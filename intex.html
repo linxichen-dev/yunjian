@@ -1,0 +1,2411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>云笺 · 便条日历</title>
+    <style>
+        /* ========== 全局 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        :root {
+            --primary: #4A6CF7;
+            --primary-light: #6B8AFF;
+            --primary-dark: #3458D6;
+            --bg: #F0F2F5;
+            --card: #FFFFFF;
+            --text: #1A1A2E;
+            --text-secondary: #5A5A7A;
+            --border: #E4E7ED;
+            --shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+            --radius: 20px;
+            --radius-sm: 12px;
+            --transition: 0.25s ease;
+        }
+        body {
+            background: var(--bg);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+        #app {
+            width: 100%;
+            max-width: 1100px;
+            height: 90vh;
+            max-height: 820px;
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .page {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 24px 28px 24px;
+            overflow: hidden;
+        }
+        .page.active {
+            display: flex;
+        }
+
+        /* ----- 头部 ----- */
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .page-header .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: var(--transition);
+            line-height: 1;
+        }
+        .page-header .back-btn:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+        .page-header h2 {
+            font-size: 22px;
+            font-weight: 600;
+            flex: 1;
+        }
+        .page-header .badge {
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: var(--bg);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        /* ========== 主页 ========== */
+        #homePage .home-header {
+            text-align: center;
+            padding: 16px 0 20px;
+            border-bottom: none;
+        }
+        #homePage .home-header h1 {
+            font-size: 44px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4A6CF7, #8B5CF6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+        #homePage .home-header .sub {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            -webkit-text-fill-color: var(--text-secondary);
+            background: none;
+        }
+        .home-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            flex: 1;
+            align-content: center;
+            padding: 10px 0;
+        }
+        .home-card {
+            background: var(--bg);
+            border-radius: var(--radius);
+            padding: 36px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+        .home-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(74, 108, 247, 0.15);
+            background: var(--card);
+        }
+        .home-card .icon {
+            font-size: 58px;
+            margin-bottom: 16px;
+            filter: drop-shadow(0 8px 12px rgba(74, 108, 247, 0.2));
+            transition: var(--transition);
+        }
+        .home-card:hover .icon {
+            transform: scale(1.05) rotate(-3deg);
+        }
+        .home-card h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+        .home-card p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.5;
+            max-width: 200px;
+        }
+
+        /* ========== 选择卡片 ========== */
+        .choice-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            flex: 1;
+            align-content: center;
+            padding: 10px 0;
+        }
+        .choice-card {
+            background: var(--bg);
+            border-radius: var(--radius);
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 140px;
+        }
+        .choice-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(74, 108, 247, 0.12);
+        }
+        .choice-card .icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+        .choice-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* ========== 便条页面 (清单 / 便条) ========== */
+        .tabs {
+            display: flex;
+            gap: 6px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            flex-shrink: 0;
+            margin-bottom: 16px;
+            position: relative;
+            touch-action: pan-y;
+        }
+        .tabs .tab {
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .tabs .tab.active {
+            background: var(--card);
+            color: var(--text);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        .tabs .tab:hover:not(.active) {
+            color: var(--text);
+        }
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+            position: relative;
+            touch-action: pan-y;
+            /* 允许垂直滚动，水平滑动我们手动处理 */;
+        }
+        .content-area::-webkit-scrollbar {
+            width: 5px;
+        }
+        .content-area::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.2s ease;
+            height: 100%;
+            flex-direction: column;
+        }
+        .tab-content.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---- 清单 (Todo) ---- */
+        .todo-input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+        .todo-input-row input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            outline: none;
+            background: var(--bg);
+            transition: var(--transition);
+        }
+        .todo-input-row input:focus {
+            border-color: var(--primary);
+            background: var(--card);
+            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.12);
+        }
+        .todo-input-row button {
+            padding: 10px 24px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        .todo-input-row button:hover {
+            background: var(--primary-dark);
+            transform: scale(0.97);
+        }
+        .todo-list {
+            list-style: none;
+            padding: 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .todo-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            border: 1px solid transparent;
+            transition: var(--transition);
+        }
+        .todo-list li:hover {
+            border-color: var(--border);
+            background: var(--card);
+        }
+        .todo-list li .check {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: var(--transition);
+            font-size: 12px;
+            color: transparent;
+            background: var(--card);
+        }
+        .todo-list li .check.done {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+        .todo-list li .text {
+            flex: 1;
+            font-size: 15px;
+            word-break: break-word;
+            cursor: pointer;
+        }
+        .todo-list li .text.done-text {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+        .todo-list li .text input.edit-input {
+            width: 100%;
+            padding: 4px 8px;
+            border: 1.5px solid var(--primary);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            background: var(--card);
+        }
+        .todo-list li .del {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0 6px;
+            opacity: 0.4;
+            transition: var(--transition);
+        }
+        .todo-list li .del:hover {
+            opacity: 1;
+            color: #e74c3c;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-secondary);
+        }
+        .empty-state .icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* ---- 便条 (日历 + 列表 左右布局) ---- */
+        .note-layout {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            min-height: 0;
+            height: 100%;
+        }
+
+        /* 左栏：日历 */
+        .note-calendar-wrapper {
+            flex: 0 0 38%;
+            min-width: 220px;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            padding: 14px 12px 12px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .note-cal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2px 10px;
+            flex-shrink: 0;
+        }
+        .note-cal-header .cal-title {
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .note-cal-header button {
+            background: var(--card);
+            border: none;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: var(--transition);
+            color: var(--text-secondary);
+            font-weight: 500;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .note-cal-header button:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+        .note-cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            flex: 1;
+            align-content: start;
+        }
+        .note-cal-grid .cal-day-label {
+            background: transparent;
+            padding: 6px 2px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .note-cal-grid .cal-day-cell {
+            background: var(--card);
+            padding: 4px 2px;
+            min-height: 40px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            border-radius: 6px;
+            position: relative;
+        }
+        .note-cal-grid .cal-day-cell:hover {
+            background: #f0f4ff;
+        }
+        .note-cal-grid .cal-day-cell .cal-num {
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+        .note-cal-grid .cal-day-cell.other-month .cal-num {
+            opacity: 0.3;
+        }
+        .note-cal-grid .cal-day-cell.today .cal-num {
+            background: var(--primary);
+            color: #fff;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .note-cal-grid .cal-day-cell.has-notes {
+            background: linear-gradient(135deg, #eef2ff, #f0e7ff);
+        }
+        .note-cal-grid .cal-day-cell.has-notes:hover {
+            background: linear-gradient(135deg, #e0e7ff, #ede0ff);
+        }
+        .note-cal-grid .cal-day-cell .note-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--primary);
+            position: absolute;
+            bottom: 3px;
+        }
+        .note-cal-grid .cal-day-cell.future-date .cal-num {
+            opacity: 0.4;
+        }
+        .note-cal-grid .cal-day-cell.future-date {
+            cursor: not-allowed;
+        }
+        .note-cal-grid .cal-day-cell.future-date:hover {
+            background: var(--card);
+        }
+        .note-cal-grid .cal-day-cell.selected {
+            outline: 2px solid var(--primary);
+            outline-offset: -2px;
+            background: #eef4ff;
+        }
+
+        /* 右栏：便条列表 + 输入 */
+        .note-content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px 12px;
+            overflow: hidden;
+            min-width: 0;
+        }
+        .note-content-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .note-content-header .date-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .note-content-header .date-label .sub {
+            font-weight: 400;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+        .note-content-header .btn-add-note {
+            padding: 4px 16px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .note-content-header .btn-add-note:hover {
+            background: var(--primary-dark);
+            transform: scale(0.97);
+        }
+        .note-content-header .btn-add-note:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .note-list-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0 4px;
+        }
+        .note-list-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .note-list-scroll::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 8px;
+        }
+        .note-item-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--card);
+            border-radius: 8px;
+            margin-bottom: 4px;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            cursor: default;
+        }
+        .note-item-row:hover {
+            border-color: var(--border);
+        }
+        .note-item-row .note-text {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+        .note-item-row .note-meta {
+            font-size: 11px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            white-space: nowrap;
+            margin-top: 2px;
+        }
+        .note-item-row .del-note-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.3;
+            transition: var(--transition);
+            padding: 0 4px;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .note-item-row .del-note-btn:hover {
+            opacity: 1;
+            color: #e74c3c;
+        }
+        .note-item-row .edit-note-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0.3;
+            transition: var(--transition);
+            padding: 0 4px;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .note-item-row .edit-note-btn:hover {
+            opacity: 0.8;
+            color: var(--primary);
+        }
+
+        .note-input-area {
+            display: flex;
+            gap: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .note-input-area input {
+            flex: 1;
+            padding: 8px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: var(--card);
+            transition: var(--transition);
+            min-width: 120px;
+        }
+        .note-input-area input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.10);
+        }
+        .note-input-area input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .note-input-area .btn-save-note {
+            padding: 8px 20px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        .note-input-area .btn-save-note:hover {
+            background: var(--primary-dark);
+            transform: scale(0.97);
+        }
+        .note-input-area .btn-save-note:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .note-input-area .btn-cancel-note {
+            padding: 8px 16px;
+            background: var(--bg);
+            color: var(--text-secondary);
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        .note-input-area .btn-cancel-note:hover {
+            background: #e0e0e8;
+        }
+        .note-input-area .future-tip {
+            font-size: 13px;
+            color: #e74c3c;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        .note-empty {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .note-empty .icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            opacity: 0.4;
+        }
+
+        /* ========== 日程视图 ========== */
+        .schedule-view {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .schedule-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 0 14px;
+            flex-shrink: 0;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .schedule-nav .nav-title {
+            font-size: 17px;
+            font-weight: 600;
+            min-width: 120px;
+            text-align: center;
+        }
+        .schedule-nav .nav-btn {
+            background: var(--bg);
+            border: none;
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .schedule-nav .nav-btn:hover {
+            background: var(--border);
+            color: var(--text);
+        }
+        .schedule-nav .nav-btn.today-btn {
+            background: var(--primary);
+            color: #fff;
+        }
+        .schedule-nav .nav-btn.today-btn:hover {
+            background: var(--primary-dark);
+        }
+        .schedule-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .schedule-grid::-webkit-scrollbar {
+            width: 5px;
+        }
+        .schedule-grid::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+
+        .day-view .hour-row {
+            display: flex;
+            align-items: stretch;
+            border-bottom: 1px solid var(--border);
+            min-height: 52px;
+        }
+        .day-view .hour-label {
+            width: 56px;
+            flex-shrink: 0;
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 6px 8px 6px 0;
+            text-align: right;
+            font-weight: 500;
+            border-right: 1px solid var(--border);
+            background: var(--bg);
+        }
+        .day-view .hour-content {
+            flex: 1;
+            padding: 4px 8px;
+            cursor: pointer;
+            position: relative;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .day-view .hour-content:hover {
+            background: #f8f9ff;
+        }
+        .day-view .event-chip {
+            background: var(--primary);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 14px;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        .day-view .event-chip:hover {
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(74, 108, 247, 0.3);
+        }
+        .day-view .event-chip .del-ev {
+            cursor: pointer;
+            opacity: 0.7;
+            font-size: 16px;
+            line-height: 1;
+        }
+        .day-view .event-chip .del-ev:hover {
+            opacity: 1;
+        }
+
+        .week-view .week-header {
+            display: grid;
+            grid-template-columns: 56px repeat(7, 1fr);
+            gap: 0;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 6px;
+            margin-bottom: 6px;
+        }
+        .week-view .week-header .day-label {
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 4px 0;
+            color: var(--text-secondary);
+        }
+        .week-view .week-header .day-label.today {
+            color: var(--primary);
+            background: #f0f4ff;
+            border-radius: 8px;
+        }
+        .week-view .week-body {
+            display: grid;
+            grid-template-columns: 56px repeat(7, 1fr);
+            gap: 0;
+            flex: 1;
+        }
+        .week-view .week-body .hour-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            padding: 4px 6px 4px 0;
+            text-align: right;
+            border-top: 1px solid var(--border);
+            font-weight: 500;
+            background: var(--bg);
+        }
+        .week-view .week-body .cell {
+            border-top: 1px solid var(--border);
+            border-left: 1px solid var(--border);
+            min-height: 40px;
+            padding: 3px 6px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .week-view .week-body .cell:hover {
+            background: #f8f9ff;
+        }
+        .week-view .week-body .cell .mini-ev {
+            background: var(--primary);
+            color: #fff;
+            font-size: 12px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin: 2px 0;
+            cursor: pointer;
+            display: inline-block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+        .week-view .week-body .cell .mini-ev .del-ev {
+            margin-left: 6px;
+            opacity: 0.7;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .month-view .month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            background: var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        .month-view .month-grid .day-cell {
+            background: var(--card);
+            padding: 6px 4px 4px 8px;
+            min-height: 72px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .month-view .month-grid .day-cell:hover {
+            background: #f8f9ff;
+        }
+        .month-view .month-grid .day-cell .day-num {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .month-view .month-grid .day-cell .day-num.today {
+            color: var(--primary);
+            background: var(--primary);
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: 700;
+        }
+        .month-view .month-grid .day-cell .day-num.other-month {
+            opacity: 0.3;
+        }
+        .month-view .month-grid .day-cell .ev-dots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin-top: 4px;
+        }
+        .month-view .month-grid .day-cell .ev-label {
+            font-size: 12px;
+            color: var(--primary);
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            background: #f0f4ff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        /* ========== 弹窗 ========== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-overlay.open {
+            display: flex;
+        }
+        .modal-box {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 28px 32px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+            animation: modalIn 0.2s ease;
+        }
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.94) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .modal-box h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+        .modal-box label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            display: block;
+            margin-top: 12px;
+            margin-bottom: 4px;
+        }
+        .modal-box input,
+        .modal-box textarea,
+        .modal-box select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+            background: var(--bg);
+            font-family: inherit;
+        }
+        .modal-box input:focus,
+        .modal-box textarea:focus,
+        .modal-box select:focus {
+            border-color: var(--primary);
+            background: var(--card);
+            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.08);
+        }
+        .modal-box textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+        .modal-box .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        .modal-box .modal-actions button {
+            padding: 8px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .modal-box .modal-actions .btn-cancel {
+            background: var(--bg);
+            color: var(--text-secondary);
+        }
+        .modal-box .modal-actions .btn-cancel:hover {
+            background: #e0e0e8;
+        }
+        .modal-box .modal-actions .btn-confirm {
+            background: var(--primary);
+            color: #fff;
+        }
+        .modal-box .modal-actions .btn-confirm:hover {
+            background: var(--primary-dark);
+        }
+
+        /* ========== 右键菜单 ========== */
+        .context-menu {
+            position: fixed;
+            background: var(--card);
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 6px;
+            z-index: 2000;
+            display: none;
+            min-width: 120px;
+        }
+        .context-menu.show {
+            display: block;
+            animation: fadeIn 0.1s ease;
+        }
+        .context-menu .menu-item {
+            padding: 8px 14px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--text);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .context-menu .menu-item:hover {
+            background: var(--bg);
+        }
+        .context-menu .menu-item.danger {
+            color: #e74c3c;
+        }
+        .context-menu .menu-item.danger:hover {
+            background: #fdecea;
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 820px) {
+            .note-calendar-wrapper {
+                flex: 0 0 42%;
+                min-width: 160px;
+            }
+            .note-cal-grid .cal-day-cell {
+                min-height: 34px;
+                padding: 2px 1px;
+            }
+            .note-cal-grid .cal-day-cell .cal-num {
+                font-size: 12px;
+            }
+            .note-cal-grid .cal-day-cell.today .cal-num {
+                width: 22px;
+                height: 22px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 680px) {
+            #app {
+                height: 96vh;
+                max-height: none;
+                border-radius: 12px;
+            }
+            .page {
+                padding: 14px 14px 16px;
+            }
+            .home-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+            .choice-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+            .home-card {
+                padding: 28px 20px;
+                min-height: 120px;
+            }
+            .choice-card {
+                padding: 20px;
+                min-height: 80px;
+            }
+            #homePage .home-header h1 {
+                font-size: 32px;
+            }
+            #homePage .home-header .sub {
+                font-size: 15px;
+            }
+            .week-view .week-body .cell {
+                min-height: 32px;
+                padding: 2px 4px;
+            }
+            .week-view .week-body .cell .mini-ev {
+                font-size: 10px;
+                padding: 1px 6px;
+            }
+            .month-view .month-grid .day-cell {
+                min-height: 48px;
+                padding: 4px 2px 2px 4px;
+            }
+            .month-view .month-grid .day-cell .day-num {
+                font-size: 12px;
+            }
+            .month-view .month-grid .day-cell .day-num.today {
+                width: 22px;
+                height: 22px;
+                font-size: 12px;
+            }
+            .day-view .hour-label {
+                width: 40px;
+                font-size: 10px;
+                padding: 4px 4px 4px 0;
+            }
+            .day-view .hour-row {
+                min-height: 44px;
+            }
+            .day-view .hour-content {
+                min-height: 44px;
+                padding: 2px 6px;
+            }
+            .day-view .event-chip {
+                font-size: 12px;
+                padding: 4px 12px;
+            }
+            .schedule-nav .nav-title {
+                font-size: 14px;
+                min-width: 80px;
+            }
+            .modal-box {
+                padding: 20px;
+            }
+
+            /* 移动端：便条上下布局 */
+            .note-layout {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .note-calendar-wrapper {
+                flex: 0 0 auto;
+                min-width: unset;
+                padding: 10px 8px 8px;
+                max-height: 220px;
+            }
+            .note-cal-grid .cal-day-cell {
+                min-height: 30px;
+                padding: 2px 1px;
+            }
+            .note-cal-grid .cal-day-cell .cal-num {
+                font-size: 11px;
+            }
+            .note-cal-grid .cal-day-cell.today .cal-num {
+                width: 20px;
+                height: 20px;
+                font-size: 11px;
+            }
+            .note-content-wrapper {
+                flex: 1;
+                min-height: 200px;
+                padding: 10px 12px 10px;
+            }
+            .note-content-header .date-label {
+                font-size: 14px;
+            }
+            .note-content-header .btn-add-note {
+                font-size: 12px;
+                padding: 4px 12px;
+            }
+            .note-input-area input {
+                font-size: 13px;
+                padding: 6px 12px;
+                min-width: 80px;
+            }
+            .note-input-area .btn-save-note {
+                font-size: 13px;
+                padding: 6px 16px;
+            }
+            .note-item-row {
+                padding: 6px 10px;
+            }
+            .note-item-row .note-text {
+                font-size: 13px;
+            }
+            .note-item-row .note-meta {
+                font-size: 10px;
+            }
+            .page-header h2 {
+                font-size: 18px;
+            }
+            .tabs .tab {
+                font-size: 14px;
+                padding: 6px 12px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .note-calendar-wrapper {
+                padding: 6px 4px 6px;
+                max-height: 180px;
+            }
+            .note-cal-grid .cal-day-cell {
+                min-height: 24px;
+                padding: 1px 0;
+            }
+            .note-cal-grid .cal-day-cell .cal-num {
+                font-size: 10px;
+            }
+            .note-cal-grid .cal-day-cell.today .cal-num {
+                width: 18px;
+                height: 18px;
+                font-size: 10px;
+            }
+            .note-cal-header .cal-title {
+                font-size: 13px;
+            }
+            .note-cal-header button {
+                font-size: 11px;
+                padding: 2px 8px;
+            }
+            .note-content-wrapper {
+                padding: 8px 8px 8px;
+            }
+            .note-content-header .date-label {
+                font-size: 13px;
+            }
+            .note-input-area {
+                gap: 6px;
+            }
+            .note-input-area input {
+                font-size: 12px;
+                padding: 5px 10px;
+                min-width: 60px;
+            }
+            .note-input-area .btn-save-note {
+                font-size: 12px;
+                padding: 5px 12px;
+            }
+            .note-item-row {
+                padding: 4px 8px;
+            }
+            .note-item-row .note-text {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+
+        <!-- ========== 主页 ========== -->
+        <div id="homePage" class="page active">
+            <div class="page-header home-header">
+                <h1>云笺</h1>
+                <div class="sub">计划、复盘、日程，一"笺"安排</div>
+            </div>
+            <div class="home-grid">
+                <div class="home-card" data-page="notePage">
+                    <div class="icon">⚡</div>
+                    <h3>你的日常</h3>
+                    <p>计划·复盘·记录</p>
+                </div>
+                <div class="home-card" data-page="scheduleChoicePage">
+                    <div class="icon">📅</div>
+                    <h3>你的日程</h3>
+                    <p>规划你的未来</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 便条页面 (清单 / 便条) ========== -->
+        <div id="notePage" class="page">
+            <div class="page-header">
+                <button class="back-btn" data-back="homePage">←</button>
+                <h2>✏️ 你的日常</h2><span class="badge">快速</span>
+            </div>
+            <div class="tabs" id="noteTabs">
+                <button class="tab active" data-tab="todoTab">📋 清单</button>
+                <button class="tab" data-tab="noteTab">📝 便条</button>
+            </div>
+            <div class="content-area" id="noteContentArea">
+                <!-- 清单 -->
+                <div id="todoTab" class="tab-content active">
+                    <div class="todo-input-row">
+                        <input type="text" id="todoInput" placeholder="输入待办事项…" maxlength="80" />
+                        <button id="todoAddBtn">添加</button>
+                    </div>
+                    <ul class="todo-list" id="todoList"></ul>
+                </div>
+                <!-- 便条 (日历 + 列表) -->
+                <div id="noteTab" class="tab-content">
+                    <div class="note-layout">
+                        <!-- 左栏：日历 -->
+                        <div class="note-calendar-wrapper" id="noteCalendarWrapper">
+                            <div class="note-cal-header">
+                                <button id="noteCalPrev">←</button>
+                                <span class="cal-title" id="noteCalTitle">本月</span>
+                                <button id="noteCalNext">→</button>
+                            </div>
+                            <div class="note-cal-grid" id="noteCalGrid"></div>
+                        </div>
+                        <!-- 右栏：便条列表 + 输入 -->
+                        <div class="note-content-wrapper">
+                            <div class="note-content-header">
+                                <span class="date-label" id="noteListDate">📅 选择日期</span>
+                                <button class="btn-add-note" id="noteAddForDateBtn" title="为所选日期添加便条">➕ 添加</button>
+                            </div>
+                            <div class="note-list-scroll" id="noteListScroll">
+                                <div id="noteListContent">
+                                    <div class="note-empty"><div class="icon">📭</div><p>点击日历中的日期查看便条</p></div>
+                                </div>
+                            </div>
+                            <div class="note-input-area" id="noteInputArea">
+                                <input type="text" id="noteDateInput" placeholder="写便条…" maxlength="200" disabled />
+                                <button class="btn-save-note" id="noteDateSaveBtn" disabled>保存</button>
+                                <button class="btn-cancel-note" id="noteDateCancelBtn" style="display:none;">取消</button>
+                                <span class="future-tip" id="futureTip" style="display:none;">🔒 未来不可写</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 日程选择 ========== -->
+        <div id="scheduleChoicePage" class="page">
+            <div class="page-header">
+                <button class="back-btn" data-back="homePage">←</button>
+                <h2>📅 选择计划类型</h2>
+            </div>
+            <div class="choice-grid">
+                <div class="choice-card" data-plan="day"><div class="icon">📆</div><h3>日计划</h3></div>
+                <div class="choice-card" data-plan="week"><div class="icon">📊</div><h3>周计划</h3></div>
+                <div class="choice-card" data-plan="month"><div class="icon">📋</div><h3>月计划</h3></div>
+            </div>
+        </div>
+
+        <!-- ========== 日计划 ========== -->
+        <div id="dayPlanPage" class="page">
+            <div class="page-header">
+                <button class="back-btn" data-back="scheduleChoicePage">←</button>
+                <h2>📆 日计划</h2><span class="badge" id="dayBadge">今天</span>
+            </div>
+            <div class="schedule-view">
+                <div class="schedule-nav">
+                    <button class="nav-btn" id="dayPrev">←</button>
+                    <span class="nav-title" id="dayTitle">今天</span>
+                    <button class="nav-btn today-btn" id="dayToday">今天</button>
+                    <button class="nav-btn" id="dayNext">→</button>
+                </div>
+                <div class="schedule-grid day-view" id="dayGrid"></div>
+            </div>
+        </div>
+
+        <!-- ========== 周计划 ========== -->
+        <div id="weekPlanPage" class="page">
+            <div class="page-header">
+                <button class="back-btn" data-back="scheduleChoicePage">←</button>
+                <h2>📊 周计划</h2><span class="badge" id="weekBadge">本周</span>
+            </div>
+            <div class="schedule-view">
+                <div class="schedule-nav">
+                    <button class="nav-btn" id="weekPrev">←</button>
+                    <span class="nav-title" id="weekTitle">本周</span>
+                    <button class="nav-btn today-btn" id="weekToday">今天</button>
+                    <button class="nav-btn" id="weekNext">→</button>
+                </div>
+                <div class="schedule-grid week-view" id="weekGrid"></div>
+            </div>
+        </div>
+
+        <!-- ========== 月计划 ========== -->
+        <div id="monthPlanPage" class="page">
+            <div class="page-header">
+                <button class="back-btn" data-back="scheduleChoicePage">←</button>
+                <h2>📋 月计划</h2><span class="badge" id="monthBadge">本月</span>
+            </div>
+            <div class="schedule-view">
+                <div class="schedule-nav">
+                    <button class="nav-btn" id="monthPrev">←</button>
+                    <span class="nav-title" id="monthTitle">本月</span>
+                    <button class="nav-btn today-btn" id="monthToday">今天</button>
+                    <button class="nav-btn" id="monthNext">→</button>
+                </div>
+                <div class="schedule-grid month-view" id="monthGrid"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========== 弹窗 ========== -->
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal-box">
+            <h3 id="modalTitle">添加事件</h3>
+            <label>标题</label>
+            <input type="text" id="modalEventTitle" placeholder="事件标题…" maxlength="50" />
+            <label>时间</label>
+            <input type="time" id="modalEventTime" value="09:00" />
+            <label>备注 (可选)</label>
+            <textarea id="modalEventDesc" placeholder="备注…" rows="2"></textarea>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="modalCancel">取消</button>
+                <button class="btn-confirm" id="modalConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右键菜单 -->
+    <div class="context-menu" id="contextMenu">
+        <div class="menu-item" data-action="edit">✏️ 编辑</div>
+        <div class="menu-item danger" data-action="delete">🗑️ 删除</div>
+    </div>
+
+    <script>
+        // ================================================================
+        //  数据层
+        // ================================================================
+        const DB = {
+            get(key, fallback) {
+                try { const raw = localStorage.getItem('desk_' + key); return raw ? JSON.parse(raw) : fallback; } catch { return
+                        fallback; }
+            },
+            set(key, val) { localStorage.setItem('desk_' + key, JSON.stringify(val)); }
+        };
+
+        let todos = DB.get('todos', []);
+        let notes = DB.get('notes', []);
+        let events = DB.get('events', []);
+
+        let dayOffset = 0,
+            weekOffset = 0,
+            monthOffset = 0;
+        let noteCalMonthOffset = 0;
+        let noteSelectedDate = formatDate(new Date()); // 默认今天
+        let editingNoteId = null;
+
+        // 工具
+        function today() { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+        function formatDate(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d
+                .getDate()).padStart(2, '0'); }
+
+        function formatDateWeek(d) { const w = ['日', '一', '二', '三', '四', '五', '六']; return (d.getMonth() + 1) + '月' + d
+                .getDate() + '日 周' + w[d.getDay()]; }
+
+        function isToday(d) { const t = today(); return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() &&
+                d.getDate() === t.getDate(); }
+
+        function isFutureDate(dateStr) {
+            const d = new Date(dateStr);
+            const t = today();
+            return d.getFullYear() > t.getFullYear() || (d.getFullYear() === t.getFullYear() && d.getMonth() > t.getMonth()) ||
+                (d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() > t.getDate());
+        }
+
+        function isSameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() ===
+                b.getDate(); }
+
+        function getWeekStart(base) { const d = new Date(base); d.setDate(d.getDate() - d.getDay()); return d; }
+
+        function getMonthDays(y, m) { return new Date(y, m + 1, 0).getDate(); }
+
+        function getDayOfWeek(y, m, d) { return new Date(y, m, d).getDay(); }
+
+        function getEventsForDate(dateStr) { return events.filter(e => e.date === dateStr); }
+
+        function getNotesForDate(dateStr) { return notes.filter(n => n.date === dateStr); }
+
+        function generateId() { return Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6); }
+
+        function escapeHtml(str) { const div = document.createElement('div');
+            div.textContent = str; return div.innerHTML; }
+
+        // ================================================================
+        //  右键菜单
+        // ================================================================
+        const contextMenu = document.getElementById('contextMenu');
+        let contextMenuTarget = null;
+        let contextMenuData = null;
+
+        function showContextMenu(e, target, data) {
+            e.preventDefault();
+            contextMenuTarget = target;
+            contextMenuData = data;
+            let x = e.clientX,
+                y = e.clientY;
+            const w = 160,
+                h = 80;
+            if (x + w > window.innerWidth) x = window.innerWidth - w - 10;
+            if (y + h > window.innerHeight) y = window.innerHeight - h - 10;
+            contextMenu.style.left = x + 'px';
+            contextMenu.style.top = y + 'px';
+            contextMenu.classList.add('show');
+        }
+
+        function hideContextMenu() {
+            contextMenu.classList.remove('show');
+            contextMenuTarget = null;
+            contextMenuData = null;
+        }
+        document.addEventListener('click', hideContextMenu);
+        document.addEventListener('scroll', hideContextMenu, true);
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') hideContextMenu(); });
+
+        contextMenu.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const action = this.dataset.action;
+                if (!contextMenuData) return;
+                if (action === 'edit') { handleContextEdit(contextMenuData); } else if (action === 'delete') {
+                    handleContextDelete(contextMenuData); }
+                hideContextMenu();
+            });
+        });
+
+        function handleContextEdit(data) {
+            if (data.type === 'todo') { startEditTodo(data.index); } else if (data.type === 'note') {
+                startEditNoteFromList(data.id); } else if (data.type === 'event') { openEditEventModal(data.id); }
+        }
+
+        function handleContextDelete(data) {
+            if (data.type === 'todo') {
+                todos.splice(data.index, 1);
+                DB.set('todos', todos);
+                renderTodos();
+            } else if (data.type === 'note') {
+                notes = notes.filter(n => n.id !== data.id);
+                DB.set('notes', notes);
+                renderNoteList();
+                renderNoteCalendar();
+            } else if (data.type === 'event') {
+                events = events.filter(ev => ev.id !== data.id);
+                DB.set('events', events);
+                refreshCurrentScheduleView();
+            }
+        }
+
+        // ================================================================
+        //  清单 (Todo)
+        // ================================================================
+        function renderTodos() {
+            const list = document.getElementById('todoList');
+            if (todos.length === 0) { list.innerHTML =
+                    `<div class="empty-state"><div class="icon">📭</div><p>还没有待办事项</p></div>`; return; }
+            list.innerHTML = todos.map((t, i) =>
+                `<li>
+                    <span class="check ${t.done?'done':''}" data-index="${i}">${t.done?'✓':''}</span>
+                    <span class="text ${t.done?'done-text':''}" data-index="${i}" title="双击或右键编辑">${escapeHtml(t.text)}</span>
+                    <button class="del" data-index="${i}">×</button>
+                </li>`
+            ).join('');
+            list.querySelectorAll('.check').forEach(el => el.addEventListener('click', function() {
+                const idx = parseInt(this.dataset.index);
+                todos[idx].done = !todos[idx].done;
+                DB.set('todos', todos);
+                renderTodos();
+            }));
+            list.querySelectorAll('.del').forEach(el => el.addEventListener('click', function() {
+                const idx = parseInt(this.dataset.index);
+                todos.splice(idx, 1);
+                DB.set('todos', todos);
+                renderTodos();
+            }));
+            list.querySelectorAll('.text').forEach(el => {
+                el.addEventListener('dblclick', function() {
+                    const idx = parseInt(this.dataset.index);
+                    startEditTodo(idx);
+                });
+                el.addEventListener('contextmenu', function(e) {
+                    const idx = parseInt(this.dataset.index);
+                    showContextMenu(e, this, { type: 'todo', index: idx });
+                });
+            });
+        }
+
+        function startEditTodo(index) {
+            const list = document.getElementById('todoList');
+            const li = list.querySelectorAll('li')[index];
+            const textSpan = li.querySelector('.text');
+            const originalText = todos[index].text;
+            textSpan.innerHTML =
+                `<input type="text" class="edit-input" value="${escapeHtml(originalText)}" maxlength="80" />`;
+            const input = textSpan.querySelector('.edit-input');
+            input.focus();
+            input.select();
+
+            function finishEdit(save) {
+                if (save) {
+                    const newText = input.value.trim();
+                    if (newText) { todos[index].text = newText;
+                        DB.set('todos', todos); }
+                }
+                renderTodos();
+            }
+            input.addEventListener('blur', function() { finishEdit(true); });
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault();
+                    finishEdit(true); }
+                if (e.key === 'Escape') { e.preventDefault();
+                    finishEdit(false); }
+            });
+        }
+
+        function addTodo(text) { if (!text.trim()) return;
+            todos.push({ id: generateId(), text: text.trim(), done: false });
+            DB.set('todos', todos);
+            renderTodos(); }
+
+        // ================================================================
+        //  便条 · 日历 + 列表 (核心)
+        // ================================================================
+
+        // 渲染日历
+        function renderNoteCalendar() {
+            const base = today();
+            base.setMonth(base.getMonth() + noteCalMonthOffset);
+            const year = base.getFullYear(),
+                month = base.getMonth();
+            document.getElementById('noteCalTitle').textContent = year + '年' + (month + 1) + '月';
+
+            const daysInMonth = getMonthDays(year, month);
+            const firstDay = getDayOfWeek(year, month, 1);
+            const prevMonthDays = getMonthDays(year, month - 1);
+            const grid = document.getElementById('noteCalGrid');
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            const todayStr = formatDate(today());
+            const selectedStr = noteSelectedDate;
+
+            const notesByDate = {};
+            notes.forEach(n => {
+                if (!notesByDate[n.date]) notesByDate[n.date] = [];
+                notesByDate[n.date].push(n);
+            });
+
+            let html = '';
+            weekdays.forEach(w => {
+                html += `<div class="cal-day-label">${w}</div>`;
+            });
+            const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+            for (let i = 0; i < totalCells; i++) {
+                let day, isOtherMonth = false,
+                    cellMonth = month;
+                if (i < firstDay) {
+                    day = prevMonthDays - firstDay + i + 1;
+                    isOtherMonth = true;
+                    cellMonth = month - 1;
+                } else if (i >= firstDay + daysInMonth) {
+                    day = i - firstDay - daysInMonth + 1;
+                    isOtherMonth = true;
+                    cellMonth = month + 1;
+                } else {
+                    day = i - firstDay + 1;
+                }
+                const cellYear = cellMonth < 0 ? year - 1 : (cellMonth > 11 ? year + 1 : year);
+                const realMonth = cellMonth < 0 ? 11 : (cellMonth > 11 ? 0 : cellMonth);
+                const d = new Date(cellYear, realMonth, day);
+                const ds = formatDate(d);
+                const isToday = ds === todayStr;
+                const isSelected = ds === selectedStr;
+                const isFuture = isFutureDate(ds);
+                const hasNotes = notesByDate[ds] && notesByDate[ds].length > 0;
+
+                let cls = 'cal-day-cell';
+                if (isOtherMonth) cls += ' other-month';
+                if (isToday) cls += ' today';
+                if (hasNotes) cls += ' has-notes';
+                if (isSelected) cls += ' selected';
+                if (isFuture) cls += ' future-date';
+
+                html += `<div class="${cls}" data-date="${ds}" data-future="${isFuture}">
+                    <span class="cal-num">${day}</span>
+                    ${hasNotes ? `<span class="note-dot"></span>` : ''}
+                </div>`;
+            }
+            grid.innerHTML = html;
+
+            // 点击日期
+            grid.querySelectorAll('.cal-day-cell').forEach(el => {
+                el.addEventListener('click', function() {
+                    const ds = this.dataset.date;
+                    const isFuture = this.dataset.future === 'true';
+                    if (isFuture) {
+                        // 未来日期：只查看，不选中（不可添加）
+                        // 但可以展示便条（如果有）
+                        noteSelectedDate = ds;
+                        renderNoteCalendar();
+                        renderNoteList();
+                        return;
+                    }
+                    noteSelectedDate = ds;
+                    renderNoteCalendar();
+                    renderNoteList();
+                });
+            });
+        }
+
+        // 渲染便条列表（选中日期）
+        function renderNoteList() {
+            const container = document.getElementById('noteListContent');
+            const dateLabel = document.getElementById('noteListDate');
+            const addBtn = document.getElementById('noteAddForDateBtn');
+            const input = document.getElementById('noteDateInput');
+            const saveBtn = document.getElementById('noteDateSaveBtn');
+            const cancelBtn = document.getElementById('noteDateCancelBtn');
+            const futureTip = document.getElementById('futureTip');
+
+            const isFuture = isFutureDate(noteSelectedDate);
+            const dayNotes = getNotesForDate(noteSelectedDate).sort((a, b) => a.time.localeCompare(b.time));
+
+            // 更新标题
+            const d = new Date(noteSelectedDate);
+            const w = ['日', '一', '二', '三', '四', '五', '六'];
+            const label = (d.getMonth() + 1) + '月' + d.getDate() + '日 周' + w[d.getDay()];
+            dateLabel.innerHTML = `📅 ${label} ${isFuture ? '🔒' : ''}`;
+
+            // 按钮状态
+            if (isFuture) {
+                addBtn.disabled = true;
+                addBtn.textContent = '🔒 不可添加';
+                input.disabled = true;
+                saveBtn.disabled = true;
+                futureTip.style.display = 'inline';
+                cancelBtn.style.display = 'none';
+                // 输入框占位显示提示
+                input.placeholder = '未来日期不可写便条';
+            } else {
+                addBtn.disabled = false;
+                addBtn.textContent = '➕ 添加';
+                input.disabled = false;
+                saveBtn.disabled = false;
+                futureTip.style.display = 'none';
+                // 显示当前选中日期提示
+                input.placeholder = `写便条 (${label})`;
+            }
+
+            // 列表内容
+            if (dayNotes.length === 0) {
+                container.innerHTML =
+                    `<div class="note-empty"><div class="icon">📭</div><p>${isFuture ? '未来日期暂无便条' : '这一天还没有便条，写一条吧'}</p></div>`;
+            } else {
+                container.innerHTML = dayNotes.map(n =>
+                    `<div class="note-item-row" data-id="${n.id}">
+                        <span class="note-text">${escapeHtml(n.text)}</span>
+                        <span class="note-meta">${n.time}</span>
+                        <button class="edit-note-btn" data-id="${n.id}" title="编辑">✏️</button>
+                        <button class="del-note-btn" data-id="${n.id}" title="删除">×</button>
+                    </div>`
+                ).join('');
+
+                container.querySelectorAll('.del-note-btn').forEach(el => {
+                    el.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const id = this.dataset.id;
+                        notes = notes.filter(n => n.id !== id);
+                        DB.set('notes', notes);
+                        renderNoteList();
+                        renderNoteCalendar();
+                    });
+                });
+                container.querySelectorAll('.edit-note-btn').forEach(el => {
+                    el.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const id = this.dataset.id;
+                        startEditNoteFromList(id);
+                    });
+                });
+                // 双击便条文本也可编辑
+                container.querySelectorAll('.note-item-row .note-text').forEach(el => {
+                    const row = el.closest('.note-item-row');
+                    if (row) {
+                        row.addEventListener('dblclick', function() {
+                            const id = this.dataset.id;
+                            if (id) startEditNoteFromList(id);
+                        });
+                        row.addEventListener('contextmenu', function(e) {
+                            e.preventDefault();
+                            const id = this.dataset.id;
+                            if (id) showContextMenu(e, this, { type: 'note', id: id });
+                        });
+                    }
+                });
+            }
+        }
+
+        // 编辑便条（从列表触发）
+        function startEditNoteFromList(id) {
+            const note = notes.find(n => n.id === id);
+            if (!note) return;
+            // 检查日期是否未来
+            if (isFutureDate(note.date)) {
+                alert('未来日期的便条不可编辑');
+                return;
+            }
+            editingNoteId = id;
+            const input = document.getElementById('noteDateInput');
+            const saveBtn = document.getElementById('noteDateSaveBtn');
+            const cancelBtn = document.getElementById('noteDateCancelBtn');
+            input.value = note.text;
+            input.focus();
+            input.select();
+            saveBtn.textContent = '💾 更新';
+            cancelBtn.style.display = 'inline-block';
+            // 滚动到输入区域
+            document.getElementById('noteInputArea').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // 保存便条（选中日期）
+        function saveNoteForDate(text) {
+            if (!text.trim()) return;
+            const dateStr = noteSelectedDate;
+            if (isFutureDate(dateStr)) {
+                alert('不能为未来日期添加便条');
+                return;
+            }
+            const now = new Date();
+            const time = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+            if (editingNoteId) {
+                // 更新
+                const note = notes.find(n => n.id === editingNoteId);
+                if (note) {
+                    note.text = text.trim();
+                    note.time = time;
+                    note.date = dateStr; // 确保日期一致
+                }
+                editingNoteId = null;
+                document.getElementById('noteDateSaveBtn').textContent = '保存';
+                document.getElementById('noteDateCancelBtn').style.display = 'none';
+            } else {
+                // 新增
+                notes.push({ id: generateId(), text: text.trim(), time: time, date: dateStr });
+            }
+            DB.set('notes', notes);
+            document.getElementById('noteDateInput').value = '';
+            renderNoteList();
+            renderNoteCalendar();
+        }
+
+        // 取消编辑
+        function cancelEditNote() {
+            editingNoteId = null;
+            document.getElementById('noteDateInput').value = '';
+            document.getElementById('noteDateSaveBtn').textContent = '保存';
+            document.getElementById('noteDateCancelBtn').style.display = 'none';
+            // 恢复占位符
+            const label = document.getElementById('noteListDate').textContent;
+            const input = document.getElementById('noteDateInput');
+            input.placeholder = `写便条 (${label.replace('📅 ','').replace(' 🔒','')})`;
+        }
+
+        // ================================================================
+        //  便条 · 触摸滑动切换 Tab (手机) - 重新实现
+        // ================================================================
+        let touchStartX = 0,
+            touchStartY = 0;
+        let isSwiping = false;
+
+        const tabsContainer = document.getElementById('noteTabs');
+        const contentArea = document.getElementById('noteContentArea');
+
+        function getActiveTabIndex() {
+            const tabs = tabsContainer.querySelectorAll('.tab');
+            for (let i = 0; i < tabs.length; i++) {
+                if (tabs[i].classList.contains('active')) return i;
+            }
+            return 0;
+        }
+
+        function switchTabByIndex(index) {
+            const tabs = tabsContainer.querySelectorAll('.tab');
+            if (index < 0 || index >= tabs.length) return;
+            tabs[index].click();
+        }
+
+        contentArea.addEventListener('touchstart', function(e) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            isSwiping = false;
+        }, { passive: true });
+
+        contentArea.addEventListener('touchmove', function(e) {
+            const dx = e.touches[0].clientX - touchStartX;
+            const dy = e.touches[0].clientY - touchStartY;
+            // 如果水平位移大于垂直位移，且超过阈值，认为是水平滑动
+            if (Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+                isSwiping = true;
+                // 阻止默认事件（垂直滚动）
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        contentArea.addEventListener('touchend', function(e) {
+            if (!isSwiping) return;
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const threshold = 40;
+            if (Math.abs(dx) < threshold) return;
+            const currentIdx = getActiveTabIndex();
+            if (dx < 0) {
+                // 左滑 -> 下一个tab
+                if (currentIdx < tabsContainer.querySelectorAll('.tab').length - 1) {
+                    switchTabByIndex(currentIdx + 1);
+                }
+            } else {
+                // 右滑 -> 上一个tab
+                if (currentIdx > 0) {
+                    switchTabByIndex(currentIdx - 1);
+                }
+            }
+            isSwiping = false;
+        }, { passive: true });
+
+        // ================================================================
+        //  便条 · 事件绑定
+        // ================================================================
+
+        // Tab切换（手动点击）
+        document.querySelectorAll('#notePage .tabs .tab').forEach(el => {
+            el.addEventListener('click', function() {
+                const parent = this.closest('.page');
+                parent.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const tabId = this.dataset.tab;
+                parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(tabId).classList.add('active');
+                // 如果切换到便条，刷新日历和列表
+                if (tabId === 'noteTab') {
+                    renderNoteCalendar();
+                    renderNoteList();
+                }
+            });
+        });
+
+        // 添加按钮
+        document.getElementById('noteAddForDateBtn').addEventListener('click', function() {
+            if (isFutureDate(noteSelectedDate)) {
+                alert('不能为未来日期添加便条');
+                return;
+            }
+            const input = document.getElementById('noteDateInput');
+            input.focus();
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        // 保存按钮
+        document.getElementById('noteDateSaveBtn').addEventListener('click', function() {
+            const input = document.getElementById('noteDateInput');
+            saveNoteForDate(input.value);
+            input.value = '';
+            document.getElementById('noteDateSaveBtn').textContent = '保存';
+            document.getElementById('noteDateCancelBtn').style.display = 'none';
+            // 恢复占位符
+            const label = document.getElementById('noteListDate').textContent;
+            input.placeholder = `写便条 (${label.replace('📅 ','').replace(' 🔒','')})`;
+        });
+
+        // 取消按钮
+        document.getElementById('noteDateCancelBtn').addEventListener('click', function() {
+            cancelEditNote();
+        });
+
+        // 输入框回车保存
+        document.getElementById('noteDateInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('noteDateSaveBtn').click();
+            }
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                cancelEditNote();
+            }
+        });
+
+        // 日历导航
+        document.getElementById('noteCalPrev').addEventListener('click', function() {
+            noteCalMonthOffset--;
+            renderNoteCalendar();
+            renderNoteList();
+        });
+        document.getElementById('noteCalNext').addEventListener('click', function() {
+            noteCalMonthOffset++;
+            renderNoteCalendar();
+            renderNoteList();
+        });
+
+        // 清单添加
+        document.getElementById('todoAddBtn').addEventListener('click', function() {
+            const input = document.getElementById('todoInput');
+            addTodo(input.value);
+            input.value = '';
+            input.focus();
+        });
+        document.getElementById('todoInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') document.getElementById('todoAddBtn').click();
+        });
+
+        // ================================================================
+        //  日程渲染 (日/周/月) - 保持不变，但增加编辑支持
+        // ================================================================
+        function openEditEventModal(eventId) {
+            const ev = events.find(e => e.id === eventId);
+            if (!ev) return;
+            editingEventId = eventId;
+            document.getElementById('modalTitle').textContent = '编辑事件 · ' + ev.date;
+            document.getElementById('modalEventTitle').value = ev.title;
+            document.getElementById('modalEventTime').value = ev.time;
+            document.getElementById('modalEventDesc').value = ev.desc || '';
+            modalDate = ev.date;
+            modalHour = parseInt(ev.time.split(':')[0]);
+            document.getElementById('eventModal').classList.add('open');
+            document.getElementById('modalEventTitle').focus();
+        }
+
+        function renderDayView() {
+            const base = today();
+            base.setDate(base.getDate() + dayOffset);
+            const dateStr = formatDate(base);
+            document.getElementById('dayTitle').textContent = formatDateWeek(base);
+            document.getElementById('dayBadge').textContent = formatDateWeek(base);
+            const grid = document.getElementById('dayGrid');
+            let html = '';
+            for (let h = 0; h < 24; h++) {
+                const evs = getEventsForDate(dateStr).filter(e => parseInt(e.time.split(':')[0]) === h);
+                html += `<div class="hour-row">
+                    <div class="hour-label">${String(h).padStart(2,'0')}:00</div>
+                    <div class="hour-content" data-hour="${h}" data-date="${dateStr}">
+                        ${evs.map(e => `<span class="event-chip" data-id="${e.id}" title="双击或右键编辑">${escapeHtml(e.title)} <span class="del-ev" data-id="${e.id}">×</span></span>`).join('')}
+                    </div>
+                </div>`;
+            }
+            grid.innerHTML = html;
+            grid.querySelectorAll('.hour-content').forEach(el => el.addEventListener('click', function(e) {
+                if (e.target.closest('.event-chip')) return;
+                openModal(this.dataset.date, parseInt(this.dataset.hour));
+            }));
+            grid.querySelectorAll('.event-chip .del-ev').forEach(el => el.addEventListener('click', function(e) {
+                e.stopPropagation();
+                events = events.filter(ev => ev.id !== this.dataset.id);
+                DB.set('events', events);
+                renderDayView();
+            }));
+            grid.querySelectorAll('.event-chip').forEach(el => {
+                el.addEventListener('dblclick', function(e) {
+                    e.stopPropagation();
+                    openEditEventModal(this.dataset.id);
+                });
+                el.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showContextMenu(e, this, { type: 'event', id: this.dataset.id });
+                });
+            });
+        }
+
+        function renderWeekView() {
+            const base = today();
+            base.setDate(base.getDate() + weekOffset * 7);
+            const start = getWeekStart(base);
+            const dates = [];
+            for (let i = 0; i < 7; i++) { const d = new Date(start);
+                d.setDate(d.getDate() + i);
+                dates.push(d); }
+            const s = dates[0],
+                e = dates[6];
+            document.getElementById('weekTitle').textContent = (s.getMonth() + 1) + '/' + s.getDate() + ' - ' + (e.getMonth() +
+                1) + '/' + e.getDate();
+            document.getElementById('weekBadge').textContent = '本周';
+            const grid = document.getElementById('weekGrid');
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            const todayStr = formatDate(today());
+            let html = `<div class="week-header"><div class="day-label"></div>`;
+            dates.forEach(d => {
+                const ds = formatDate(d);
+                const isToday = ds === todayStr;
+                html +=
+                    `<div class="day-label ${isToday?'today':''}">${weekdays[d.getDay()]}<br><strong>${d.getDate()}</strong></div>`;
+            });
+            html += `</div><div class="week-body">`;
+            for (let h = 0; h < 24; h++) {
+                html += `<div class="hour-label">${String(h).padStart(2,'0')}:00</div>`;
+                for (let i = 0; i < 7; i++) {
+                    const d = dates[i];
+                    const ds = formatDate(d);
+                    const evs = getEventsForDate(ds).filter(e => parseInt(e.time.split(':')[0]) === h);
+                    const isToday = ds === todayStr;
+                    html += `<div class="cell" data-date="${ds}" data-hour="${h}" style="${isToday?'background:#f8faff;':''}">
+                        ${evs.map(e => `<span class="mini-ev" data-id="${e.id}" title="双击或右键编辑">${escapeHtml(e.title)} <span class="del-ev" data-id="${e.id}">×</span></span>`).join('')}
+                    </div>`;
+                }
+            }
+            html += `</div>`;
+            grid.innerHTML = html;
+            grid.querySelectorAll('.cell').forEach(el => el.addEventListener('click', function(e) {
+                if (e.target.closest('.mini-ev')) return;
+                openModal(this.dataset.date, parseInt(this.dataset.hour));
+            }));
+            grid.querySelectorAll('.mini-ev .del-ev').forEach(el => el.addEventListener('click', function(e) {
+                e.stopPropagation();
+                events = events.filter(ev => ev.id !== this.dataset.id);
+                DB.set('events', events);
+                renderWeekView();
+            }));
+            grid.querySelectorAll('.mini-ev').forEach(el => {
+                el.addEventListener('dblclick', function(e) {
+                    e.stopPropagation();
+                    openEditEventModal(this.dataset.id);
+                });
+                el.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showContextMenu(e, this, { type: 'event', id: this.dataset.id });
+                });
+            });
+        }
+
+        function renderMonthView() {
+            const base = today();
+            base.setMonth(base.getMonth() + monthOffset);
+            const year = base.getFullYear(),
+                month = base.getMonth();
+            document.getElementById('monthTitle').textContent = year + '年' + (month + 1) + '月';
+            document.getElementById('monthBadge').textContent = '本月';
+            const daysInMonth = getMonthDays(year, month);
+            const firstDay = getDayOfWeek(year, month, 1);
+            const prevMonthDays = getMonthDays(year, month - 1);
+            const grid = document.getElementById('monthGrid');
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            const todayStr = formatDate(today());
+            let html = `<div class="month-grid">`;
+            weekdays.forEach(w => { html +=
+                    `<div style="background:var(--bg);padding:6px 4px;text-align:center;font-weight:600;font-size:13px;color:var(--text-secondary);">${w}</div>`; });
+            const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+            for (let i = 0; i < totalCells; i++) {
+                let day, isOtherMonth = false;
+                if (i < firstDay) { day = prevMonthDays - firstDay + i + 1;
+                    isOtherMonth = true; } else if (i >= firstDay + daysInMonth) { day = i - firstDay - daysInMonth + 1;
+                    isOtherMonth = true; } else { day = i - firstDay + 1; }
+                const d = new Date(year, month, day);
+                const ds = formatDate(d);
+                const isToday = ds === todayStr;
+                const evs = getEventsForDate(ds);
+                html += `<div class="day-cell" data-date="${ds}">
+                    <span class="day-num ${isToday?'today':''} ${isOtherMonth?'other-month':''}">${day}</span>
+                    <div class="ev-dots">
+                        ${evs.slice(0,3).map(e => `<span class="ev-label" data-id="${e.id}">${escapeHtml(e.title)}</span>`).join('')}
+                        ${evs.length>3?`<span class="ev-label" style="background:transparent;color:var(--text-secondary);">+${evs.length-3}</span>`:''}
+                    </div>
+                </div>`;
+            }
+            html += `</div>`;
+            grid.innerHTML = html;
+            grid.querySelectorAll('.day-cell').forEach(el => el.addEventListener('click', function(e) {
+                if (e.target.closest('.ev-label') && e.target.dataset.id) {
+                    e.stopPropagation();
+                    openEditEventModal(e.target.dataset.id);
+                    return;
+                }
+                openModal(this.dataset.date, 9);
+            }));
+            grid.querySelectorAll('.ev-label[data-id]').forEach(el => {
+                el.style.cursor = 'pointer';
+                el.title = '点击编辑';
+                el.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showContextMenu(e, this, { type: 'event', id: this.dataset.id });
+                });
+            });
+        }
+
+        // ================================================================
+        //  弹窗
+        // ================================================================
+        let modalDate = '',
+            modalHour = 9;
+        let editingEventId = null;
+
+        function openModal(date, hour) {
+            editingEventId = null;
+            modalDate = date;
+            modalHour = hour;
+            document.getElementById('modalTitle').textContent = '添加事件 · ' + date;
+            document.getElementById('modalEventTitle').value = '';
+            document.getElementById('modalEventTime').value = String(hour).padStart(2, '0') + ':00';
+            document.getElementById('modalEventDesc').value = '';
+            document.getElementById('eventModal').classList.add('open');
+            document.getElementById('modalEventTitle').focus();
+        }
+
+        function closeModal() { document.getElementById('eventModal').classList.remove('open');
+            editingEventId = null; }
+
+        function confirmModal() {
+            const title = document.getElementById('modalEventTitle').value.trim();
+            const time = document.getElementById('modalEventTime').value;
+            const desc = document.getElementById('modalEventDesc').value.trim();
+            if (!title) { alert('请输入事件标题'); return; }
+            if (editingEventId) {
+                const ev = events.find(e => e.id === editingEventId);
+                if (ev) { ev.title = title;
+                    ev.time = time || '09:00';
+                    ev.desc = desc;
+                    ev.date = modalDate; }
+            } else {
+                events.push({ id: generateId(), title, date: modalDate, time: time || '09:00', desc });
+            }
+            DB.set('events', events);
+            closeModal();
+            refreshCurrentScheduleView();
+        }
+
+        function refreshCurrentScheduleView() {
+            const pages = ['dayPlanPage', 'weekPlanPage', 'monthPlanPage'];
+            for (let id of pages) {
+                if (document.getElementById(id).classList.contains('active')) {
+                    if (id === 'dayPlanPage') renderDayView();
+                    else if (id === 'weekPlanPage') renderWeekView();
+                    else if (id === 'monthPlanPage') renderMonthView();
+                    break;
+                }
+            }
+        }
+
+        document.getElementById('modalCancel').addEventListener('click', closeModal);
+        document.getElementById('modalConfirm').addEventListener('click', confirmModal);
+        document.getElementById('eventModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') { if (document.getElementById('eventModal').classList.contains('open')) closeModal(); }
+            if (e.key === 'Enter' && document.getElementById('eventModal').classList.contains('open')) {
+                if (['modalEventTitle', 'modalEventTime', 'modalEventDesc'].includes(document.activeElement.id))
+                    confirmModal();
+            }
+        });
+
+        // ================================================================
+        //  页面切换 & 导航
+        // ================================================================
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            if (pageId === 'dayPlanPage') renderDayView();
+            else if (pageId === 'weekPlanPage') renderWeekView();
+            else if (pageId === 'monthPlanPage') renderMonthView();
+            else if (pageId === 'notePage') {
+                renderNoteCalendar();
+                renderNoteList();
+            }
+        }
+
+        document.querySelectorAll('.home-card[data-page]').forEach(el => el.addEventListener('click', function() {
+            showPage(this.dataset.page);
+        }));
+        document.querySelectorAll('.back-btn[data-back]').forEach(el => el.addEventListener('click', function() {
+            showPage(this.dataset.back);
+        }));
+
+        document.querySelectorAll('.choice-card[data-plan]').forEach(el => {
+            el.addEventListener('click', function() {
+                const plan = this.dataset.plan;
+                if (plan === 'day') showPage('dayPlanPage');
+                else if (plan === 'week') showPage('weekPlanPage');
+                else if (plan === 'month') showPage('monthPlanPage');
+            });
+        });
+
+        function setupNav(prefix, renderFn) {
+            const prev = document.getElementById(prefix + 'Prev');
+            const next = document.getElementById(prefix + 'Next');
+            const todayBtn = document.getElementById(prefix + 'Today');
+            if (prev) prev.addEventListener('click', function() {
+                if (prefix === 'day') dayOffset--;
+                else if (prefix === 'week') weekOffset--;
+                else if (prefix === 'month') monthOffset--;
+                renderFn();
+            });
+            if (next) next.addEventListener('click', function() {
+                if (prefix === 'day') dayOffset++;
+                else if (prefix === 'week') weekOffset++;
+                else if (prefix === 'month') monthOffset++;
+                renderFn();
+            });
+            if (todayBtn) todayBtn.addEventListener('click', function() {
+                if (prefix === 'day') dayOffset = 0;
+                else if (prefix === 'week') weekOffset = 0;
+                else if (prefix === 'month') monthOffset = 0;
+                renderFn();
+            });
+        }
+        setupNav('day', renderDayView);
+        setupNav('week', renderWeekView);
+        setupNav('month', renderMonthView);
+
+        // 快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'N') { e.preventDefault();
+                showPage('notePage'); }
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') { e.preventDefault();
+                showPage('scheduleChoicePage'); }
+            if (e.ctrlKey && e.shiftKey && e.key === 'H') { e.preventDefault();
+                showPage('homePage'); }
+        });
+
+        // ================================================================
+        //  启动
+        // ================================================================
+        function init() {
+            renderTodos();
+            // 默认选中今天
+            noteSelectedDate = formatDate(today());
+            renderNoteCalendar();
+            renderNoteList();
+            renderDayView();
+            renderWeekView();
+            renderMonthView();
+            // 如果noteTab是激活状态，刷新
+            if (document.getElementById('noteTab').classList.contains('active')) {
+                renderNoteCalendar();
+                renderNoteList();
+            }
+            // 设置输入框初始占位
+            const label = document.getElementById('noteListDate').textContent;
+            const input = document.getElementById('noteDateInput');
+            input.placeholder = `写便条 (${label.replace('📅 ','').replace(' 🔒','')})`;
+        }
+        init();
+        console.log('📋 云笺 v2.1 已启动 (修复日期保存 & 触屏滑动)');
+        console.log('快捷键: Ctrl+Shift+H 主页 | Ctrl+Shift+N 日常 | Ctrl+Shift+C 日程');
+        console.log('✨ 修复: 过去日期保存正确 · 手机左右滑动切换');
+    </script>
+</body>
+</html>
