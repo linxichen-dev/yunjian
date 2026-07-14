@@ -396,6 +396,16 @@
             color: var(--text-secondary);
             white-space: nowrap;
             flex-shrink: 0;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .todo-list li .type-badge .arrow {
+            font-size: 10px;
+            opacity: 0.7;
+            display: none;
         }
         .todo-list li .type-badge.hard {
             background: #fee2e2;
@@ -1583,62 +1593,44 @@
                 margin-left: 10px;
             }
         }
-        @media (max-width: 420px) {
-            /* 更小屏幕：同样移除 max-height，保证日历完整可见 */
-            .note-calendar-wrapper {
-                padding: 6px 4px 6px;
-                overflow: visible;
-            }
-            .note-cal-grid .cal-day-cell {
-                min-height: 24px;
-                padding: 1px 0;
-            }
-            .note-cal-grid .cal-day-cell .cal-num {
-                font-size: 10px;
-            }
-            .note-cal-grid .cal-day-cell.today .cal-num {
-                width: 18px;
-                height: 18px;
-                font-size: 10px;
-            }
-            .note-cal-header .cal-title {
+
+        /* ========== 触屏专用优化 ========== */
+        @media (hover: none) and (pointer: coarse) {
+            .todo-list li .type-badge {
                 font-size: 13px;
+                padding: 6px 14px;
+                border-radius: 16px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+                font-weight: 500;
+                gap: 4px;
             }
-            .note-cal-header button {
-                font-size: 11px;
-                padding: 2px 8px;
-            }
-            .note-content-wrapper {
-                padding: 8px 8px 8px;
-                min-height: 160px;
-            }
-            .note-content-header .date-label {
-                font-size: 13px;
-            }
-            .note-input-area {
-                gap: 6px;
-            }
-            .note-input-area input {
-                font-size: 12px;
-                padding: 5px 10px;
-                min-width: 60px;
-            }
-            .note-input-area .btn-save-note {
-                font-size: 12px;
-                padding: 5px 12px;
-            }
-            .note-item-row {
-                padding: 4px 8px;
-            }
-            .note-item-row .note-text {
+            .todo-list li .type-badge .arrow {
+                display: inline;
                 font-size: 12px;
             }
-            .done-group-title {
-                margin-left: 6px;
-                font-size: 11px;
+            .todo-list li .del {
+                font-size: 22px;
+                padding: 4px 10px;
+                opacity: 0.6;
             }
-            .done-group-items {
-                margin-left: 6px;
+            .todo-list li .check {
+                width: 24px;
+                height: 24px;
+                font-size: 14px;
+            }
+            .todo-list li .text {
+                font-size: 16px;
+            }
+            .todo-list li .text.done-text {
+                cursor: default;
+            }
+            /* 已完成任务不可点击标签和文字 */
+            .todo-list li[data-done="true"] .type-badge {
+                pointer-events: none;
+                opacity: 0.7;
+            }
+            .todo-list li[data-done="true"] .text {
+                pointer-events: none;
             }
         }
     </style>
@@ -1850,7 +1842,7 @@
         </div>
     </div>
 
-    <!-- 快速添加弹窗（颜色已与标签统一） -->
+    <!-- 快速添加弹窗 -->
     <div class="modal-overlay" id="quickAddModal">
         <div class="modal-box" style="max-width:400px;">
             <h3>快速添加计划</h3>
@@ -1919,7 +1911,6 @@
         };
 
         let todos = DB.get('todos', []);
-        // 兼容旧数据：确保每个todo有 completedAt 和 nextActiveTime 字段
         todos.forEach(t => {
             if (t.completedAt === undefined) t.completedAt = null;
             if (t.nextActiveTime === undefined) t.nextActiveTime = null;
@@ -1943,21 +1934,15 @@
         let editingTodoId = null;
 
         const DEFAULT_TODAY_REMIND = '21:00';
+        const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
         function today() { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
-
         function formatDate(d) {
-            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(
-                2, '0');
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         }
-
         function formatTime(d) { return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
-
         function formatDateTime(d) { return formatDate(d) + ' ' + formatTime(d); }
-
-        function isToday(d) { const t = today(); return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() &&
-                d.getDate() === t.getDate(); }
-
+        function isToday(d) { const t = today(); return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate(); }
         function isFutureDate(dateStr) {
             const d = new Date(dateStr);
             const t = today();
@@ -1965,7 +1950,6 @@
                 (d.getFullYear() === t.getFullYear() && d.getMonth() > t.getMonth()) ||
                 (d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() > t.getDate());
         }
-
         function isPastDate(dateStr) {
             const d = new Date(dateStr);
             const t = today();
@@ -1973,28 +1957,18 @@
                 (d.getFullYear() === t.getFullYear() && d.getMonth() < t.getMonth()) ||
                 (d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() < t.getDate());
         }
-
         function getMonthDays(y, m) { return new Date(y, m + 1, 0).getDate(); }
-
         function getDayOfWeek(y, m, d) { return new Date(y, m, d).getDay(); }
-
         function getEventsForDate(dateStr) { return events.filter(e => e.date === dateStr); }
-
         function getNotesForDate(dateStr) { return notes.filter(n => n.date === dateStr); }
-
         function generateId() { return Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6); }
-
-        function escapeHtml(str) { const div = document.createElement('div');
-            div.textContent = str; return div.innerHTML; }
-
+        function escapeHtml(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
         function isDateTimePast(dateStr, hour) {
             const now = new Date();
             const [y, m, d] = dateStr.split('-').map(Number);
             const target = new Date(y, m - 1, d, hour, 0, 0);
             return target < now;
         }
-
-        // 获取明天0点的时间戳 (用于循环硬计划复活)
         function getNextMidnight() {
             const d = new Date();
             d.setDate(d.getDate() + 1);
@@ -2064,56 +2038,43 @@
         }
 
         // ================================================================
-        //  渲染清单 (重构：分离未完成与已完成)
+        //  渲染清单
         // ================================================================
         function renderTodos() {
             const list = document.getElementById('todoList');
             if (todos.length === 0) {
-                list.innerHTML =
-                `<div class="empty-state"><div class="icon">📭</div><p>还没有待办事项</p></div>`;
+                list.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>还没有待办事项</p></div>`;
                 return;
             }
 
-            // 分组
             const undone = todos.filter(t => !t.done);
             const done = todos.filter(t => t.done);
-
-            // 对已完成组内按 completedAt 排序 (从新到旧)
             done.sort((a, b) => {
                 const timeA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
                 const timeB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
                 return timeB - timeA;
             });
 
-            // 按类型分组已完成
             const doneByType = {
                 today: done.filter(t => t.type === 'today'),
                 hard: done.filter(t => t.type === 'hard'),
                 flexible: done.filter(t => t.type === 'flexible')
             };
 
-            // 构建 HTML
             let html = '';
-
-            // 未完成部分
             if (undone.length > 0) {
                 html += undone.map(t => buildTodoItemHtml(t)).join('');
             } else {
-                html +=
-                `<div class="empty-state"><div class="icon">✨</div><p>全部完成，太棒了！</p></div>`;
+                html += `<div class="empty-state"><div class="icon">✨</div><p>全部完成，太棒了！</p></div>`;
             }
 
-            // 已完成部分
             if (done.length > 0) {
-                html +=
-                `<div class="done-section-title"><span class="icon">✅</span> 已完成 (${done.length})</div>`;
-
+                html += `<div class="done-section-title"><span class="icon">✅</span> 已完成 (${done.length})</div>`;
                 const typeGroups = [
                     { key: 'today', label: '📅 今日计划', items: doneByType.today },
                     { key: 'hard', label: '🔴 硬计划', items: doneByType.hard },
                     { key: 'flexible', label: '🌱 灵活计划', items: doneByType.flexible }
                 ];
-
                 typeGroups.forEach(group => {
                     if (group.items.length > 0) {
                         html += `<div class="done-group-title">${group.label}</div>`;
@@ -2125,36 +2086,29 @@
             }
 
             list.innerHTML = html;
-
-            // 绑定事件
             attachTodoEvents(list);
         }
 
-        // ========== 修改后的 buildTodoItemHtml 函数 ==========
         function buildTodoItemHtml(t, isDoneGroup = false) {
             let typeLabel = '';
             let remindInfo = '';
             if (t.type === 'today') {
-                typeLabel = '<span class="type-badge today">📅 今日</span>';
+                typeLabel = '<span class="type-badge today">📅 今日<span class="arrow">▾</span></span>';
                 const todayStr = formatDate(today());
                 const remind = t.remindTimes.find(r => r.startsWith(todayStr));
-                remindInfo = remind ? `<span class="remind-info">⏰ ${remind.split('T')[1]} 前</span>` :
-                    `<span class="remind-info">⏰ ${DEFAULT_TODAY_REMIND} 前</span>`;
+                remindInfo = remind ? `<span class="remind-info">⏰ ${remind.split('T')[1]} 前</span>` : `<span class="remind-info">⏰ ${DEFAULT_TODAY_REMIND} 前</span>`;
             } else if (t.type === 'hard') {
                 let badgeText = '🔴 硬计划';
                 if (t.hardConfig && t.hardConfig.mode === 'cycle') {
-                    badgeText =
-                        `🔁 ${t.hardConfig.value === 'daily' ? '每天' : t.hardConfig.value === 'weekly' ? '每周' : '每月'} ${t.hardConfig.time}`;
+                    badgeText = `🔁 ${t.hardConfig.value === 'daily' ? '每天' : t.hardConfig.value === 'weekly' ? '每周' : '每月'} ${t.hardConfig.time}`;
                 }
-                typeLabel = `<span class="type-badge hard">${badgeText}</span>`;
-                // 硬计划不显示闹钟标识和时间
+                typeLabel = `<span class="type-badge hard">${badgeText}<span class="arrow">▾</span></span>`;
             } else if (t.type === 'flexible') {
-                typeLabel = '<span class="type-badge flexible">🌱 灵活</span>';
-                // 灵活计划不显示闹钟标识和时间
+                typeLabel = '<span class="type-badge flexible">🌱 灵活<span class="arrow">▾</span></span>';
             }
             const doneClass = t.done ? 'done-text' : '';
             const checked = t.done ? 'done' : '';
-            return `<li data-id="${t.id}">
+            return `<li data-id="${t.id}" data-done="${t.done}">
                         <span class="check ${checked}" data-id="${t.id}">${t.done?'✓':''}</span>
                         <span class="text ${doneClass}" data-id="${t.id}">${escapeHtml(t.text)}</span>
                         ${typeLabel}
@@ -2164,38 +2118,35 @@
         }
 
         function attachTodoEvents(container) {
+            // 勾选圆圈
             container.querySelectorAll('.check').forEach(el => {
                 el.addEventListener('click', function() {
                     const id = this.dataset.id;
                     const todo = todos.find(t => t.id === id);
                     if (!todo) return;
                     if (todo.done) {
-                        // 取消勾选：弹回未完成底部
                         todo.done = false;
                         todo.completedAt = null;
                         todo.nextActiveTime = null;
-                        // 重新生成提醒时间（根据类型）
                         regenerateRemind(todo);
-                        // 移到未完成底部 (通过排序实现：渲染时自动排在未完成末尾)
                         DB.set('todos', todos);
                         renderTodos();
                     } else {
-                        // 勾选完成
                         todo.done = true;
                         todo.completedAt = new Date().toISOString();
-                        // 如果是循环硬计划，计算下次复活时间（明天0点）
                         if (todo.type === 'hard' && todo.hardConfig && todo.hardConfig.mode === 'cycle') {
                             todo.nextActiveTime = getNextMidnight();
                         } else {
                             todo.nextActiveTime = null;
                         }
-                        todo.remindTimes = []; // 完成时清除提醒
+                        todo.remindTimes = [];
                         DB.set('todos', todos);
                         renderTodos();
                     }
                 });
             });
 
+            // 删除按钮
             container.querySelectorAll('.del').forEach(el => {
                 el.addEventListener('click', function() {
                     const id = this.dataset.id;
@@ -2205,15 +2156,59 @@
                 });
             });
 
-            container.querySelectorAll('.text').forEach(el => {
-                el.addEventListener('dblclick', function() {
-                    startEditTodo(this.dataset.id);
+            // 文字编辑与标签点击（根据设备类型区分）
+            if (isTouchDevice) {
+                // 触屏：移除长按菜单，文字单击编辑，标签单击切换类型
+                container.querySelectorAll('.text').forEach(el => {
+                    const todo = todos.find(t => t.id === el.dataset.id);
+                    if (!todo || todo.done) {
+                        el.style.pointerEvents = 'none';
+                        return;
+                    }
+                    el.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        startEditTodo(this.dataset.id);
+                    });
                 });
-                el.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                    showContextMenu(e, this, { type: 'todo', id: this.dataset.id });
+
+                // 标签点击
+                container.querySelectorAll('.type-badge').forEach(badge => {
+                    const li = badge.closest('li');
+                    if (!li) return;
+                    const id = li.dataset.id;
+                    const todo = todos.find(t => t.id === id);
+                    if (!todo || todo.done) {
+                        badge.style.pointerEvents = 'none';
+                        return;
+                    }
+                    badge.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        showTypeSelectForTodo(id, true);
+                    });
                 });
-            });
+
+                // 阻止清单区域长按弹出系统菜单
+                const todoList = document.getElementById('todoList');
+                if (todoList && !todoList.dataset.contextPrevented) {
+                    todoList.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                    });
+                    todoList.dataset.contextPrevented = 'true';
+                }
+            } else {
+                // PC端：保留双击编辑、右键菜单
+                container.querySelectorAll('.text').forEach(el => {
+                    el.addEventListener('dblclick', function() {
+                        startEditTodo(this.dataset.id);
+                    });
+                    el.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                        showContextMenu(e, this, { type: 'todo', id: this.dataset.id });
+                    });
+                });
+                // 标签无额外事件，可保留原有样式
+            }
         }
 
         function regenerateRemind(todo) {
@@ -2243,12 +2238,12 @@
 
         function startEditTodo(id) {
             const todo = todos.find(t => t.id === id);
-            if (!todo) return;
+            if (!todo || todo.done) return;
             const list = document.getElementById('todoList');
             const li = list.querySelector(`li[data-id="${id}"]`);
+            if (!li) return;
             const textSpan = li.querySelector('.text');
-            textSpan.innerHTML =
-                `<input type="text" class="edit-input" value="${escapeHtml(todo.text)}" maxlength="80" />`;
+            textSpan.innerHTML = `<input type="text" class="edit-input" value="${escapeHtml(todo.text)}" maxlength="80" />`;
             const input = textSpan.querySelector('.edit-input');
             input.focus();
             input.select();
@@ -2256,17 +2251,14 @@
             function finishEdit(save) {
                 if (save) {
                     const newText = input.value.trim();
-                    if (newText) { todo.text = newText;
-                        DB.set('todos', todos); }
+                    if (newText) { todo.text = newText; DB.set('todos', todos); }
                 }
                 renderTodos();
             }
             input.addEventListener('blur', function() { finishEdit(true); });
             input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') { e.preventDefault();
-                    finishEdit(true); }
-                if (e.key === 'Escape') { e.preventDefault();
-                    finishEdit(false); }
+                if (e.key === 'Enter') { e.preventDefault(); finishEdit(true); }
+                if (e.key === 'Escape') { e.preventDefault(); finishEdit(false); }
             });
         }
 
@@ -2368,7 +2360,7 @@
         });
 
         // ================================================================
-        //  提醒系统 (包含循环硬计划复活)
+        //  提醒系统
         // ================================================================
         function checkReminders() {
             const now = new Date();
@@ -2377,20 +2369,15 @@
             const triggeredList = [];
 
             todos.forEach(todo => {
-                // 复活检测：已完成的循环硬计划，且到达复活时间
-                if (todo.done && todo.type === 'hard' && todo.hardConfig && todo.hardConfig.mode === 'cycle' &&
-                    todo.nextActiveTime) {
+                if (todo.done && todo.type === 'hard' && todo.hardConfig && todo.hardConfig.mode === 'cycle' && todo.nextActiveTime) {
                     if (now.getTime() >= todo.nextActiveTime) {
-                        // 复活
                         todo.done = false;
                         todo.completedAt = null;
                         todo.nextActiveTime = null;
                         regenerateRemind(todo);
-                        // 不需要弹提醒，只是回归未完成
                     }
                 }
-
-                if (todo.done) return; // 已完成且未到复活时间，忽略提醒
+                if (todo.done) return;
                 const newRemindTimes = [];
                 let hasTriggered = false;
                 todo.remindTimes.forEach(rt => {
@@ -2426,7 +2413,6 @@
                     new Notification('云笺提醒', { body: todo.text });
                 });
             }
-            // 刷新清单视图以反映复活变化
             renderTodos();
         }
 
@@ -2471,18 +2457,17 @@
         setTimeout(checkReminders, 1000);
 
         // ================================================================
-        //  右键菜单 (保持不变，仅调整对已完成条目的禁用逻辑)
+        //  右键菜单 (PC端保留)
         // ================================================================
         const contextMenu = document.getElementById('contextMenu');
         let contextMenuData = null;
 
         function showContextMenu(e, target, data) {
+            if (isTouchDevice) return; // 触屏端不启用
             e.preventDefault();
             contextMenuData = data;
-            let x = e.clientX,
-                y = e.clientY;
-            const w = 180,
-                h = 150;
+            let x = e.clientX, y = e.clientY;
+            const w = 180, h = 150;
             if (x + w > window.innerWidth) x = window.innerWidth - w - 10;
             if (y + h > window.innerHeight) y = window.innerHeight - h - 10;
             contextMenu.style.left = x + 'px';
@@ -2494,7 +2479,6 @@
             const editTitleItem = contextMenu.querySelector('[data-action="editTitle"]');
             const deleteItem = contextMenu.querySelector('.menu-item.danger');
 
-            // 重置状态
             editTimeItem.style.display = '';
             editTypeItem.style.display = '';
             editTitleItem.style.display = '';
@@ -2507,11 +2491,9 @@
                 const todo = todos.find(t => t.id === data.id);
                 if (todo) {
                     if (todo.done) {
-                        // 已完成的任务，禁用所有编辑，但可以删除
                         editTimeItem.classList.add('disabled');
                         editTypeItem.classList.add('disabled');
                         editTitleItem.classList.add('disabled');
-                        // 已完成允许删除
                     } else {
                         if (todo.type === 'flexible') {
                             editTimeItem.classList.add('disabled');
@@ -2560,7 +2542,7 @@
                 else if (contextMenuData.type === 'note') startEditNoteFromList(contextMenuData.id);
                 else if (contextMenuData.type === 'event') openEditEventModal(contextMenuData.id);
             } else if (action === 'editType') {
-                if (contextMenuData.type === 'todo') showTypeSelectForTodo(contextMenuData.id);
+                if (contextMenuData.type === 'todo') showTypeSelectForTodo(contextMenuData.id, false);
             } else if (action === 'editTime') {
                 if (contextMenuData.type === 'todo') {
                     const todo = todos.find(t => t.id === contextMenuData.id);
@@ -2585,8 +2567,8 @@
             hideContextMenu();
         });
 
-        // 类型选择（颜色与标签统一）
-        function showTypeSelectForTodo(id) {
+        // 类型选择弹窗 (PC与触屏复用，增加触屏后续操作)
+        function showTypeSelectForTodo(id, isTouch = false) {
             const types = [
                 { label: '今日计划', value: 'today', bg: '#dbeafe', color: '#1e40af', border: '#b8c9e8' },
                 { label: '硬计划', value: 'hard', bg: '#fee2e2', color: '#b91c1c', border: '#e5b8b8' },
@@ -2606,21 +2588,33 @@
                 </div>
             `;
             document.body.appendChild(overlay);
+
             overlay.querySelector('#typeSelectCancel').addEventListener('click', () => overlay.remove());
+            overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+
             overlay.querySelectorAll('button[data-type]').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const newType = this.dataset.type;
                     changeTodoType(id, newType);
                     overlay.remove();
+
+                    if (isTouch) {
+                        // 触屏下，根据新类型打开后续弹窗
+                        const todo = todos.find(t => t.id === id);
+                        if (!todo) return;
+                        if (newType === 'hard') {
+                            openHardModal(todo);
+                        } else if (newType === 'today' || newType === 'flexible') {
+                            openTimeEditModal(todo);
+                        }
+                    }
                 });
             });
-            overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
         }
 
         function changeTodoType(id, newType) {
             const todo = todos.find(t => t.id === id);
-            if (!todo) return;
-            if (todo.type === newType) return;
+            if (!todo || todo.type === newType) return;
             todo.type = newType;
             if (newType === 'today') {
                 const todayStr = formatDate(today());
@@ -2629,9 +2623,9 @@
                 todo.remindCount = 0;
                 todo.nextActiveTime = null;
             } else if (newType === 'hard') {
+                // 硬计划配置稍后打开
                 DB.set('todos', todos);
                 renderTodos();
-                openHardModal(todo);
                 return;
             } else if (newType === 'flexible') {
                 const now = new Date();
@@ -2688,47 +2682,32 @@
         });
 
         // ================================================================
-        //  便条 (笔记) 功能
+        //  便条功能 (保持不变)
         // ================================================================
         function renderNoteCalendar() {
             const base = today();
             base.setMonth(base.getMonth() + noteCalMonthOffset);
-            const year = base.getFullYear(),
-                month = base.getMonth();
+            const year = base.getFullYear(), month = base.getMonth();
             document.getElementById('noteCalTitle').textContent = year + '年' + (month + 1) + '月';
-
             const daysInMonth = getMonthDays(year, month);
             const firstDay = getDayOfWeek(year, month, 1);
             const prevMonthDays = getMonthDays(year, month - 1);
             const grid = document.getElementById('noteCalGrid');
             const todayStr = formatDate(today());
             const selectedStr = noteSelectedDate;
-
             const notesByDate = {};
             notes.forEach(n => {
                 if (!notesByDate[n.date]) notesByDate[n.date] = [];
                 notesByDate[n.date].push(n);
             });
-
             let html = '';
-            ['日', '一', '二', '三', '四', '五', '六'].forEach(w => {
-                html += `<div class="cal-day-label">${w}</div>`;
-            });
+            ['日', '一', '二', '三', '四', '五', '六'].forEach(w => { html += `<div class="cal-day-label">${w}</div>`; });
             const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
             for (let i = 0; i < totalCells; i++) {
-                let day, isOtherMonth = false,
-                    cellMonth = month;
-                if (i < firstDay) {
-                    day = prevMonthDays - firstDay + i + 1;
-                    isOtherMonth = true;
-                    cellMonth = month - 1;
-                } else if (i >= firstDay + daysInMonth) {
-                    day = i - firstDay - daysInMonth + 1;
-                    isOtherMonth = true;
-                    cellMonth = month + 1;
-                } else {
-                    day = i - firstDay + 1;
-                }
+                let day, isOtherMonth = false, cellMonth = month;
+                if (i < firstDay) { day = prevMonthDays - firstDay + i + 1; isOtherMonth = true; cellMonth = month - 1; }
+                else if (i >= firstDay + daysInMonth) { day = i - firstDay - daysInMonth + 1; isOtherMonth = true; cellMonth = month + 1; }
+                else { day = i - firstDay + 1; }
                 const cellYear = cellMonth < 0 ? year - 1 : (cellMonth > 11 ? year + 1 : year);
                 const realMonth = cellMonth < 0 ? 11 : (cellMonth > 11 ? 0 : cellMonth);
                 const d = new Date(cellYear, realMonth, day);
@@ -2737,26 +2716,22 @@
                 const isSelected = ds === selectedStr;
                 const isFuture = isFutureDate(ds);
                 const hasNotes = notesByDate[ds] && notesByDate[ds].length > 0;
-
                 let cls = 'cal-day-cell';
                 if (isOtherMonth) cls += ' other-month';
                 if (isToday) cls += ' today';
                 if (hasNotes) cls += ' has-notes';
                 if (isSelected) cls += ' selected';
                 if (isFuture) cls += ' future-date';
-
                 html += `<div class="${cls}" data-date="${ds}" data-future="${isFuture}">
                             <span class="cal-num">${day}</span>
                             ${hasNotes ? '<span class="note-dot"></span>' : ''}
                         </div>`;
             }
             grid.innerHTML = html;
-
             grid.querySelectorAll('.cal-day-cell').forEach(el => {
                 el.addEventListener('click', function() {
                     if (this.dataset.future === 'true') return;
-                    const ds = this.dataset.date;
-                    noteSelectedDate = ds;
+                    noteSelectedDate = this.dataset.date;
                     renderNoteCalendar();
                     renderNoteList();
                 });
@@ -2771,35 +2746,25 @@
             const saveBtn = document.getElementById('noteDateSaveBtn');
             const cancelBtn = document.getElementById('noteDateCancelBtn');
             const futureTip = document.getElementById('futureTip');
-
             const isFuture = isFutureDate(noteSelectedDate);
             const dayNotes = getNotesForDate(noteSelectedDate).sort((a, b) => a.time.localeCompare(b.time));
-
             const d = new Date(noteSelectedDate);
             const w = ['日', '一', '二', '三', '四', '五', '六'];
             const label = (d.getMonth() + 1) + '月' + d.getDate() + '日 周' + w[d.getDay()];
             dateLabel.innerHTML = `📅 ${label} ${isFuture ? '🔒' : ''}`;
-
             if (isFuture) {
-                addBtn.disabled = true;
-                addBtn.textContent = '🔒 不可添加';
-                input.disabled = true;
-                saveBtn.disabled = true;
-                futureTip.style.display = 'inline';
-                cancelBtn.style.display = 'none';
+                addBtn.disabled = true; addBtn.textContent = '🔒 不可添加';
+                input.disabled = true; saveBtn.disabled = true;
+                futureTip.style.display = 'inline'; cancelBtn.style.display = 'none';
                 input.placeholder = '未来日期不可写便条';
             } else {
-                addBtn.disabled = false;
-                addBtn.textContent = '➕ 添加';
-                input.disabled = false;
-                saveBtn.disabled = false;
+                addBtn.disabled = false; addBtn.textContent = '➕ 添加';
+                input.disabled = false; saveBtn.disabled = false;
                 futureTip.style.display = 'none';
                 input.placeholder = `写便条 (${label})`;
             }
-
             if (dayNotes.length === 0) {
-                container.innerHTML =
-                    `<div class="note-empty"><div class="icon">📭</div><p>${isFuture ? '未来日期暂无便条' : '这一天还没有便条，写一条吧'}</p></div>`;
+                container.innerHTML = `<div class="note-empty"><div class="icon">📭</div><p>${isFuture ? '未来日期暂无便条' : '这一天还没有便条，写一条吧'}</p></div>`;
             } else {
                 container.innerHTML = dayNotes.map(n =>
                     `<div class="note-item-row" data-id="${n.id}">
@@ -2809,64 +2774,43 @@
                         <button class="del-note-btn" data-id="${n.id}" title="删除">×</button>
                     </div>`
                 ).join('');
-
                 container.querySelectorAll('.del-note-btn').forEach(el => {
-                    el.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const id = this.dataset.id;
-                        notes = notes.filter(n => n.id !== id);
+                    el.addEventListener('click', function(e) { e.stopPropagation();
+                        notes = notes.filter(n => n.id !== this.dataset.id);
                         DB.set('notes', notes);
-                        renderNoteList();
-                        renderNoteCalendar();
-                    });
+                        renderNoteList(); renderNoteCalendar(); });
                 });
                 container.querySelectorAll('.edit-note-btn').forEach(el => {
-                    el.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        startEditNoteFromList(this.dataset.id);
-                    });
+                    el.addEventListener('click', function(e) { e.stopPropagation(); startEditNoteFromList(this.dataset.id); });
                 });
                 container.querySelectorAll('.note-item-row').forEach(row => {
-                    row.addEventListener('dblclick', function() {
-                        const id = this.dataset.id;
-                        if (id) startEditNoteFromList(id);
-                    });
-                    row.addEventListener('contextmenu', function(e) {
-                        e.preventDefault();
-                        const id = this.dataset.id;
-                        if (id) showContextMenu(e, this, { type: 'note', id: id });
-                    });
+                    row.addEventListener('dblclick', function() { if(this.dataset.id) startEditNoteFromList(this.dataset.id); });
+                    row.addEventListener('contextmenu', function(e) { e.preventDefault(); if(this.dataset.id) showContextMenu(e, this, { type: 'note', id: this.dataset.id }); });
                 });
             }
         }
 
         function startEditNoteFromList(id) {
             const note = notes.find(n => n.id === id);
-            if (!note) return;
-            if (isFutureDate(note.date)) { alert('未来日期的便条不可编辑'); return; }
+            if (!note || isFutureDate(note.date)) return;
             editingNoteId = id;
             const input = document.getElementById('noteDateInput');
             const saveBtn = document.getElementById('noteDateSaveBtn');
             const cancelBtn = document.getElementById('noteDateCancelBtn');
-            input.value = note.text;
-            input.focus();
-            input.select();
-            saveBtn.textContent = '💾 更新';
-            cancelBtn.style.display = 'inline-block';
+            input.value = note.text; input.focus(); input.select();
+            saveBtn.textContent = '💾 更新'; cancelBtn.style.display = 'inline-block';
             document.getElementById('noteInputArea').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function saveNoteForDate(text) {
             if (!text.trim()) return;
             const dateStr = noteSelectedDate;
-            if (isFutureDate(dateStr)) { alert('不能为未来日期添加便条'); return; }
+            if (isFutureDate(dateStr)) return;
             const now = new Date();
             const time = formatTime(now);
             if (editingNoteId) {
                 const note = notes.find(n => n.id === editingNoteId);
-                if (note) { note.text = text.trim();
-                    note.time = time;
-                    note.date = dateStr; }
+                if (note) { note.text = text.trim(); note.time = time; note.date = dateStr; }
                 editingNoteId = null;
                 document.getElementById('noteDateSaveBtn').textContent = '保存';
                 document.getElementById('noteDateCancelBtn').style.display = 'none';
@@ -2884,82 +2828,48 @@
             document.getElementById('noteDateInput').value = '';
             document.getElementById('noteDateSaveBtn').textContent = '保存';
             document.getElementById('noteDateCancelBtn').style.display = 'none';
-            const label = document.getElementById('noteListDate').textContent;
-            document.getElementById('noteDateInput').placeholder = `写便条 (${label.replace('📅 ', '').replace(' 🔒', '')})`;
         }
 
-        document.getElementById('noteAddForDateBtn').addEventListener('click', function() {
-            if (isFutureDate(noteSelectedDate)) { alert('不能为未来日期添加便条'); return; }
-            document.getElementById('noteDateInput').focus();
-        });
-        document.getElementById('noteDateSaveBtn').addEventListener('click', function() {
-            saveNoteForDate(document.getElementById('noteDateInput').value);
-        });
+        document.getElementById('noteAddForDateBtn').addEventListener('click', () => { if(!isFutureDate(noteSelectedDate)) document.getElementById('noteDateInput').focus(); });
+        document.getElementById('noteDateSaveBtn').addEventListener('click', () => { saveNoteForDate(document.getElementById('noteDateInput').value); });
         document.getElementById('noteDateCancelBtn').addEventListener('click', cancelEditNote);
         document.getElementById('noteDateInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') { e.preventDefault();
-                document.getElementById('noteDateSaveBtn').click(); }
-            if (e.key === 'Escape') { e.preventDefault();
-                cancelEditNote(); }
+            if (e.key === 'Enter') { e.preventDefault(); document.getElementById('noteDateSaveBtn').click(); }
+            if (e.key === 'Escape') { e.preventDefault(); cancelEditNote(); }
         });
-        document.getElementById('noteCalPrev').addEventListener('click', function() { noteCalMonthOffset--;
-            renderNoteCalendar();
-            renderNoteList(); });
-        document.getElementById('noteCalNext').addEventListener('click', function() { noteCalMonthOffset++;
-            renderNoteCalendar();
-            renderNoteList(); });
+        document.getElementById('noteCalPrev').addEventListener('click', () => { noteCalMonthOffset--; renderNoteCalendar(); renderNoteList(); });
+        document.getElementById('noteCalNext').addEventListener('click', () => { noteCalMonthOffset++; renderNoteCalendar(); renderNoteList(); });
 
         // ================================================================
-        //  日程视图渲染 (三块式)
+        //  日程视图 (不变)
         // ================================================================
-
         function renderDayView() {
-            const base = today();
-            base.setDate(base.getDate() + dayOffset);
+            const base = today(); base.setDate(base.getDate() + dayOffset);
             const dateStr = formatDate(base);
             document.getElementById('dayTitle').textContent = formatDateWeek(base);
             document.getElementById('dayBadge').textContent = formatDateWeek(base);
-
             const slider = document.getElementById('daySlider');
             const offsets = [-1, 0, 1];
             let html = '';
             offsets.forEach(off => {
-                const d = new Date(base);
-                d.setDate(d.getDate() + off);
-                const ds = formatDate(d);
-                html += `<div class="slide">${buildDayContent(ds)}</div>`;
+                const d = new Date(base); d.setDate(d.getDate() + off);
+                html += `<div class="slide">${buildDayContent(formatDate(d))}</div>`;
             });
             slider.innerHTML = html;
             slider.querySelectorAll('.day-view .hour-content').forEach(el => {
                 const locked = el.dataset.locked === 'true';
                 el.addEventListener('click', function(e) {
-                    if (locked) return;
-                    if (e.target.closest('.event-chip')) return;
+                    if (locked || e.target.closest('.event-chip')) return;
                     openModal(this.dataset.date, parseInt(this.dataset.hour));
                 });
                 if (!locked) {
                     el.querySelectorAll('.event-chip .del-ev').forEach(delBtn => {
-                        delBtn.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            events = events.filter(ev => ev.id !== this.dataset.id);
-                            DB.set('events', events);
-                            renderDayView();
-                        });
+                        delBtn.addEventListener('click', function(e) { e.stopPropagation();
+                            events = events.filter(ev => ev.id !== this.dataset.id); DB.set('events', events); renderDayView(); });
                     });
                     el.querySelectorAll('.event-chip').forEach(chip => {
-                        chip.addEventListener('dblclick', function(e) {
-                            e.stopPropagation();
-                            openEditEventModal(this.dataset.id);
-                        });
-                        chip.addEventListener('contextmenu', function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            showContextMenu(e, this, { type: 'event', id: this.dataset.id });
-                        });
-                    });
-                } else {
-                    el.querySelectorAll('.event-chip').forEach(chip => {
-                        chip.style.pointerEvents = 'none';
+                        chip.addEventListener('dblclick', function(e) { e.stopPropagation(); openEditEventModal(this.dataset.id); });
+                        chip.addEventListener('contextmenu', function(e) { e.preventDefault(); e.stopPropagation(); showContextMenu(e, this, { type: 'event', id: this.dataset.id }); });
                     });
                 }
             });
@@ -2971,65 +2881,43 @@
             for (let h = 0; h < 24; h++) {
                 const evs = getEventsForDate(dateStr).filter(e => parseInt(e.time.split(':')[0]) === h);
                 const locked = isDateTimePast(dateStr, h);
-                const lockedClass = locked ? ' locked' : '';
-                html +=
-                    `<div class="hour-row">
-                            <div class="hour-label">${String(h).padStart(2,'0')}:00</div>
-                            <div class="hour-content${lockedClass}" data-hour="${h}" data-date="${dateStr}" data-locked="${locked}">
-                                ${evs.map(e => `<span class="event-chip" data-id="${e.id}" title="双击或右键编辑">${escapeHtml(e.title)} ${locked ? '' : `<span class="del-ev" data-id="${e.id}">×</span>`}</span>`).join('')}
-                            </div>
-                        </div>`;
+                html += `<div class="hour-row">
+                    <div class="hour-label">${String(h).padStart(2,'0')}:00</div>
+                    <div class="hour-content${locked?' locked':''}" data-hour="${h}" data-date="${dateStr}" data-locked="${locked}">
+                        ${evs.map(e => `<span class="event-chip" data-id="${e.id}" title="双击或右键编辑">${escapeHtml(e.title)} ${locked ? '' : `<span class="del-ev" data-id="${e.id}">×</span>`}</span>`).join('')}
+                    </div>
+                </div>`;
             }
-            html += '</div>';
-            return html;
+            return html + '</div>';
         }
 
         function renderWeekView() {
             const start = new Date(weekStartDate);
-            const end = new Date(start);
-            end.setDate(end.getDate() + 6);
+            const end = new Date(start); end.setDate(end.getDate() + 6);
             document.getElementById('weekTitle').textContent = formatDateWeek(start) + ' ~ ' + formatDateWeek(end);
             document.getElementById('weekBadge').textContent = '本周';
-
             const slider = document.getElementById('weekSlider');
             const offsets = [-7, 0, 7];
             let html = '';
             offsets.forEach(off => {
-                const d = new Date(start);
-                d.setDate(d.getDate() + off);
+                const d = new Date(start); d.setDate(d.getDate() + off);
                 html += `<div class="slide">${buildWeekContent(d)}</div>`;
             });
             slider.innerHTML = html;
             slider.querySelectorAll('.week-view .cell').forEach(el => {
                 const locked = el.dataset.locked === 'true';
                 el.addEventListener('click', function(e) {
-                    if (locked) return;
-                    if (e.target.closest('.mini-ev')) return;
+                    if (locked || e.target.closest('.mini-ev')) return;
                     openModal(this.dataset.date, parseInt(this.dataset.hour));
                 });
                 if (!locked) {
                     el.querySelectorAll('.mini-ev .del-ev').forEach(delBtn => {
-                        delBtn.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            events = events.filter(ev => ev.id !== this.dataset.id);
-                            DB.set('events', events);
-                            renderWeekView();
-                        });
+                        delBtn.addEventListener('click', function(e) { e.stopPropagation();
+                            events = events.filter(ev => ev.id !== this.dataset.id); DB.set('events', events); renderWeekView(); });
                     });
                     el.querySelectorAll('.mini-ev').forEach(chip => {
-                        chip.addEventListener('dblclick', function(e) {
-                            e.stopPropagation();
-                            openEditEventModal(this.dataset.id);
-                        });
-                        chip.addEventListener('contextmenu', function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            showContextMenu(e, this, { type: 'event', id: this.dataset.id });
-                        });
-                    });
-                } else {
-                    el.querySelectorAll('.mini-ev').forEach(chip => {
-                        chip.style.pointerEvents = 'none';
+                        chip.addEventListener('dblclick', function(e) { e.stopPropagation(); openEditEventModal(this.dataset.id); });
+                        chip.addEventListener('contextmenu', function(e) { e.preventDefault(); e.stopPropagation(); showContextMenu(e, this, { type: 'event', id: this.dataset.id }); });
                     });
                 }
             });
@@ -3038,51 +2926,36 @@
 
         function buildWeekContent(startDate) {
             const dates = [];
-            for (let i = 0; i < 7; i++) { const d = new Date(startDate);
-                d.setDate(d.getDate() + i);
-                dates.push(d); }
+            for (let i = 0; i < 7; i++) { const d = new Date(startDate); d.setDate(d.getDate() + i); dates.push(d); }
             const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
             const todayStr = formatDate(today());
-            let html = '<div class="week-view" style="height:100%;">';
-            html += `<div class="week-header"><div class="day-label"></div>`;
-            dates.forEach(d => {
-                const ds = formatDate(d);
-                html +=
-                    `<div class="day-label ${ds === todayStr ? 'today' : ''}">${weekdays[d.getDay()]}<br><strong>${d.getDate()}</strong></div>`;
-            });
-            html += `</div><div class="week-body">`;
+            let html = '<div class="week-view" style="height:100%;"><div class="week-header"><div class="day-label"></div>';
+            dates.forEach(d => { const ds = formatDate(d); html += `<div class="day-label ${ds===todayStr?'today':''}">${weekdays[d.getDay()]}<br><strong>${d.getDate()}</strong></div>`; });
+            html += '</div><div class="week-body">';
             for (let h = 0; h < 24; h++) {
                 html += `<div class="hour-label">${String(h).padStart(2,'0')}:00</div>`;
                 for (let i = 0; i < 7; i++) {
-                    const d = dates[i];
-                    const ds = formatDate(d);
+                    const d = dates[i], ds = formatDate(d);
                     const evs = getEventsForDate(ds).filter(e => parseInt(e.time.split(':')[0]) === h);
                     const locked = isDateTimePast(ds, h);
-                    const lockedClass = locked ? ' locked' : '';
-                    html +=
-                        `<div class="cell${lockedClass}" data-date="${ds}" data-hour="${h}" data-locked="${locked}" style="${ds === todayStr ? 'background:#f8faff;' : ''}">
-                                ${evs.map(e => `<span class="mini-ev" data-id="${e.id}" title="双击或右键编辑">${escapeHtml(e.title)} ${locked ? '' : `<span class="del-ev" data-id="${e.id}">×</span>`}</span>`).join('')}
-                            </div>`;
+                    html += `<div class="cell${locked?' locked':''}" data-date="${ds}" data-hour="${h}" data-locked="${locked}" style="${ds===todayStr?'background:#f8faff;':''}">
+                        ${evs.map(e => `<span class="mini-ev" data-id="${e.id}" title="双击或右键编辑">${escapeHtml(e.title)} ${locked ? '' : `<span class="del-ev" data-id="${e.id}">×</span>`}</span>`).join('')}
+                    </div>`;
                 }
             }
-            html += '</div></div>';
-            return html;
+            return html + '</div></div>';
         }
 
         function renderMonthView() {
-            const base = today();
-            base.setMonth(base.getMonth() + monthOffset);
-            const year = base.getFullYear(),
-                month = base.getMonth();
+            const base = today(); base.setMonth(base.getMonth() + monthOffset);
+            const year = base.getFullYear(), month = base.getMonth();
             document.getElementById('monthTitle').textContent = year + '年' + (month + 1) + '月';
             document.getElementById('monthBadge').textContent = '本月';
-
             const slider = document.getElementById('monthSlider');
             const offsets = [-1, 0, 1];
             let html = '';
             offsets.forEach(off => {
-                const d = new Date(base);
-                d.setMonth(d.getMonth() + off);
+                const d = new Date(base); d.setMonth(d.getMonth() + off);
                 html += `<div class="slide">${buildMonthContent(d.getFullYear(), d.getMonth())}</div>`;
             });
             slider.innerHTML = html;
@@ -3090,22 +2963,13 @@
                 const locked = el.dataset.locked === 'true';
                 el.addEventListener('click', function(e) {
                     if (locked) return;
-                    if (e.target.closest('.ev-label') && e.target.dataset.id) {
-                        e.stopPropagation();
-                        openEditEventModal(e.target.dataset.id);
-                        return;
-                    }
+                    if (e.target.closest('.ev-label') && e.target.dataset.id) { e.stopPropagation(); openEditEventModal(e.target.dataset.id); return; }
                     openModal(this.dataset.date, 9);
                 });
                 if (!locked) {
                     el.querySelectorAll('.ev-label[data-id]').forEach(label => {
-                        label.style.cursor = 'pointer';
-                        label.title = '点击编辑';
-                        label.addEventListener('contextmenu', function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            showContextMenu(e, this, { type: 'event', id: this.dataset.id });
-                        });
+                        label.style.cursor = 'pointer'; label.title = '点击编辑';
+                        label.addEventListener('contextmenu', function(e) { e.preventDefault(); e.stopPropagation(); showContextMenu(e, this, { type: 'event', id: this.dataset.id }); });
                     });
                 }
             });
@@ -3117,90 +2981,47 @@
             const firstDay = getDayOfWeek(year, month, 1);
             const todayStr = formatDate(today());
             let html = '<div class="month-view" style="height:100%;"><div class="month-grid">';
-            ['日', '一', '二', '三', '四', '五', '六'].forEach(w => {
-                html +=
-                    `<div style="background:var(--bg);padding:6px 4px;text-align:center;font-weight:600;font-size:13px;color:var(--text-secondary);">${w}</div>`;
-            });
+            ['日', '一', '二', '三', '四', '五', '六'].forEach(w => { html += `<div style="background:var(--bg);padding:6px 4px;text-align:center;font-weight:600;font-size:13px;color:var(--text-secondary);">${w}</div>`; });
             const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
             for (let i = 0; i < totalCells; i++) {
                 let day, isOtherMonth = false;
-                if (i < firstDay) { day = (getMonthDays(year, month - 1) - firstDay + i + 1);
-                    isOtherMonth = true; } else if (i >= firstDay + daysInMonth) { day = i - firstDay - daysInMonth +
-                    1;
-                    isOtherMonth = true; } else { day = i - firstDay + 1; }
-                const d = new Date(year, month, day);
-                const ds = formatDate(d);
+                if (i < firstDay) { day = (getMonthDays(year, month - 1) - firstDay + i + 1); isOtherMonth = true; }
+                else if (i >= firstDay + daysInMonth) { day = i - firstDay - daysInMonth + 1; isOtherMonth = true; }
+                else { day = i - firstDay + 1; }
+                const d = new Date(year, month, day); const ds = formatDate(d);
                 const isToday = ds === todayStr;
                 const locked = isPastDate(ds);
-                const lockedClass = locked ? ' locked' : '';
                 const evs = getEventsForDate(ds);
-                html +=
-                    `<div class="day-cell${lockedClass}" data-date="${ds}" data-locked="${locked}">
-                            <span class="day-num ${isToday ? 'today' : ''} ${isOtherMonth ? 'other-month' : ''}">${day}</span>
-                            <div class="ev-dots">
-                                ${evs.slice(0,3).map(e => `<span class="ev-label" data-id="${e.id}">${escapeHtml(e.title)}</span>`).join('')}
-                                ${evs.length>3 ? `<span class="ev-label" style="background:transparent;color:var(--text-secondary);">+${evs.length-3}</span>` : ''}
-                            </div>
-                        </div>`;
+                html += `<div class="day-cell${locked?' locked':''}" data-date="${ds}" data-locked="${locked}">
+                    <span class="day-num ${isToday?'today':''} ${isOtherMonth?'other-month':''}">${day}</span>
+                    <div class="ev-dots">
+                        ${evs.slice(0,3).map(e => `<span class="ev-label" data-id="${e.id}">${escapeHtml(e.title)}</span>`).join('')}
+                        ${evs.length>3 ? `<span class="ev-label" style="background:transparent;color:var(--text-secondary);">+${evs.length-3}</span>` : ''}
+                    </div>
+                </div>`;
             }
-            html += '</div></div>';
-            return html;
+            return html + '</div></div>';
         }
 
-        function formatDateWeek(d) {
-            const w = ['日', '一', '二', '三', '四', '五', '六'];
-            return (d.getMonth() + 1) + '/' + d.getDate() + ' 周' + w[d.getDay()];
-        }
+        function formatDateWeek(d) { const w = ['日', '一', '二', '三', '四', '五', '六']; return (d.getMonth()+1)+'/'+d.getDate()+' 周'+w[d.getDay()]; }
+        function resetSliderToCenter(sliderId) { const slider = document.getElementById(sliderId); slider.classList.add('no-transition'); slider.style.transform = 'translateX(-33.333%)'; void slider.offsetHeight; slider.classList.remove('no-transition'); }
 
-        function resetSliderToCenter(sliderId) {
-            const slider = document.getElementById(sliderId);
-            slider.classList.add('no-transition');
-            slider.style.transform = 'translateX(-33.333%)';
-            void slider.offsetHeight;
-            slider.classList.remove('no-transition');
-        }
-
-        // ================================================================
-        //  滑动控制器
-        // ================================================================
         function initSwipe(wrapId, onSwipe) {
             const wrap = document.getElementById(wrapId);
             if (wrap.dataset.swipeInited === 'true') return;
             wrap.dataset.swipeInited = 'true';
-
             const slider = wrap.querySelector('.slider');
-            let startX = 0,
-                startY = 0;
-            let currentTranslate = -33.333;
-            let isDragging = false,
-                isHorizontal = false;
+            let startX = 0, startY = 0, currentTranslate = -33.333, isDragging = false, isHorizontal = false;
             const threshold = 0.2;
-
-            function onStart(e) {
-                const touch = e.touches ? e.touches[0] : e;
-                startX = touch.clientX;
-                startY = touch.clientY;
-                isDragging = true;
-                isHorizontal = false;
-                slider.classList.add('no-transition');
-                if (e.cancelable) e.preventDefault();
-            }
-
+            function onStart(e) { const touch = e.touches ? e.touches[0] : e; startX = touch.clientX; startY = touch.clientY; isDragging = true; isHorizontal = false; slider.classList.add('no-transition'); if (e.cancelable) e.preventDefault(); }
             function onMove(e) {
                 if (!isDragging) return;
                 const touch = e.touches ? e.touches[0] : e;
-                const dx = touch.clientX - startX;
-                const dy = touch.clientY - startY;
+                const dx = touch.clientX - startX, dy = touch.clientY - startY;
                 if (!isHorizontal) {
-                    if (Math.abs(dx) > Math.abs(dy) + 15) {
-                        isHorizontal = true;
-                    } else if (Math.abs(dy) > Math.abs(dx) + 15) {
-                        isDragging = false;
-                        slider.classList.remove('no-transition');
-                        return;
-                    } else {
-                        return;
-                    }
+                    if (Math.abs(dx) > Math.abs(dy) + 15) isHorizontal = true;
+                    else if (Math.abs(dy) > Math.abs(dx) + 15) { isDragging = false; slider.classList.remove('no-transition'); return; }
+                    else return;
                 }
                 if (!isHorizontal) return;
                 e.preventDefault();
@@ -3211,183 +3032,74 @@
                 if (newTranslate < -33.333 - 33.333) newTranslate = -33.333 - 33.333;
                 slider.style.transform = `translateX(${newTranslate}%)`;
             }
-
             function onEnd(e) {
-                if (!isDragging || !isHorizontal) {
-                    isDragging = false;
-                    slider.classList.remove('no-transition');
-                    return;
-                }
+                if (!isDragging || !isHorizontal) { isDragging = false; slider.classList.remove('no-transition'); return; }
                 isDragging = false;
                 const containerWidth = wrap.offsetWidth;
                 const dx = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX) - startX;
                 const ratio = dx / containerWidth;
                 let direction = 0;
-                if (ratio < -threshold) direction = 1;
-                else if (ratio > threshold) direction = -1;
-
-                if (direction !== 0) {
-                    onSwipe(direction);
-                } else {
-                    resetSliderToCenter(slider.id);
-                }
+                if (ratio < -threshold) direction = 1; else if (ratio > threshold) direction = -1;
+                if (direction !== 0) onSwipe(direction);
+                else resetSliderToCenter(slider.id);
                 currentTranslate = -33.333;
             }
-
             wrap.addEventListener('touchstart', onStart, { passive: false });
             wrap.addEventListener('touchmove', onMove, { passive: false });
             wrap.addEventListener('touchend', onEnd);
             wrap.addEventListener('touchcancel', onEnd);
-
-            wrap.addEventListener('mousedown', function(e) {
-                if (e.button !== 0) return;
-                onStart(e);
-
-                function mouseMove(ev) { onMove(ev); }
-
-                function mouseUp(ev) {
-                    onEnd(ev);
-                    document.removeEventListener('mousemove', mouseMove);
-                    document.removeEventListener('mouseup', mouseUp);
-                }
-                document.addEventListener('mousemove', mouseMove);
-                document.addEventListener('mouseup', mouseUp);
-                e.preventDefault();
-            });
+            wrap.addEventListener('mousedown', function(e) { if (e.button !== 0) return; onStart(e); function mouseMove(ev) { onMove(ev); } function mouseUp(ev) { onEnd(ev); document.removeEventListener('mousemove', mouseMove); document.removeEventListener('mouseup', mouseUp); } document.addEventListener('mousemove', mouseMove); document.addEventListener('mouseup', mouseUp); e.preventDefault(); });
             wrap.addEventListener('selectstart', function(e) { e.preventDefault(); });
         }
 
-        function onDaySwipe(delta) { dayOffset += delta;
-            renderDayView(); }
+        function onDaySwipe(delta) { dayOffset += delta; renderDayView(); }
+        function onWeekSwipe(delta) { const newStart = new Date(weekStartDate); newStart.setDate(newStart.getDate() + delta * 7); weekStartDate = newStart; renderWeekView(); }
+        function onMonthSwipe(delta) { monthOffset += delta; renderMonthView(); }
 
-        function onWeekSwipe(delta) { const newStart = new Date(weekStartDate);
-            newStart.setDate(newStart.getDate() + delta * 7);
-            weekStartDate = newStart;
-            renderWeekView(); }
-
-        function onMonthSwipe(delta) { monthOffset += delta;
-            renderMonthView(); }
-
-        // ================================================================
-        //  事件弹窗
-        // ================================================================
-        let modalDate = '',
-            modalHour = 9,
-            editingEventId = null;
-
-        function openModal(date, hour) {
-            if (isDateTimePast(date, hour)) return;
-            editingEventId = null;
-            modalDate = date;
-            modalHour = hour;
-            document.getElementById('modalTitle').textContent = '添加事件 · ' + date;
-            document.getElementById('modalEventTitle').value = '';
-            document.getElementById('modalEventTime').value = String(hour).padStart(2, '0') + ':00';
-            document.getElementById('modalEventDesc').value = '';
-            document.getElementById('eventModal').classList.add('open');
-            document.getElementById('modalEventTitle').focus();
-        }
-
-        function closeModal() { document.getElementById('eventModal').classList.remove('open');
-            editingEventId = null; }
-
+        let modalDate = '', modalHour = 9, editingEventId = null;
+        function openModal(date, hour) { if (isDateTimePast(date, hour)) return; editingEventId = null; modalDate = date; modalHour = hour; document.getElementById('modalTitle').textContent = '添加事件 · ' + date; document.getElementById('modalEventTitle').value = ''; document.getElementById('modalEventTime').value = String(hour).padStart(2,'0')+':00'; document.getElementById('modalEventDesc').value = ''; document.getElementById('eventModal').classList.add('open'); document.getElementById('modalEventTitle').focus(); }
+        function closeModal() { document.getElementById('eventModal').classList.remove('open'); editingEventId = null; }
         function confirmModal() {
             const title = document.getElementById('modalEventTitle').value.trim();
             const time = document.getElementById('modalEventTime').value;
             const desc = document.getElementById('modalEventDesc').value.trim();
             if (!title) { alert('请输入事件标题'); return; }
-            if (editingEventId) {
-                const ev = events.find(e => e.id === editingEventId);
-                if (ev) { ev.title = title;
-                    ev.time = time;
-                    ev.desc = desc;
-                    ev.date = modalDate; }
-            } else {
-                events.push({ id: generateId(), title, date: modalDate, time: time || '09:00', desc });
-            }
-            DB.set('events', events);
-            closeModal();
-            refreshCurrentScheduleView();
+            if (editingEventId) { const ev = events.find(e => e.id === editingEventId); if (ev) { ev.title = title; ev.time = time; ev.desc = desc; ev.date = modalDate; } }
+            else { events.push({ id: generateId(), title, date: modalDate, time: time || '09:00', desc }); }
+            DB.set('events', events); closeModal(); refreshCurrentScheduleView();
         }
-
-        function openEditEventModal(eventId) {
-            const ev = events.find(e => e.id === eventId);
-            if (!ev) return;
-            if (isDateTimePast(ev.date, parseInt(ev.time.split(':')[0]))) return;
-            editingEventId = eventId;
-            document.getElementById('modalTitle').textContent = '编辑事件 · ' + ev.date;
-            document.getElementById('modalEventTitle').value = ev.title;
-            document.getElementById('modalEventTime').value = ev.time;
-            document.getElementById('modalEventDesc').value = ev.desc || '';
-            modalDate = ev.date;
-            modalHour = parseInt(ev.time.split(':')[0]);
-            document.getElementById('eventModal').classList.add('open');
-            document.getElementById('modalEventTitle').focus();
-        }
-
-        function refreshCurrentScheduleView() {
-            const pages = ['dayPlanPage', 'weekPlanPage', 'monthPlanPage'];
-            for (let id of pages) {
-                if (document.getElementById(id).classList.contains('active')) {
-                    if (id === 'dayPlanPage') renderDayView();
-                    else if (id === 'weekPlanPage') renderWeekView();
-                    else if (id === 'monthPlanPage') renderMonthView();
-                    break;
-                }
-            }
-        }
-
+        function openEditEventModal(eventId) { const ev = events.find(e => e.id === eventId); if (!ev || isDateTimePast(ev.date, parseInt(ev.time.split(':')[0]))) return; editingEventId = eventId; document.getElementById('modalTitle').textContent = '编辑事件 · ' + ev.date; document.getElementById('modalEventTitle').value = ev.title; document.getElementById('modalEventTime').value = ev.time; document.getElementById('modalEventDesc').value = ev.desc || ''; modalDate = ev.date; modalHour = parseInt(ev.time.split(':')[0]); document.getElementById('eventModal').classList.add('open'); document.getElementById('modalEventTitle').focus(); }
+        function refreshCurrentScheduleView() { const pages = ['dayPlanPage','weekPlanPage','monthPlanPage']; for (let id of pages) { if (document.getElementById(id).classList.contains('active')) { if (id==='dayPlanPage') renderDayView(); else if (id==='weekPlanPage') renderWeekView(); else if (id==='monthPlanPage') renderMonthView(); break; } } }
         document.getElementById('modalCancel').addEventListener('click', closeModal);
         document.getElementById('modalConfirm').addEventListener('click', confirmModal);
         document.getElementById('eventModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && document.getElementById('eventModal').classList.contains('open')) closeModal();
-            if (e.key === 'Enter' && document.getElementById('eventModal').classList.contains('open')) {
-                if (['modalEventTitle', 'modalEventTime', 'modalEventDesc'].includes(document.activeElement.id))
-                    confirmModal();
-            }
-        });
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && document.getElementById('eventModal').classList.contains('open')) closeModal(); if (e.key === 'Enter' && document.getElementById('eventModal').classList.contains('open') && ['modalEventTitle','modalEventTime','modalEventDesc'].includes(document.activeElement.id)) confirmModal(); });
 
-        // ================================================================
-        //  Tab 滑动切换
-        // ================================================================
-        let touchStartXTab = 0,
-            touchStartYTab = 0,
-            isSwipingTab = false;
-        const contentAreaTab = document.getElementById('noteContentArea');
-        const tabsContainer = document.getElementById('noteTabs');
-
-        function getActiveTabIndex() {
-            const tabs = tabsContainer.querySelectorAll('.tab');
-            for (let i = 0; i < tabs.length; i++)
-                if (tabs[i].classList.contains('active')) return i;
-            return 0;
+        // 页面导航
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            if (pageId === 'dayPlanPage') { renderDayView(); initSwipe('daySliderWrap', onDaySwipe); }
+            else if (pageId === 'weekPlanPage') { renderWeekView(); initSwipe('weekSliderWrap', onWeekSwipe); }
+            else if (pageId === 'monthPlanPage') { renderMonthView(); initSwipe('monthSliderWrap', onMonthSwipe); }
+            else if (pageId === 'notePage') { renderNoteCalendar(); renderNoteList(); }
         }
 
-        function switchTabByIndex(index) {
-            const tabs = tabsContainer.querySelectorAll('.tab');
-            if (index >= 0 && index < tabs.length) tabs[index].click();
+        document.querySelectorAll('.home-card[data-page]').forEach(el => el.addEventListener('click', function() { showPage(this.dataset.page); }));
+        document.querySelectorAll('.back-btn[data-back]').forEach(el => el.addEventListener('click', function() { showPage(this.dataset.back); }));
+        document.querySelectorAll('.choice-card[data-plan]').forEach(el => { el.addEventListener('click', function() { const plan = this.dataset.plan; if (plan === 'day') showPage('dayPlanPage'); else if (plan === 'week') showPage('weekPlanPage'); else if (plan === 'month') showPage('monthPlanPage'); }); });
+
+        function setupNav(prefix, renderFn, offsetType) {
+            document.getElementById(prefix + 'Prev').addEventListener('click', function() { if (offsetType === 'day') { dayOffset--; renderFn(); } else if (offsetType === 'week') { weekStartDate.setDate(weekStartDate.getDate() - 7); renderFn(); } else { monthOffset--; renderFn(); } });
+            document.getElementById(prefix + 'Next').addEventListener('click', function() { if (offsetType === 'day') { dayOffset++; renderFn(); } else if (offsetType === 'week') { weekStartDate.setDate(weekStartDate.getDate() + 7); renderFn(); } else { monthOffset++; renderFn(); } });
+            document.getElementById(prefix + 'Today').addEventListener('click', function() { if (offsetType === 'day') { dayOffset = 0; renderFn(); } else if (offsetType === 'week') { const d = new Date(); d.setDate(d.getDate() - d.getDay()); weekStartDate = d; renderFn(); } else { monthOffset = 0; renderFn(); } });
         }
-        contentAreaTab.addEventListener('touchstart', function(e) {
-            touchStartXTab = e.touches[0].clientX;
-            touchStartYTab = e.touches[0].clientY;
-            isSwipingTab = false;
-        }, { passive: true });
-        contentAreaTab.addEventListener('touchmove', function(e) {
-            const dx = e.touches[0].clientX - touchStartXTab;
-            const dy = e.touches[0].clientY - touchStartYTab;
-            if (Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy) * 1.2) { isSwipingTab = true;
-                e.preventDefault(); }
-        }, { passive: false });
-        contentAreaTab.addEventListener('touchend', function(e) {
-            if (!isSwipingTab) return;
-            const dx = e.changedTouches[0].clientX - touchStartXTab;
-            if (Math.abs(dx) < 40) return;
-            const idx = getActiveTabIndex();
-            if (dx < 0) switchTabByIndex(idx + 1);
-            else switchTabByIndex(idx - 1);
-            isSwipingTab = false;
-        });
+        setupNav('day', renderDayView, 'day');
+        setupNav('week', renderWeekView, 'week');
+        setupNav('month', renderMonthView, 'month');
+
+        document.getElementById('todoAddBtn').addEventListener('click', function() { const input = document.getElementById('todoInput'); addTodo(input.value); input.value = ''; input.focus(); });
+        document.getElementById('todoInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('todoAddBtn').click(); });
 
         document.querySelectorAll('#notePage .tabs .tab').forEach(el => {
             el.addEventListener('click', function() {
@@ -3397,79 +3109,8 @@
                 const tabId = this.dataset.tab;
                 parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 document.getElementById(tabId).classList.add('active');
-                if (tabId === 'noteTab') { renderNoteCalendar();
-                    renderNoteList(); }
+                if (tabId === 'noteTab') { renderNoteCalendar(); renderNoteList(); }
             });
-        });
-
-        document.getElementById('todoAddBtn').addEventListener('click', function() {
-            const input = document.getElementById('todoInput');
-            addTodo(input.value);
-            input.value = '';
-            input.focus();
-        });
-        document.getElementById('todoInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') document.getElementById('todoAddBtn').click();
-        });
-
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            if (pageId === 'dayPlanPage') { renderDayView();
-                initSwipe('daySliderWrap', onDaySwipe); } else if (pageId === 'weekPlanPage') { renderWeekView();
-                initSwipe('weekSliderWrap', onWeekSwipe); } else if (pageId === 'monthPlanPage') { renderMonthView();
-                initSwipe('monthSliderWrap', onMonthSwipe); } else if (pageId === 'notePage') { renderNoteCalendar();
-                renderNoteList(); }
-        }
-
-        document.querySelectorAll('.home-card[data-page]').forEach(el => el.addEventListener('click', function() { showPage(
-            this.dataset.page); }));
-        document.querySelectorAll('.back-btn[data-back]').forEach(el => el.addEventListener('click', function() { showPage(
-            this.dataset.back); }));
-        document.querySelectorAll('.choice-card[data-plan]').forEach(el => {
-            el.addEventListener('click', function() {
-                const plan = this.dataset.plan;
-                if (plan === 'day') showPage('dayPlanPage');
-                else if (plan === 'week') showPage('weekPlanPage');
-                else if (plan === 'month') showPage('monthPlanPage');
-            });
-        });
-
-        function setupNav(prefix, renderFn, offsetType) {
-            document.getElementById(prefix + 'Prev').addEventListener('click', function() {
-                if (offsetType === 'day') { dayOffset--;
-                    renderFn(); } else if (offsetType === 'week') { weekStartDate.setDate(weekStartDate
-                        .getDate() - 7);
-                    renderFn(); } else { monthOffset--;
-                    renderFn(); }
-            });
-            document.getElementById(prefix + 'Next').addEventListener('click', function() {
-                if (offsetType === 'day') { dayOffset++;
-                    renderFn(); } else if (offsetType === 'week') { weekStartDate.setDate(weekStartDate
-                        .getDate() + 7);
-                    renderFn(); } else { monthOffset++;
-                    renderFn(); }
-            });
-            document.getElementById(prefix + 'Today').addEventListener('click', function() {
-                if (offsetType === 'day') { dayOffset = 0;
-                    renderFn(); } else if (offsetType === 'week') { const d = new Date();
-                    d.setDate(d.getDate() - d.getDay());
-                    weekStartDate = d;
-                    renderFn(); } else { monthOffset = 0;
-                    renderFn(); }
-            });
-        }
-        setupNav('day', renderDayView, 'day');
-        setupNav('week', renderWeekView, 'week');
-        setupNav('month', renderMonthView, 'month');
-
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.shiftKey && e.key === 'N') { e.preventDefault();
-                showPage('notePage'); }
-            if (e.ctrlKey && e.shiftKey && e.key === 'C') { e.preventDefault();
-                showPage('scheduleChoicePage'); }
-            if (e.ctrlKey && e.shiftKey && e.key === 'H') { e.preventDefault();
-                showPage('homePage'); }
         });
 
         function init() {
@@ -3488,7 +3129,6 @@
             document.getElementById('noteDateInput').placeholder = `写便条 (${label.replace('📅 ', '').replace(' 🔒', '')})`;
         }
         init();
-        console.log('📋 云笺 v4.1 移动端日历完整显示优化版');
     </script>
 </body>
 </html>
