@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>云笺 · 便条日历</title>
+    <title>云笺 · 清单升级</title>
     <style>
         /* ========== 全局 ========== */
         * {
@@ -25,7 +25,6 @@
             --radius: 20px;
             --radius-sm: 12px;
             --transition: 0.25s ease;
-            --touch-threshold: 50px;
         }
         body {
             background: var(--bg);
@@ -317,20 +316,20 @@
         }
         .todo-list {
             list-style: none;
-            padding: 0;
+            padding: 0 0 60px 0;
             flex: 1;
-            overflow-y: auto;
         }
         .todo-list li {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             padding: 10px 14px;
             background: var(--bg);
             border-radius: var(--radius-sm);
             margin-bottom: 6px;
             border: 1px solid transparent;
             transition: var(--transition);
+            position: relative;
         }
         .todo-list li:hover {
             border-color: var(--border);
@@ -389,6 +388,33 @@
             opacity: 1;
             color: #e74c3c;
         }
+        .todo-list li .type-badge {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            background: var(--border);
+            color: var(--text-secondary);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .todo-list li .type-badge.hard {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .todo-list li .type-badge.flexible {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .todo-list li .type-badge.today {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .todo-list li .remind-info {
+            font-size: 11px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            margin-left: 4px;
+        }
         .empty-state {
             text-align: center;
             padding: 40px 0;
@@ -403,7 +429,65 @@
             font-size: 14px;
         }
 
-        /* ---- 便条 (日历 + 列表 左右布局) ---- */
+        /* 已完成区分割标题 */
+        .done-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            padding: 16px 0 8px 0;
+            margin-top: 8px;
+            border-top: 1px dashed var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+        }
+        .done-section-title .icon {
+            font-size: 16px;
+        }
+
+        /* 分组子标题（已完成区内） */
+        .done-group-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin: 8px 0 6px 20px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+        }
+        .done-group-items {
+            margin-left: 20px;
+        }
+
+        /* 右下角圆形加号按钮 */
+        .fab-add-todo {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            font-size: 28px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 10;
+            line-height: 1;
+        }
+        .fab-add-todo:hover {
+            background: var(--primary-dark);
+            transform: scale(1.08);
+        }
+
+        /* ---- 便条 (笔记) ---- */
         .note-layout {
             display: flex;
             gap: 20px;
@@ -411,8 +495,6 @@
             min-height: 0;
             height: 100%;
         }
-
-        /* 左栏：日历 */
         .note-calendar-wrapper {
             flex: 0 0 38%;
             min-width: 220px;
@@ -531,7 +613,6 @@
             background: #eef4ff;
         }
 
-        /* 右栏：便条列表 + 输入 */
         .note-content-wrapper {
             flex: 1;
             display: flex;
@@ -556,12 +637,6 @@
             font-size: 15px;
             font-weight: 600;
             color: var(--text);
-        }
-        .note-content-header .date-label .sub {
-            font-weight: 400;
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-left: 8px;
         }
         .note-content-header .btn-add-note {
             padding: 4px 16px;
@@ -784,19 +859,42 @@
         .schedule-nav .nav-btn.today-btn:hover {
             background: var(--primary-dark);
         }
-        .schedule-grid {
+
+        /* 滑动容器 */
+        .slider-wrap {
             flex: 1;
+            overflow: hidden;
+            position: relative;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .slider {
+            display: flex;
+            width: 300%;
+            height: 100%;
+            transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            will-change: transform;
+        }
+        .slider.no-transition {
+            transition: none !important;
+        }
+        .slider .slide {
+            width: 33.333%;
+            height: 100%;
+            flex-shrink: 0;
             overflow-y: auto;
-            padding-right: 4px;
+            padding: 0 4px;
         }
-        .schedule-grid::-webkit-scrollbar {
-            width: 5px;
+        .slider .slide::-webkit-scrollbar {
+            width: 4px;
         }
-        .schedule-grid::-webkit-scrollbar-thumb {
+        .slider .slide::-webkit-scrollbar-thumb {
             background: var(--border);
-            border-radius: 10px;
+            border-radius: 8px;
         }
 
+        /* 日视图样式 */
         .day-view .hour-row {
             display: flex;
             align-items: stretch;
@@ -855,7 +953,19 @@
         .day-view .event-chip .del-ev:hover {
             opacity: 1;
         }
+        .day-view .hour-content.locked {
+            cursor: not-allowed;
+            background: #f9f9f9;
+        }
+        .day-view .hour-content.locked:hover {
+            background: #f9f9f9;
+        }
+        .day-view .hour-content.locked .event-chip {
+            opacity: 0.6;
+            pointer-events: none;
+        }
 
+        /* 周视图样式 */
         .week-view .week-header {
             display: grid;
             grid-template-columns: 56px repeat(7, 1fr);
@@ -923,7 +1033,19 @@
             cursor: pointer;
             font-size: 14px;
         }
+        .week-view .week-body .cell.locked {
+            cursor: not-allowed;
+            background: #f9f9f9;
+        }
+        .week-view .week-body .cell.locked:hover {
+            background: #f9f9f9;
+        }
+        .week-view .week-body .cell.locked .mini-ev {
+            opacity: 0.6;
+            pointer-events: none;
+        }
 
+        /* 月视图样式 */
         .month-view .month-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -982,6 +1104,17 @@
             margin-top: 2px;
             font-weight: 500;
         }
+        .month-view .month-grid .day-cell.locked {
+            cursor: not-allowed;
+            background: #f9f9f9;
+        }
+        .month-view .month-grid .day-cell.locked:hover {
+            background: #f9f9f9;
+        }
+        .month-view .month-grid .day-cell.locked .ev-label {
+            opacity: 0.6;
+            pointer-events: none;
+        }
 
         /* ========== 弹窗 ========== */
         .modal-overlay {
@@ -1003,7 +1136,7 @@
             border-radius: var(--radius);
             padding: 28px 32px;
             width: 100%;
-            max-width: 420px;
+            max-width: 500px;
             box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
             animation: modalIn 0.2s ease;
         }
@@ -1083,7 +1216,102 @@
             background: var(--primary-dark);
         }
 
-        /* ========== 右键菜单 ========== */
+        /* 提醒弹窗 */
+        .reminder-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+        .reminder-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--bg);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        .reminder-list li .reminder-text {
+            flex: 1;
+            word-break: break-word;
+        }
+        .reminder-list li .ok-btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        .reminder-list li .ok-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* 硬计划配置弹窗 */
+        .hard-config {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .hard-config .mode-switch {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .hard-config .mode-switch button {
+            padding: 6px 20px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            color: var(--text-secondary);
+        }
+        .hard-config .mode-switch button.active {
+            border-color: var(--primary);
+            background: var(--card);
+            color: var(--text);
+        }
+        .hard-config .mode-panel {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .hard-config .mode-panel.active {
+            display: flex;
+        }
+        .hard-config .mode-panel .row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .hard-config .mode-panel .row label {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            min-width: 60px;
+        }
+        .hard-config .mode-panel .row input[type="time"],
+        .hard-config .mode-panel .row input[type="date"] {
+            flex: 1;
+            min-width: 140px;
+        }
+        .hard-config .mode-panel .row select {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        /* 右键菜单 */
         .context-menu {
             position: fixed;
             background: var(--card);
@@ -1092,7 +1320,7 @@
             padding: 6px;
             z-index: 2000;
             display: none;
-            min-width: 120px;
+            min-width: 140px;
         }
         .context-menu.show {
             display: block;
@@ -1118,8 +1346,70 @@
         .context-menu .menu-item.danger:hover {
             background: #fdecea;
         }
+        .context-menu .sub-menu {
+            position: relative;
+        }
+        .context-menu .sub-menu .sub-items {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: 0;
+            background: var(--card);
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 6px;
+            min-width: 120px;
+        }
+        .context-menu .sub-menu:hover .sub-items {
+            display: block;
+        }
+        .context-menu .menu-item.disabled {
+            color: #ccc;
+            pointer-events: none;
+        }
 
-        /* ========== 响应式 ========== */
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--text);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+            font-size: 14px;
+            max-width: 90vw;
+            text-align: center;
+            pointer-events: auto;
+            animation: slideUp 0.3s ease;
+            transition: opacity 0.3s;
+            opacity: 1;
+        }
+        .toast.hide {
+            opacity: 0;
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* 响应式 */
         @media (max-width: 820px) {
             .note-calendar-wrapper {
                 flex: 0 0 42%;
@@ -1137,8 +1427,13 @@
                 height: 22px;
                 font-size: 12px;
             }
+            .done-group-title {
+                margin-left: 14px;
+            }
+            .done-group-items {
+                margin-left: 14px;
+            }
         }
-
         @media (max-width: 680px) {
             #app {
                 height: 96vh;
@@ -1213,17 +1508,16 @@
             .modal-box {
                 padding: 20px;
             }
-
-            /* 移动端：便条上下布局 */
             .note-layout {
                 flex-direction: column;
                 gap: 12px;
             }
+            /* 移动端：移除 max-height 限制，让日历完整显示所有行 */
             .note-calendar-wrapper {
                 flex: 0 0 auto;
                 min-width: unset;
                 padding: 10px 8px 8px;
-                max-height: 220px;
+                overflow: visible;
             }
             .note-cal-grid .cal-day-cell {
                 min-height: 30px;
@@ -1274,12 +1568,26 @@
                 font-size: 14px;
                 padding: 6px 12px;
             }
+            .todo-list li .type-badge {
+                font-size: 10px;
+                padding: 1px 8px;
+            }
+            .todo-list li .remind-info {
+                font-size: 10px;
+            }
+            .done-group-title {
+                margin-left: 10px;
+                font-size: 12px;
+            }
+            .done-group-items {
+                margin-left: 10px;
+            }
         }
-
         @media (max-width: 420px) {
+            /* 更小屏幕：同样移除 max-height，保证日历完整可见 */
             .note-calendar-wrapper {
                 padding: 6px 4px 6px;
-                max-height: 180px;
+                overflow: visible;
             }
             .note-cal-grid .cal-day-cell {
                 min-height: 24px;
@@ -1302,6 +1610,7 @@
             }
             .note-content-wrapper {
                 padding: 8px 8px 8px;
+                min-height: 160px;
             }
             .note-content-header .date-label {
                 font-size: 13px;
@@ -1323,6 +1632,13 @@
             }
             .note-item-row .note-text {
                 font-size: 12px;
+            }
+            .done-group-title {
+                margin-left: 6px;
+                font-size: 11px;
+            }
+            .done-group-items {
+                margin-left: 6px;
             }
         }
     </style>
@@ -1362,17 +1678,17 @@
             </div>
             <div class="content-area" id="noteContentArea">
                 <!-- 清单 -->
-                <div id="todoTab" class="tab-content active">
+                <div id="todoTab" class="tab-content active" style="position:relative;">
                     <div class="todo-input-row">
                         <input type="text" id="todoInput" placeholder="输入待办事项…" maxlength="80" />
                         <button id="todoAddBtn">添加</button>
                     </div>
                     <ul class="todo-list" id="todoList"></ul>
+                    <button class="fab-add-todo" id="fabAddTodo" title="快速添加硬计划/灵活计划">+</button>
                 </div>
-                <!-- 便条 (日历 + 列表) -->
+                <!-- 便条 (笔记) -->
                 <div id="noteTab" class="tab-content">
                     <div class="note-layout">
-                        <!-- 左栏：日历 -->
                         <div class="note-calendar-wrapper" id="noteCalendarWrapper">
                             <div class="note-cal-header">
                                 <button id="noteCalPrev">←</button>
@@ -1381,11 +1697,10 @@
                             </div>
                             <div class="note-cal-grid" id="noteCalGrid"></div>
                         </div>
-                        <!-- 右栏：便条列表 + 输入 -->
                         <div class="note-content-wrapper">
                             <div class="note-content-header">
                                 <span class="date-label" id="noteListDate">📅 选择日期</span>
-                                <button class="btn-add-note" id="noteAddForDateBtn" title="为所选日期添加便条">➕ 添加</button>
+                                <button class="btn-add-note" id="noteAddForDateBtn">➕ 添加</button>
                             </div>
                             <div class="note-list-scroll" id="noteListScroll">
                                 <div id="noteListContent">
@@ -1430,7 +1745,9 @@
                     <button class="nav-btn today-btn" id="dayToday">今天</button>
                     <button class="nav-btn" id="dayNext">→</button>
                 </div>
-                <div class="schedule-grid day-view" id="dayGrid"></div>
+                <div class="slider-wrap" id="daySliderWrap">
+                    <div class="slider" id="daySlider"></div>
+                </div>
             </div>
         </div>
 
@@ -1447,7 +1764,9 @@
                     <button class="nav-btn today-btn" id="weekToday">今天</button>
                     <button class="nav-btn" id="weekNext">→</button>
                 </div>
-                <div class="schedule-grid week-view" id="weekGrid"></div>
+                <div class="slider-wrap" id="weekSliderWrap">
+                    <div class="slider" id="weekSlider"></div>
+                </div>
             </div>
         </div>
 
@@ -1464,13 +1783,16 @@
                     <button class="nav-btn today-btn" id="monthToday">今天</button>
                     <button class="nav-btn" id="monthNext">→</button>
                 </div>
-                <div class="schedule-grid month-view" id="monthGrid"></div>
+                <div class="slider-wrap" id="monthSliderWrap">
+                    <div class="slider" id="monthSlider"></div>
+                </div>
             </div>
         </div>
 
     </div>
 
-    <!-- ========== 弹窗 ========== -->
+    <!-- ========== 弹窗区域 ========== -->
+    <!-- 通用事件弹窗 -->
     <div class="modal-overlay" id="eventModal">
         <div class="modal-box">
             <h3 id="modalTitle">添加事件</h3>
@@ -1487,11 +1809,101 @@
         </div>
     </div>
 
+    <!-- 硬计划配置弹窗 -->
+    <div class="modal-overlay" id="hardModal">
+        <div class="modal-box">
+            <h3>🔴 配置硬计划</h3>
+            <div class="hard-config">
+                <div class="mode-switch">
+                    <button class="active" data-mode="cycle">🔄 循环</button>
+                    <button data-mode="deadline">⏰ Deadline</button>
+                </div>
+                <div class="mode-panel active" data-mode="cycle">
+                    <div class="row">
+                        <label>周期</label>
+                        <select id="hardCycle">
+                            <option value="daily">每天</option>
+                            <option value="weekly">每周</option>
+                            <option value="monthly">每月</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <label>时间</label>
+                        <input type="time" id="hardCycleTime" value="09:00" />
+                    </div>
+                </div>
+                <div class="mode-panel" data-mode="deadline">
+                    <div class="row">
+                        <label>日期</label>
+                        <input type="date" id="hardDeadlineDate" />
+                    </div>
+                    <div class="row">
+                        <label>时间</label>
+                        <input type="time" id="hardDeadlineTime" value="09:00" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="hardModalCancel">取消</button>
+                <button class="btn-confirm" id="hardModalConfirm">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速添加弹窗（颜色已与标签统一） -->
+    <div class="modal-overlay" id="quickAddModal">
+        <div class="modal-box" style="max-width:400px;">
+            <h3>快速添加计划</h3>
+            <input type="text" id="quickAddTitle" placeholder="输入任务标题…" maxlength="80" />
+            <div class="modal-actions" style="justify-content:center; margin-top:20px;">
+                <button class="btn-confirm" id="quickAddHard" style="background:#fee2e2; color:#b91c1c; border:1px solid #e5b8b8;">🔴 硬计划</button>
+                <button class="btn-confirm" id="quickAddFlexible" style="background:#d1fae5; color:#065f46; border:1px solid #b8d9c2;">🌱 灵活计划</button>
+            </div>
+            <div class="modal-actions" style="justify-content:center;">
+                <button class="btn-cancel" id="quickAddCancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提醒弹窗 -->
+    <div class="modal-overlay" id="reminderModal">
+        <div class="modal-box" style="max-width:480px;">
+            <h3>⏰ 提醒</h3>
+            <ul class="reminder-list" id="reminderList"></ul>
+            <p style="text-align:center; color:var(--text-secondary); font-size:13px;">点击 OK 仅表示已看到，任务不会自动完成</p>
+        </div>
+    </div>
+
+    <!-- 时间编辑弹窗 -->
+    <div class="modal-overlay" id="timeEditModal">
+        <div class="modal-box" style="max-width:360px;">
+            <h3>⏰ 修改提醒时间</h3>
+            <label>日期</label>
+            <input type="date" id="timeEditDate" />
+            <label>时间</label>
+            <input type="time" id="timeEditTime" value="21:00" />
+            <div class="modal-actions" style="justify-content:center;">
+                <button class="btn-cancel" id="timeEditCancel">取消</button>
+                <button class="btn-confirm" id="timeEditConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 右键菜单 -->
     <div class="context-menu" id="contextMenu">
-        <div class="menu-item" data-action="edit">✏️ 编辑</div>
+        <div class="menu-item sub-menu">
+            ✏️ 编辑
+            <div class="sub-items">
+                <div class="menu-item" data-action="editTitle">标题</div>
+                <div class="menu-item" data-action="editType">类型</div>
+                <div class="menu-item" data-action="editTime" id="contextEditTime">时间</div>
+            </div>
+        </div>
         <div class="menu-item danger" data-action="delete">🗑️ 删除</div>
     </div>
+
+    <!-- Toast 容器 -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <script>
         // ================================================================
@@ -1499,31 +1911,49 @@
         // ================================================================
         const DB = {
             get(key, fallback) {
-                try { const raw = localStorage.getItem('desk_' + key); return raw ? JSON.parse(raw) : fallback; } catch { return
-                        fallback; }
+                try { const raw = localStorage.getItem('desk_' + key); return raw ? JSON.parse(raw) : fallback; } catch {
+                    return fallback;
+                }
             },
             set(key, val) { localStorage.setItem('desk_' + key, JSON.stringify(val)); }
         };
 
         let todos = DB.get('todos', []);
+        // 兼容旧数据：确保每个todo有 completedAt 和 nextActiveTime 字段
+        todos.forEach(t => {
+            if (t.completedAt === undefined) t.completedAt = null;
+            if (t.nextActiveTime === undefined) t.nextActiveTime = null;
+        });
+
         let notes = DB.get('notes', []);
         let events = DB.get('events', []);
 
-        let dayOffset = 0,
-            weekOffset = 0,
-            monthOffset = 0;
-        let noteCalMonthOffset = 0;
-        let noteSelectedDate = formatDate(new Date()); // 默认今天
-        let editingNoteId = null;
+        let dayOffset = 0;
+        let monthOffset = 0;
+        let weekStartDate = new Date();
+        (function initWeekStart() {
+            const d = new Date();
+            d.setDate(d.getDate() - d.getDay());
+            weekStartDate = d;
+        })();
 
-        // 工具
+        let noteCalMonthOffset = 0;
+        let noteSelectedDate = formatDate(new Date());
+        let editingNoteId = null;
+        let editingTodoId = null;
+
+        const DEFAULT_TODAY_REMIND = '21:00';
+
         function today() { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 
-        function formatDate(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d
-                .getDate()).padStart(2, '0'); }
+        function formatDate(d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(
+                2, '0');
+        }
 
-        function formatDateWeek(d) { const w = ['日', '一', '二', '三', '四', '五', '六']; return (d.getMonth() + 1) + '月' + d
-                .getDate() + '日 周' + w[d.getDay()]; }
+        function formatTime(d) { return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+
+        function formatDateTime(d) { return formatDate(d) + ' ' + formatTime(d); }
 
         function isToday(d) { const t = today(); return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() &&
                 d.getDate() === t.getDate(); }
@@ -1531,14 +1961,18 @@
         function isFutureDate(dateStr) {
             const d = new Date(dateStr);
             const t = today();
-            return d.getFullYear() > t.getFullYear() || (d.getFullYear() === t.getFullYear() && d.getMonth() > t.getMonth()) ||
+            return d.getFullYear() > t.getFullYear() ||
+                (d.getFullYear() === t.getFullYear() && d.getMonth() > t.getMonth()) ||
                 (d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() > t.getDate());
         }
 
-        function isSameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() ===
-                b.getDate(); }
-
-        function getWeekStart(base) { const d = new Date(base); d.setDate(d.getDate() - d.getDay()); return d; }
+        function isPastDate(dateStr) {
+            const d = new Date(dateStr);
+            const t = today();
+            return d.getFullYear() < t.getFullYear() ||
+                (d.getFullYear() === t.getFullYear() && d.getMonth() < t.getMonth()) ||
+                (d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() < t.getDate());
+        }
 
         function getMonthDays(y, m) { return new Date(y, m + 1, 0).getDate(); }
 
@@ -1553,114 +1987,268 @@
         function escapeHtml(str) { const div = document.createElement('div');
             div.textContent = str; return div.innerHTML; }
 
+        function isDateTimePast(dateStr, hour) {
+            const now = new Date();
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const target = new Date(y, m - 1, d, hour, 0, 0);
+            return target < now;
+        }
+
+        // 获取明天0点的时间戳 (用于循环硬计划复活)
+        function getNextMidnight() {
+            const d = new Date();
+            d.setDate(d.getDate() + 1);
+            d.setHours(0, 0, 0, 0);
+            return d.getTime();
+        }
+
         // ================================================================
-        //  右键菜单
+        //  清单数据操作
         // ================================================================
-        const contextMenu = document.getElementById('contextMenu');
-        let contextMenuTarget = null;
-        let contextMenuData = null;
-
-        function showContextMenu(e, target, data) {
-            e.preventDefault();
-            contextMenuTarget = target;
-            contextMenuData = data;
-            let x = e.clientX,
-                y = e.clientY;
-            const w = 160,
-                h = 80;
-            if (x + w > window.innerWidth) x = window.innerWidth - w - 10;
-            if (y + h > window.innerHeight) y = window.innerHeight - h - 10;
-            contextMenu.style.left = x + 'px';
-            contextMenu.style.top = y + 'px';
-            contextMenu.classList.add('show');
-        }
-
-        function hideContextMenu() {
-            contextMenu.classList.remove('show');
-            contextMenuTarget = null;
-            contextMenuData = null;
-        }
-        document.addEventListener('click', hideContextMenu);
-        document.addEventListener('scroll', hideContextMenu, true);
-        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') hideContextMenu(); });
-
-        contextMenu.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const action = this.dataset.action;
-                if (!contextMenuData) return;
-                if (action === 'edit') { handleContextEdit(contextMenuData); } else if (action === 'delete') {
-                    handleContextDelete(contextMenuData); }
-                hideContextMenu();
-            });
-        });
-
-        function handleContextEdit(data) {
-            if (data.type === 'todo') { startEditTodo(data.index); } else if (data.type === 'note') {
-                startEditNoteFromList(data.id); } else if (data.type === 'event') { openEditEventModal(data.id); }
-        }
-
-        function handleContextDelete(data) {
-            if (data.type === 'todo') {
-                todos.splice(data.index, 1);
-                DB.set('todos', todos);
-                renderTodos();
-            } else if (data.type === 'note') {
-                notes = notes.filter(n => n.id !== data.id);
-                DB.set('notes', notes);
-                renderNoteList();
-                renderNoteCalendar();
-            } else if (data.type === 'event') {
-                events = events.filter(ev => ev.id !== data.id);
-                DB.set('events', events);
-                refreshCurrentScheduleView();
+        function createTodo(text, type = 'today', config = {}) {
+            const now = new Date();
+            const base = {
+                id: generateId(),
+                text: text.trim(),
+                done: false,
+                type: type,
+                createdAt: formatDateTime(now),
+                remindTimes: [],
+                remindCount: 0,
+                hardConfig: null,
+                completedAt: null,
+                nextActiveTime: null
+            };
+            if (type === 'today') {
+                const todayStr = formatDate(now);
+                const remindDateTime = todayStr + 'T' + DEFAULT_TODAY_REMIND;
+                base.remindTimes.push(remindDateTime);
+            } else if (type === 'flexible') {
+                const days = 2 + Math.floor(Math.random() * 2);
+                const remindDate = new Date(now);
+                remindDate.setDate(remindDate.getDate() + days);
+                remindDate.setHours(8 + Math.floor(Math.random() * 10), Math.floor(Math.random() * 60), 0);
+                base.remindTimes.push(formatDateTime(remindDate));
+                base.remindCount = 0;
             }
+            return base;
+        }
+
+        function updateHardConfig(todoId, mode, value, time) {
+            const todo = todos.find(t => t.id === todoId);
+            if (!todo) return;
+            todo.type = 'hard';
+            todo.hardConfig = { mode, value, time };
+            const now = new Date();
+            let remindDateTime = '';
+            if (mode === 'cycle') {
+                const [h, m] = time.split(':').map(Number);
+                const d = new Date(now);
+                d.setHours(h, m, 0, 0);
+                if (value === 'daily') {
+                    if (d < now) d.setDate(d.getDate() + 1);
+                    remindDateTime = formatDateTime(d);
+                } else if (value === 'weekly') {
+                    d.setDate(d.getDate() + 7);
+                    remindDateTime = formatDateTime(d);
+                } else if (value === 'monthly') {
+                    d.setMonth(d.getMonth() + 1);
+                    remindDateTime = formatDateTime(d);
+                }
+            } else if (mode === 'deadline') {
+                remindDateTime = value + 'T' + time;
+            }
+            if (remindDateTime) todo.remindTimes = [remindDateTime];
+            DB.set('todos', todos);
+            renderTodos();
         }
 
         // ================================================================
-        //  清单 (Todo)
+        //  渲染清单 (重构：分离未完成与已完成)
         // ================================================================
         function renderTodos() {
             const list = document.getElementById('todoList');
-            if (todos.length === 0) { list.innerHTML =
-                    `<div class="empty-state"><div class="icon">📭</div><p>还没有待办事项</p></div>`; return; }
-            list.innerHTML = todos.map((t, i) =>
-                `<li>
-                    <span class="check ${t.done?'done':''}" data-index="${i}">${t.done?'✓':''}</span>
-                    <span class="text ${t.done?'done-text':''}" data-index="${i}" title="双击或右键编辑">${escapeHtml(t.text)}</span>
-                    <button class="del" data-index="${i}">×</button>
-                </li>`
-            ).join('');
-            list.querySelectorAll('.check').forEach(el => el.addEventListener('click', function() {
-                const idx = parseInt(this.dataset.index);
-                todos[idx].done = !todos[idx].done;
-                DB.set('todos', todos);
-                renderTodos();
-            }));
-            list.querySelectorAll('.del').forEach(el => el.addEventListener('click', function() {
-                const idx = parseInt(this.dataset.index);
-                todos.splice(idx, 1);
-                DB.set('todos', todos);
-                renderTodos();
-            }));
-            list.querySelectorAll('.text').forEach(el => {
+            if (todos.length === 0) {
+                list.innerHTML =
+                `<div class="empty-state"><div class="icon">📭</div><p>还没有待办事项</p></div>`;
+                return;
+            }
+
+            // 分组
+            const undone = todos.filter(t => !t.done);
+            const done = todos.filter(t => t.done);
+
+            // 对已完成组内按 completedAt 排序 (从新到旧)
+            done.sort((a, b) => {
+                const timeA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+                const timeB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+                return timeB - timeA;
+            });
+
+            // 按类型分组已完成
+            const doneByType = {
+                today: done.filter(t => t.type === 'today'),
+                hard: done.filter(t => t.type === 'hard'),
+                flexible: done.filter(t => t.type === 'flexible')
+            };
+
+            // 构建 HTML
+            let html = '';
+
+            // 未完成部分
+            if (undone.length > 0) {
+                html += undone.map(t => buildTodoItemHtml(t)).join('');
+            } else {
+                html +=
+                `<div class="empty-state"><div class="icon">✨</div><p>全部完成，太棒了！</p></div>`;
+            }
+
+            // 已完成部分
+            if (done.length > 0) {
+                html +=
+                `<div class="done-section-title"><span class="icon">✅</span> 已完成 (${done.length})</div>`;
+
+                const typeGroups = [
+                    { key: 'today', label: '📅 今日计划', items: doneByType.today },
+                    { key: 'hard', label: '🔴 硬计划', items: doneByType.hard },
+                    { key: 'flexible', label: '🌱 灵活计划', items: doneByType.flexible }
+                ];
+
+                typeGroups.forEach(group => {
+                    if (group.items.length > 0) {
+                        html += `<div class="done-group-title">${group.label}</div>`;
+                        html += `<div class="done-group-items">`;
+                        html += group.items.map(t => buildTodoItemHtml(t, true)).join('');
+                        html += `</div>`;
+                    }
+                });
+            }
+
+            list.innerHTML = html;
+
+            // 绑定事件
+            attachTodoEvents(list);
+        }
+
+        // ========== 修改后的 buildTodoItemHtml 函数 ==========
+        function buildTodoItemHtml(t, isDoneGroup = false) {
+            let typeLabel = '';
+            let remindInfo = '';
+            if (t.type === 'today') {
+                typeLabel = '<span class="type-badge today">📅 今日</span>';
+                const todayStr = formatDate(today());
+                const remind = t.remindTimes.find(r => r.startsWith(todayStr));
+                remindInfo = remind ? `<span class="remind-info">⏰ ${remind.split('T')[1]} 前</span>` :
+                    `<span class="remind-info">⏰ ${DEFAULT_TODAY_REMIND} 前</span>`;
+            } else if (t.type === 'hard') {
+                let badgeText = '🔴 硬计划';
+                if (t.hardConfig && t.hardConfig.mode === 'cycle') {
+                    badgeText =
+                        `🔁 ${t.hardConfig.value === 'daily' ? '每天' : t.hardConfig.value === 'weekly' ? '每周' : '每月'} ${t.hardConfig.time}`;
+                }
+                typeLabel = `<span class="type-badge hard">${badgeText}</span>`;
+                // 硬计划不显示闹钟标识和时间
+            } else if (t.type === 'flexible') {
+                typeLabel = '<span class="type-badge flexible">🌱 灵活</span>';
+                // 灵活计划不显示闹钟标识和时间
+            }
+            const doneClass = t.done ? 'done-text' : '';
+            const checked = t.done ? 'done' : '';
+            return `<li data-id="${t.id}">
+                        <span class="check ${checked}" data-id="${t.id}">${t.done?'✓':''}</span>
+                        <span class="text ${doneClass}" data-id="${t.id}">${escapeHtml(t.text)}</span>
+                        ${typeLabel}
+                        ${remindInfo}
+                        <button class="del" data-id="${t.id}">×</button>
+                    </li>`;
+        }
+
+        function attachTodoEvents(container) {
+            container.querySelectorAll('.check').forEach(el => {
+                el.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const todo = todos.find(t => t.id === id);
+                    if (!todo) return;
+                    if (todo.done) {
+                        // 取消勾选：弹回未完成底部
+                        todo.done = false;
+                        todo.completedAt = null;
+                        todo.nextActiveTime = null;
+                        // 重新生成提醒时间（根据类型）
+                        regenerateRemind(todo);
+                        // 移到未完成底部 (通过排序实现：渲染时自动排在未完成末尾)
+                        DB.set('todos', todos);
+                        renderTodos();
+                    } else {
+                        // 勾选完成
+                        todo.done = true;
+                        todo.completedAt = new Date().toISOString();
+                        // 如果是循环硬计划，计算下次复活时间（明天0点）
+                        if (todo.type === 'hard' && todo.hardConfig && todo.hardConfig.mode === 'cycle') {
+                            todo.nextActiveTime = getNextMidnight();
+                        } else {
+                            todo.nextActiveTime = null;
+                        }
+                        todo.remindTimes = []; // 完成时清除提醒
+                        DB.set('todos', todos);
+                        renderTodos();
+                    }
+                });
+            });
+
+            container.querySelectorAll('.del').forEach(el => {
+                el.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    todos = todos.filter(t => t.id !== id);
+                    DB.set('todos', todos);
+                    renderTodos();
+                });
+            });
+
+            container.querySelectorAll('.text').forEach(el => {
                 el.addEventListener('dblclick', function() {
-                    const idx = parseInt(this.dataset.index);
-                    startEditTodo(idx);
+                    startEditTodo(this.dataset.id);
                 });
                 el.addEventListener('contextmenu', function(e) {
-                    const idx = parseInt(this.dataset.index);
-                    showContextMenu(e, this, { type: 'todo', index: idx });
+                    e.preventDefault();
+                    showContextMenu(e, this, { type: 'todo', id: this.dataset.id });
                 });
             });
         }
 
-        function startEditTodo(index) {
+        function regenerateRemind(todo) {
+            const now = new Date();
+            if (todo.type === 'today') {
+                const todayStr = formatDate(now);
+                todo.remindTimes = [todayStr + 'T' + DEFAULT_TODAY_REMIND];
+            } else if (todo.type === 'flexible') {
+                const days = 2 + Math.floor(Math.random() * 2);
+                const remindDate = new Date(now);
+                remindDate.setDate(remindDate.getDate() + days);
+                remindDate.setHours(8 + Math.floor(Math.random() * 10), Math.floor(Math.random() * 60), 0);
+                todo.remindTimes = [formatDateTime(remindDate)];
+                todo.remindCount = 0;
+            } else if (todo.type === 'hard' && todo.hardConfig) {
+                if (todo.hardConfig.mode === 'cycle') {
+                    const [h, m] = todo.hardConfig.time.split(':').map(Number);
+                    const d = new Date(now);
+                    d.setHours(h, m, 0, 0);
+                    if (d < now) d.setDate(d.getDate() + 1);
+                    todo.remindTimes = [formatDateTime(d)];
+                } else if (todo.hardConfig.mode === 'deadline') {
+                    todo.remindTimes = [todo.hardConfig.value + 'T' + todo.hardConfig.time];
+                }
+            }
+        }
+
+        function startEditTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            if (!todo) return;
             const list = document.getElementById('todoList');
-            const li = list.querySelectorAll('li')[index];
+            const li = list.querySelector(`li[data-id="${id}"]`);
             const textSpan = li.querySelector('.text');
-            const originalText = todos[index].text;
             textSpan.innerHTML =
-                `<input type="text" class="edit-input" value="${escapeHtml(originalText)}" maxlength="80" />`;
+                `<input type="text" class="edit-input" value="${escapeHtml(todo.text)}" maxlength="80" />`;
             const input = textSpan.querySelector('.edit-input');
             input.focus();
             input.select();
@@ -1668,7 +2256,7 @@
             function finishEdit(save) {
                 if (save) {
                     const newText = input.value.trim();
-                    if (newText) { todos[index].text = newText;
+                    if (newText) { todo.text = newText;
                         DB.set('todos', todos); }
                 }
                 renderTodos();
@@ -1682,16 +2270,426 @@
             });
         }
 
-        function addTodo(text) { if (!text.trim()) return;
-            todos.push({ id: generateId(), text: text.trim(), done: false });
+        function addTodo(text) {
+            if (!text.trim()) return;
+            const newTodo = createTodo(text, 'today');
+            todos.push(newTodo);
             DB.set('todos', todos);
-            renderTodos(); }
+            renderTodos();
+        }
 
         // ================================================================
-        //  便条 · 日历 + 列表 (核心)
+        //  硬计划配置弹窗
         // ================================================================
+        let hardModalTargetId = null;
 
-        // 渲染日历
+        function openHardModal(todo) {
+            hardModalTargetId = todo.id;
+            const now = new Date();
+            const defaultDate = formatDate(now);
+            const defaultTime = formatTime(now);
+            document.getElementById('hardDeadlineDate').value = defaultDate;
+            document.getElementById('hardDeadlineDate').setAttribute('min', defaultDate);
+            document.getElementById('hardDeadlineTime').value = defaultTime;
+            document.getElementById('hardCycleTime').value = defaultTime;
+            switchHardMode('cycle');
+            document.getElementById('hardModal').classList.add('open');
+        }
+
+        function switchHardMode(mode) {
+            document.querySelectorAll('.hard-config .mode-switch button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+            document.querySelectorAll('.hard-config .mode-panel').forEach(panel => {
+                panel.classList.toggle('active', panel.dataset.mode === mode);
+            });
+        }
+
+        document.querySelectorAll('.hard-config .mode-switch button').forEach(btn => {
+            btn.addEventListener('click', function() { switchHardMode(this.dataset.mode); });
+        });
+        document.getElementById('hardModalCancel').addEventListener('click', function() {
+            document.getElementById('hardModal').classList.remove('open');
+            hardModalTargetId = null;
+        });
+        document.getElementById('hardModalConfirm').addEventListener('click', function() {
+            const todo = todos.find(t => t.id === hardModalTargetId);
+            if (!todo) { alert('任务不存在'); return; }
+            const activeMode = document.querySelector('.hard-config .mode-switch .active').dataset.mode;
+            if (activeMode === 'cycle') {
+                const cycle = document.getElementById('hardCycle').value;
+                const time = document.getElementById('hardCycleTime').value;
+                if (!time) { alert('请选择时间'); return; }
+                updateHardConfig(todo.id, 'cycle', cycle, time);
+            } else {
+                const date = document.getElementById('hardDeadlineDate').value;
+                const time = document.getElementById('hardDeadlineTime').value;
+                if (!date || !time) { alert('请选择日期和时间'); return; }
+                const now = new Date();
+                const selected = new Date(date + 'T' + time);
+                if (selected < now) { alert('不能选择过去的时间'); return; }
+                const diffDays = (selected - now) / (1000 * 60 * 60 * 24);
+                if (diffDays > 30) { alert('请选择近一个月内的日期'); return; }
+                updateHardConfig(todo.id, 'deadline', date, time);
+            }
+            document.getElementById('hardModal').classList.remove('open');
+            hardModalTargetId = null;
+        });
+
+        // ================================================================
+        //  快速添加弹窗
+        // ================================================================
+        document.getElementById('fabAddTodo').addEventListener('click', function() {
+            document.getElementById('quickAddTitle').value = '';
+            document.getElementById('quickAddModal').classList.add('open');
+            document.getElementById('quickAddTitle').focus();
+        });
+        document.getElementById('quickAddCancel').addEventListener('click', function() {
+            document.getElementById('quickAddModal').classList.remove('open');
+        });
+        document.getElementById('quickAddHard').addEventListener('click', function() {
+            const title = document.getElementById('quickAddTitle').value.trim();
+            if (!title) { alert('请输入任务标题'); return; }
+            const newTodo = createTodo(title, 'hard');
+            todos.push(newTodo);
+            DB.set('todos', todos);
+            renderTodos();
+            document.getElementById('quickAddModal').classList.remove('open');
+            openHardModal(newTodo);
+        });
+        document.getElementById('quickAddFlexible').addEventListener('click', function() {
+            const title = document.getElementById('quickAddTitle').value.trim();
+            if (!title) { alert('请输入任务标题'); return; }
+            const newTodo = createTodo(title, 'flexible');
+            todos.push(newTodo);
+            DB.set('todos', todos);
+            renderTodos();
+            document.getElementById('quickAddModal').classList.remove('open');
+        });
+
+        // ================================================================
+        //  提醒系统 (包含循环硬计划复活)
+        // ================================================================
+        function checkReminders() {
+            const now = new Date();
+            const nowDate = formatDate(now);
+            const nowTime = formatTime(now);
+            const triggeredList = [];
+
+            todos.forEach(todo => {
+                // 复活检测：已完成的循环硬计划，且到达复活时间
+                if (todo.done && todo.type === 'hard' && todo.hardConfig && todo.hardConfig.mode === 'cycle' &&
+                    todo.nextActiveTime) {
+                    if (now.getTime() >= todo.nextActiveTime) {
+                        // 复活
+                        todo.done = false;
+                        todo.completedAt = null;
+                        todo.nextActiveTime = null;
+                        regenerateRemind(todo);
+                        // 不需要弹提醒，只是回归未完成
+                    }
+                }
+
+                if (todo.done) return; // 已完成且未到复活时间，忽略提醒
+                const newRemindTimes = [];
+                let hasTriggered = false;
+                todo.remindTimes.forEach(rt => {
+                    const [date, time] = rt.split('T');
+                    if (date < nowDate || (date === nowDate && time <= nowTime)) {
+                        if (!hasTriggered) {
+                            triggeredList.push({ todo, remindTime: rt });
+                            hasTriggered = true;
+                        }
+                        if (todo.type === 'hard' && todo.hardConfig && todo.hardConfig.mode === 'cycle') {
+                            const next = generateNextCycleReminder(todo.hardConfig, rt);
+                            if (next) newRemindTimes.push(next);
+                        } else if (todo.type === 'flexible') {
+                            if (todo.remindCount < 3) {
+                                todo.remindCount++;
+                                const next = generateFlexibleNext(todo);
+                                if (next) newRemindTimes.push(next);
+                            }
+                        }
+                    } else {
+                        newRemindTimes.push(rt);
+                    }
+                });
+                todo.remindTimes = newRemindTimes;
+            });
+
+            if (triggeredList.length > 0) {
+                showReminderModal(triggeredList);
+            }
+            DB.set('todos', todos);
+            if (Notification.permission === 'granted' && triggeredList.length) {
+                triggeredList.forEach(({ todo }) => {
+                    new Notification('云笺提醒', { body: todo.text });
+                });
+            }
+            // 刷新清单视图以反映复活变化
+            renderTodos();
+        }
+
+        function showReminderModal(list) {
+            const modal = document.getElementById('reminderModal');
+            const listEl = document.getElementById('reminderList');
+            listEl.innerHTML = list.map(({ todo }) => {
+                return `<li data-id="${todo.id}">
+                            <span class="reminder-text">${escapeHtml(todo.text)}</span>
+                            <button class="ok-btn">OK</button>
+                        </li>`;
+            }).join('');
+            modal.classList.add('open');
+            listEl.querySelectorAll('.ok-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('li').remove();
+                    if (listEl.children.length === 0) modal.classList.remove('open');
+                });
+            });
+        }
+
+        function generateNextCycleReminder(config, currentRemind) {
+            const [date, time] = currentRemind.split('T');
+            const d = new Date(date + 'T' + time);
+            if (config.value === 'daily') d.setDate(d.getDate() + 1);
+            else if (config.value === 'weekly') d.setDate(d.getDate() + 7);
+            else if (config.value === 'monthly') d.setMonth(d.getMonth() + 1);
+            return formatDateTime(d);
+        }
+
+        function generateFlexibleNext(todo) {
+            const intervals = [2, 4, 7];
+            const idx = Math.min(todo.remindCount, intervals.length - 1);
+            const days = intervals[idx];
+            const next = new Date();
+            next.setDate(next.getDate() + days);
+            next.setHours(8 + Math.floor(Math.random() * 10), Math.floor(Math.random() * 60), 0);
+            return formatDateTime(next);
+        }
+
+        setInterval(checkReminders, 30000);
+        setTimeout(checkReminders, 1000);
+
+        // ================================================================
+        //  右键菜单 (保持不变，仅调整对已完成条目的禁用逻辑)
+        // ================================================================
+        const contextMenu = document.getElementById('contextMenu');
+        let contextMenuData = null;
+
+        function showContextMenu(e, target, data) {
+            e.preventDefault();
+            contextMenuData = data;
+            let x = e.clientX,
+                y = e.clientY;
+            const w = 180,
+                h = 150;
+            if (x + w > window.innerWidth) x = window.innerWidth - w - 10;
+            if (y + h > window.innerHeight) y = window.innerHeight - h - 10;
+            contextMenu.style.left = x + 'px';
+            contextMenu.style.top = y + 'px';
+            contextMenu.classList.add('show');
+
+            const editTimeItem = document.getElementById('contextEditTime');
+            const editTypeItem = contextMenu.querySelector('[data-action="editType"]');
+            const editTitleItem = contextMenu.querySelector('[data-action="editTitle"]');
+            const deleteItem = contextMenu.querySelector('.menu-item.danger');
+
+            // 重置状态
+            editTimeItem.style.display = '';
+            editTypeItem.style.display = '';
+            editTitleItem.style.display = '';
+            editTimeItem.classList.remove('disabled');
+            editTypeItem.classList.remove('disabled');
+            editTitleItem.classList.remove('disabled');
+            deleteItem.classList.remove('disabled');
+
+            if (data.type === 'todo') {
+                const todo = todos.find(t => t.id === data.id);
+                if (todo) {
+                    if (todo.done) {
+                        // 已完成的任务，禁用所有编辑，但可以删除
+                        editTimeItem.classList.add('disabled');
+                        editTypeItem.classList.add('disabled');
+                        editTitleItem.classList.add('disabled');
+                        // 已完成允许删除
+                    } else {
+                        if (todo.type === 'flexible') {
+                            editTimeItem.classList.add('disabled');
+                        }
+                    }
+                }
+            } else if (data.type === 'event') {
+                const ev = events.find(e => e.id === data.id);
+                if (ev) {
+                    const locked = isDateTimePast(ev.date, parseInt(ev.time.split(':')[0]));
+                    if (locked) {
+                        editTimeItem.classList.add('disabled');
+                        editTypeItem.classList.add('disabled');
+                        editTitleItem.classList.add('disabled');
+                        deleteItem.classList.add('disabled');
+                    }
+                }
+                editTypeItem.style.display = 'none';
+            } else if (data.type === 'note') {
+                editTypeItem.style.display = 'none';
+                editTimeItem.style.display = 'none';
+                const note = notes.find(n => n.id === data.id);
+                if (note && isFutureDate(note.date)) {
+                    editTitleItem.classList.add('disabled');
+                    deleteItem.classList.add('disabled');
+                }
+            }
+        }
+
+        function hideContextMenu() {
+            contextMenu.classList.remove('show');
+            contextMenuData = null;
+        }
+        document.addEventListener('click', hideContextMenu);
+        document.addEventListener('scroll', hideContextMenu, true);
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') hideContextMenu(); });
+
+        contextMenu.addEventListener('click', function(e) {
+            const actionItem = e.target.closest('.menu-item');
+            if (!actionItem || !contextMenuData) return;
+            if (actionItem.classList.contains('disabled')) return;
+            e.stopPropagation();
+            const action = actionItem.dataset.action;
+            if (action === 'editTitle') {
+                if (contextMenuData.type === 'todo') startEditTodo(contextMenuData.id);
+                else if (contextMenuData.type === 'note') startEditNoteFromList(contextMenuData.id);
+                else if (contextMenuData.type === 'event') openEditEventModal(contextMenuData.id);
+            } else if (action === 'editType') {
+                if (contextMenuData.type === 'todo') showTypeSelectForTodo(contextMenuData.id);
+            } else if (action === 'editTime') {
+                if (contextMenuData.type === 'todo') {
+                    const todo = todos.find(t => t.id === contextMenuData.id);
+                    if (todo && todo.type !== 'flexible') openTimeEditModal(todo);
+                }
+            } else if (action === 'delete') {
+                if (contextMenuData.type === 'todo') {
+                    todos = todos.filter(t => t.id !== contextMenuData.id);
+                    DB.set('todos', todos);
+                    renderTodos();
+                } else if (contextMenuData.type === 'note') {
+                    notes = notes.filter(n => n.id !== contextMenuData.id);
+                    DB.set('notes', notes);
+                    renderNoteList();
+                    renderNoteCalendar();
+                } else if (contextMenuData.type === 'event') {
+                    events = events.filter(ev => ev.id !== contextMenuData.id);
+                    DB.set('events', events);
+                    refreshCurrentScheduleView();
+                }
+            }
+            hideContextMenu();
+        });
+
+        // 类型选择（颜色与标签统一）
+        function showTypeSelectForTodo(id) {
+            const types = [
+                { label: '今日计划', value: 'today', bg: '#dbeafe', color: '#1e40af', border: '#b8c9e8' },
+                { label: '硬计划', value: 'hard', bg: '#fee2e2', color: '#b91c1c', border: '#e5b8b8' },
+                { label: '灵活计划', value: 'flexible', bg: '#d1fae5', color: '#065f46', border: '#b8d9c2' }
+            ];
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay open';
+            overlay.innerHTML = `
+                <div class="modal-box" style="max-width:300px;">
+                    <h3>选择类型</h3>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        ${types.map(t => `<button class="btn-confirm" style="margin:4px 0; background:${t.bg}; color:${t.color}; border:1px solid ${t.border}; font-weight:500;" data-type="${t.value}">${t.label}</button>`).join('')}
+                    </div>
+                    <div class="modal-actions" style="justify-content:center; margin-top:10px;">
+                        <button class="btn-cancel" id="typeSelectCancel">取消</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            overlay.querySelector('#typeSelectCancel').addEventListener('click', () => overlay.remove());
+            overlay.querySelectorAll('button[data-type]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const newType = this.dataset.type;
+                    changeTodoType(id, newType);
+                    overlay.remove();
+                });
+            });
+            overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+        }
+
+        function changeTodoType(id, newType) {
+            const todo = todos.find(t => t.id === id);
+            if (!todo) return;
+            if (todo.type === newType) return;
+            todo.type = newType;
+            if (newType === 'today') {
+                const todayStr = formatDate(today());
+                todo.remindTimes = [todayStr + 'T' + DEFAULT_TODAY_REMIND];
+                todo.hardConfig = null;
+                todo.remindCount = 0;
+                todo.nextActiveTime = null;
+            } else if (newType === 'hard') {
+                DB.set('todos', todos);
+                renderTodos();
+                openHardModal(todo);
+                return;
+            } else if (newType === 'flexible') {
+                const now = new Date();
+                const days = 2 + Math.floor(Math.random() * 2);
+                const remindDate = new Date(now);
+                remindDate.setDate(remindDate.getDate() + days);
+                remindDate.setHours(8 + Math.floor(Math.random() * 10), Math.floor(Math.random() * 60), 0);
+                todo.remindTimes = [formatDateTime(remindDate)];
+                todo.remindCount = 0;
+                todo.hardConfig = null;
+                todo.nextActiveTime = null;
+            }
+            DB.set('todos', todos);
+            renderTodos();
+        }
+
+        // 时间编辑弹窗
+        let timeEditTargetId = null;
+
+        function openTimeEditModal(todo) {
+            timeEditTargetId = todo.id;
+            const modal = document.getElementById('timeEditModal');
+            const dateInput = document.getElementById('timeEditDate');
+            const timeInput = document.getElementById('timeEditTime');
+            if (todo.remindTimes.length > 0) {
+                const [date, time] = todo.remindTimes[0].split('T');
+                dateInput.value = date;
+                timeInput.value = time;
+            } else {
+                const now = new Date();
+                dateInput.value = formatDate(now);
+                timeInput.value = DEFAULT_TODAY_REMIND;
+            }
+            modal.classList.add('open');
+        }
+        document.getElementById('timeEditCancel').addEventListener('click', function() {
+            document.getElementById('timeEditModal').classList.remove('open');
+            timeEditTargetId = null;
+        });
+        document.getElementById('timeEditConfirm').addEventListener('click', function() {
+            const todo = todos.find(t => t.id === timeEditTargetId);
+            if (!todo) return;
+            const date = document.getElementById('timeEditDate').value;
+            const time = document.getElementById('timeEditTime').value;
+            if (!date || !time) { alert('请完整填写日期和时间'); return; }
+            const newRemind = date + 'T' + time;
+            const now = new Date();
+            if (new Date(newRemind) < now) { alert('提醒时间不能是过去'); return; }
+            todo.remindTimes = [newRemind];
+            DB.set('todos', todos);
+            renderTodos();
+            document.getElementById('timeEditModal').classList.remove('open');
+            timeEditTargetId = null;
+        });
+
+        // ================================================================
+        //  便条 (笔记) 功能
+        // ================================================================
         function renderNoteCalendar() {
             const base = today();
             base.setMonth(base.getMonth() + noteCalMonthOffset);
@@ -1703,7 +2701,6 @@
             const firstDay = getDayOfWeek(year, month, 1);
             const prevMonthDays = getMonthDays(year, month - 1);
             const grid = document.getElementById('noteCalGrid');
-            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
             const todayStr = formatDate(today());
             const selectedStr = noteSelectedDate;
 
@@ -1714,7 +2711,7 @@
             });
 
             let html = '';
-            weekdays.forEach(w => {
+            ['日', '一', '二', '三', '四', '五', '六'].forEach(w => {
                 html += `<div class="cal-day-label">${w}</div>`;
             });
             const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
@@ -1749,25 +2746,16 @@
                 if (isFuture) cls += ' future-date';
 
                 html += `<div class="${cls}" data-date="${ds}" data-future="${isFuture}">
-                    <span class="cal-num">${day}</span>
-                    ${hasNotes ? `<span class="note-dot"></span>` : ''}
-                </div>`;
+                            <span class="cal-num">${day}</span>
+                            ${hasNotes ? '<span class="note-dot"></span>' : ''}
+                        </div>`;
             }
             grid.innerHTML = html;
 
-            // 点击日期
             grid.querySelectorAll('.cal-day-cell').forEach(el => {
                 el.addEventListener('click', function() {
+                    if (this.dataset.future === 'true') return;
                     const ds = this.dataset.date;
-                    const isFuture = this.dataset.future === 'true';
-                    if (isFuture) {
-                        // 未来日期：只查看，不选中（不可添加）
-                        // 但可以展示便条（如果有）
-                        noteSelectedDate = ds;
-                        renderNoteCalendar();
-                        renderNoteList();
-                        return;
-                    }
                     noteSelectedDate = ds;
                     renderNoteCalendar();
                     renderNoteList();
@@ -1775,7 +2763,6 @@
             });
         }
 
-        // 渲染便条列表（选中日期）
         function renderNoteList() {
             const container = document.getElementById('noteListContent');
             const dateLabel = document.getElementById('noteListDate');
@@ -1788,13 +2775,11 @@
             const isFuture = isFutureDate(noteSelectedDate);
             const dayNotes = getNotesForDate(noteSelectedDate).sort((a, b) => a.time.localeCompare(b.time));
 
-            // 更新标题
             const d = new Date(noteSelectedDate);
             const w = ['日', '一', '二', '三', '四', '五', '六'];
             const label = (d.getMonth() + 1) + '月' + d.getDate() + '日 周' + w[d.getDay()];
             dateLabel.innerHTML = `📅 ${label} ${isFuture ? '🔒' : ''}`;
 
-            // 按钮状态
             if (isFuture) {
                 addBtn.disabled = true;
                 addBtn.textContent = '🔒 不可添加';
@@ -1802,15 +2787,16 @@
                 saveBtn.disabled = true;
                 futureTip.style.display = 'inline';
                 cancelBtn.style.display = 'none';
+                input.placeholder = '未来日期不可写便条';
             } else {
                 addBtn.disabled = false;
                 addBtn.textContent = '➕ 添加';
                 input.disabled = false;
                 saveBtn.disabled = false;
                 futureTip.style.display = 'none';
+                input.placeholder = `写便条 (${label})`;
             }
 
-            // 列表内容
             if (dayNotes.length === 0) {
                 container.innerHTML =
                     `<div class="note-empty"><div class="icon">📭</div><p>${isFuture ? '未来日期暂无便条' : '这一天还没有便条，写一条吧'}</p></div>`;
@@ -1837,37 +2823,27 @@
                 container.querySelectorAll('.edit-note-btn').forEach(el => {
                     el.addEventListener('click', function(e) {
                         e.stopPropagation();
-                        const id = this.dataset.id;
-                        startEditNoteFromList(id);
+                        startEditNoteFromList(this.dataset.id);
                     });
                 });
-                // 双击便条文本也可编辑
-                container.querySelectorAll('.note-item-row .note-text').forEach(el => {
-                    const row = el.closest('.note-item-row');
-                    if (row) {
-                        row.addEventListener('dblclick', function() {
-                            const id = this.dataset.id;
-                            if (id) startEditNoteFromList(id);
-                        });
-                        row.addEventListener('contextmenu', function(e) {
-                            e.preventDefault();
-                            const id = this.dataset.id;
-                            if (id) showContextMenu(e, this, { type: 'note', id: id });
-                        });
-                    }
+                container.querySelectorAll('.note-item-row').forEach(row => {
+                    row.addEventListener('dblclick', function() {
+                        const id = this.dataset.id;
+                        if (id) startEditNoteFromList(id);
+                    });
+                    row.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                        const id = this.dataset.id;
+                        if (id) showContextMenu(e, this, { type: 'note', id: id });
+                    });
                 });
             }
         }
 
-        // 编辑便条（从列表触发）
         function startEditNoteFromList(id) {
             const note = notes.find(n => n.id === id);
             if (!note) return;
-            // 检查日期是否未来
-            if (isFutureDate(note.date)) {
-                alert('未来日期的便条不可编辑');
-                return;
-            }
+            if (isFutureDate(note.date)) { alert('未来日期的便条不可编辑'); return; }
             editingNoteId = id;
             const input = document.getElementById('noteDateInput');
             const saveBtn = document.getElementById('noteDateSaveBtn');
@@ -1877,34 +2853,24 @@
             input.select();
             saveBtn.textContent = '💾 更新';
             cancelBtn.style.display = 'inline-block';
-            // 滚动到输入区域
             document.getElementById('noteInputArea').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        // 保存便条（选中日期）
         function saveNoteForDate(text) {
             if (!text.trim()) return;
             const dateStr = noteSelectedDate;
-            if (isFutureDate(dateStr)) {
-                alert('不能为未来日期添加便条');
-                return;
-            }
+            if (isFutureDate(dateStr)) { alert('不能为未来日期添加便条'); return; }
             const now = new Date();
-            const time = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-
+            const time = formatTime(now);
             if (editingNoteId) {
-                // 更新
                 const note = notes.find(n => n.id === editingNoteId);
-                if (note) {
-                    note.text = text.trim();
+                if (note) { note.text = text.trim();
                     note.time = time;
-                    note.date = dateStr; // 确保日期一致
-                }
+                    note.date = dateStr; }
                 editingNoteId = null;
                 document.getElementById('noteDateSaveBtn').textContent = '保存';
                 document.getElementById('noteDateCancelBtn').style.display = 'none';
             } else {
-                // 新增
                 notes.push({ id: generateId(), text: text.trim(), time: time, date: dateStr });
             }
             DB.set('notes', notes);
@@ -1913,171 +2879,39 @@
             renderNoteCalendar();
         }
 
-        // 取消编辑
         function cancelEditNote() {
             editingNoteId = null;
             document.getElementById('noteDateInput').value = '';
             document.getElementById('noteDateSaveBtn').textContent = '保存';
             document.getElementById('noteDateCancelBtn').style.display = 'none';
+            const label = document.getElementById('noteListDate').textContent;
+            document.getElementById('noteDateInput').placeholder = `写便条 (${label.replace('📅 ', '').replace(' 🔒', '')})`;
         }
 
-        // ================================================================
-        //  便条 · 触摸滑动切换 Tab (手机)
-        // ================================================================
-        let touchStartX = 0,
-            touchStartY = 0,
-            touchIsSwiping = false;
-
-        const tabsContainer = document.getElementById('noteTabs');
-        const contentArea = document.getElementById('noteContentArea');
-
-        function getActiveTabIndex() {
-            const tabs = tabsContainer.querySelectorAll('.tab');
-            for (let i = 0; i < tabs.length; i++) {
-                if (tabs[i].classList.contains('active')) return i;
-            }
-            return 0;
-        }
-
-        function switchTabByIndex(index) {
-            const tabs = tabsContainer.querySelectorAll('.tab');
-            if (index < 0 || index >= tabs.length) return;
-            tabs[index].click();
-        }
-
-        contentArea.addEventListener('touchstart', function(e) {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            touchIsSwiping = false;
-        }, { passive: true });
-
-        contentArea.addEventListener('touchmove', function(e) {
-            const dx = e.touches[0].clientX - touchStartX;
-            const dy = e.touches[0].clientY - touchStartY;
-            if (Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy) * 1.2) {
-                touchIsSwiping = true;
-                // 阻止页面滚动
-                e.preventDefault();
-            }
-        }, { passive: false });
-
-        contentArea.addEventListener('touchend', function(e) {
-            if (!touchIsSwiping) return;
-            const dx = e.changedTouches[0].clientX - touchStartX;
-            const threshold = 50;
-            if (Math.abs(dx) < threshold) return;
-            const currentIdx = getActiveTabIndex();
-            if (dx < 0) {
-                // 左滑 -> 下一个tab
-                if (currentIdx < tabsContainer.querySelectorAll('.tab').length - 1) {
-                    switchTabByIndex(currentIdx + 1);
-                }
-            } else {
-                // 右滑 -> 上一个tab
-                if (currentIdx > 0) {
-                    switchTabByIndex(currentIdx - 1);
-                }
-            }
-            touchIsSwiping = false;
-        }, { passive: true });
-
-        // ================================================================
-        //  便条 · 事件绑定
-        // ================================================================
-
-        // Tab切换（手动点击）
-        document.querySelectorAll('#notePage .tabs .tab').forEach(el => {
-            el.addEventListener('click', function() {
-                const parent = this.closest('.page');
-                parent.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                const tabId = this.dataset.tab;
-                parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                document.getElementById(tabId).classList.add('active');
-                // 如果切换到便条，刷新日历和列表
-                if (tabId === 'noteTab') {
-                    renderNoteCalendar();
-                    renderNoteList();
-                }
-            });
-        });
-
-        // 添加按钮
         document.getElementById('noteAddForDateBtn').addEventListener('click', function() {
-            if (isFutureDate(noteSelectedDate)) {
-                alert('不能为未来日期添加便条');
-                return;
-            }
-            const input = document.getElementById('noteDateInput');
-            input.focus();
-            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (isFutureDate(noteSelectedDate)) { alert('不能为未来日期添加便条'); return; }
+            document.getElementById('noteDateInput').focus();
         });
-
-        // 保存按钮
         document.getElementById('noteDateSaveBtn').addEventListener('click', function() {
-            const input = document.getElementById('noteDateInput');
-            saveNoteForDate(input.value);
-            input.value = '';
-            document.getElementById('noteDateSaveBtn').textContent = '保存';
-            document.getElementById('noteDateCancelBtn').style.display = 'none';
+            saveNoteForDate(document.getElementById('noteDateInput').value);
         });
-
-        // 取消按钮
-        document.getElementById('noteDateCancelBtn').addEventListener('click', function() {
-            cancelEditNote();
-        });
-
-        // 输入框回车保存
+        document.getElementById('noteDateCancelBtn').addEventListener('click', cancelEditNote);
         document.getElementById('noteDateInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('noteDateSaveBtn').click();
-            }
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                cancelEditNote();
-            }
+            if (e.key === 'Enter') { e.preventDefault();
+                document.getElementById('noteDateSaveBtn').click(); }
+            if (e.key === 'Escape') { e.preventDefault();
+                cancelEditNote(); }
         });
-
-        // 日历导航
-        document.getElementById('noteCalPrev').addEventListener('click', function() {
-            noteCalMonthOffset--;
+        document.getElementById('noteCalPrev').addEventListener('click', function() { noteCalMonthOffset--;
             renderNoteCalendar();
-            renderNoteList();
-        });
-        document.getElementById('noteCalNext').addEventListener('click', function() {
-            noteCalMonthOffset++;
+            renderNoteList(); });
+        document.getElementById('noteCalNext').addEventListener('click', function() { noteCalMonthOffset++;
             renderNoteCalendar();
-            renderNoteList();
-        });
-
-        // 清单添加
-        document.getElementById('todoAddBtn').addEventListener('click', function() {
-            const input = document.getElementById('todoInput');
-            addTodo(input.value);
-            input.value = '';
-            input.focus();
-        });
-        document.getElementById('todoInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') document.getElementById('todoAddBtn').click();
-        });
+            renderNoteList(); });
 
         // ================================================================
-        //  日程渲染 (日/周/月) - 保持不变，但增加编辑支持
+        //  日程视图渲染 (三块式)
         // ================================================================
-        function openEditEventModal(eventId) {
-            const ev = events.find(e => e.id === eventId);
-            if (!ev) return;
-            editingEventId = eventId;
-            document.getElementById('modalTitle').textContent = '编辑事件 · ' + ev.date;
-            document.getElementById('modalEventTitle').value = ev.title;
-            document.getElementById('modalEventTime').value = ev.time;
-            document.getElementById('modalEventDesc').value = ev.desc || '';
-            modalDate = ev.date;
-            modalHour = parseInt(ev.time.split(':')[0]);
-            document.getElementById('eventModal').classList.add('open');
-            document.getElementById('modalEventTitle').focus();
-        }
 
         function renderDayView() {
             const base = today();
@@ -2085,63 +2919,136 @@
             const dateStr = formatDate(base);
             document.getElementById('dayTitle').textContent = formatDateWeek(base);
             document.getElementById('dayBadge').textContent = formatDateWeek(base);
-            const grid = document.getElementById('dayGrid');
+
+            const slider = document.getElementById('daySlider');
+            const offsets = [-1, 0, 1];
             let html = '';
+            offsets.forEach(off => {
+                const d = new Date(base);
+                d.setDate(d.getDate() + off);
+                const ds = formatDate(d);
+                html += `<div class="slide">${buildDayContent(ds)}</div>`;
+            });
+            slider.innerHTML = html;
+            slider.querySelectorAll('.day-view .hour-content').forEach(el => {
+                const locked = el.dataset.locked === 'true';
+                el.addEventListener('click', function(e) {
+                    if (locked) return;
+                    if (e.target.closest('.event-chip')) return;
+                    openModal(this.dataset.date, parseInt(this.dataset.hour));
+                });
+                if (!locked) {
+                    el.querySelectorAll('.event-chip .del-ev').forEach(delBtn => {
+                        delBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            events = events.filter(ev => ev.id !== this.dataset.id);
+                            DB.set('events', events);
+                            renderDayView();
+                        });
+                    });
+                    el.querySelectorAll('.event-chip').forEach(chip => {
+                        chip.addEventListener('dblclick', function(e) {
+                            e.stopPropagation();
+                            openEditEventModal(this.dataset.id);
+                        });
+                        chip.addEventListener('contextmenu', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            showContextMenu(e, this, { type: 'event', id: this.dataset.id });
+                        });
+                    });
+                } else {
+                    el.querySelectorAll('.event-chip').forEach(chip => {
+                        chip.style.pointerEvents = 'none';
+                    });
+                }
+            });
+            resetSliderToCenter('daySlider');
+        }
+
+        function buildDayContent(dateStr) {
+            let html = `<div class="day-view" style="height:100%;">`;
             for (let h = 0; h < 24; h++) {
                 const evs = getEventsForDate(dateStr).filter(e => parseInt(e.time.split(':')[0]) === h);
-                html += `<div class="hour-row">
-                    <div class="hour-label">${String(h).padStart(2,'0')}:00</div>
-                    <div class="hour-content" data-hour="${h}" data-date="${dateStr}">
-                        ${evs.map(e => `<span class="event-chip" data-id="${e.id}" title="双击或右键编辑">${escapeHtml(e.title)} <span class="del-ev" data-id="${e.id}">×</span></span>`).join('')}
-                    </div>
-                </div>`;
+                const locked = isDateTimePast(dateStr, h);
+                const lockedClass = locked ? ' locked' : '';
+                html +=
+                    `<div class="hour-row">
+                            <div class="hour-label">${String(h).padStart(2,'0')}:00</div>
+                            <div class="hour-content${lockedClass}" data-hour="${h}" data-date="${dateStr}" data-locked="${locked}">
+                                ${evs.map(e => `<span class="event-chip" data-id="${e.id}" title="双击或右键编辑">${escapeHtml(e.title)} ${locked ? '' : `<span class="del-ev" data-id="${e.id}">×</span>`}</span>`).join('')}
+                            </div>
+                        </div>`;
             }
-            grid.innerHTML = html;
-            grid.querySelectorAll('.hour-content').forEach(el => el.addEventListener('click', function(e) {
-                if (e.target.closest('.event-chip')) return;
-                openModal(this.dataset.date, parseInt(this.dataset.hour));
-            }));
-            grid.querySelectorAll('.event-chip .del-ev').forEach(el => el.addEventListener('click', function(e) {
-                e.stopPropagation();
-                events = events.filter(ev => ev.id !== this.dataset.id);
-                DB.set('events', events);
-                renderDayView();
-            }));
-            grid.querySelectorAll('.event-chip').forEach(el => {
-                el.addEventListener('dblclick', function(e) {
-                    e.stopPropagation();
-                    openEditEventModal(this.dataset.id);
-                });
-                el.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    showContextMenu(e, this, { type: 'event', id: this.dataset.id });
-                });
-            });
+            html += '</div>';
+            return html;
         }
 
         function renderWeekView() {
-            const base = today();
-            base.setDate(base.getDate() + weekOffset * 7);
-            const start = getWeekStart(base);
+            const start = new Date(weekStartDate);
+            const end = new Date(start);
+            end.setDate(end.getDate() + 6);
+            document.getElementById('weekTitle').textContent = formatDateWeek(start) + ' ~ ' + formatDateWeek(end);
+            document.getElementById('weekBadge').textContent = '本周';
+
+            const slider = document.getElementById('weekSlider');
+            const offsets = [-7, 0, 7];
+            let html = '';
+            offsets.forEach(off => {
+                const d = new Date(start);
+                d.setDate(d.getDate() + off);
+                html += `<div class="slide">${buildWeekContent(d)}</div>`;
+            });
+            slider.innerHTML = html;
+            slider.querySelectorAll('.week-view .cell').forEach(el => {
+                const locked = el.dataset.locked === 'true';
+                el.addEventListener('click', function(e) {
+                    if (locked) return;
+                    if (e.target.closest('.mini-ev')) return;
+                    openModal(this.dataset.date, parseInt(this.dataset.hour));
+                });
+                if (!locked) {
+                    el.querySelectorAll('.mini-ev .del-ev').forEach(delBtn => {
+                        delBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            events = events.filter(ev => ev.id !== this.dataset.id);
+                            DB.set('events', events);
+                            renderWeekView();
+                        });
+                    });
+                    el.querySelectorAll('.mini-ev').forEach(chip => {
+                        chip.addEventListener('dblclick', function(e) {
+                            e.stopPropagation();
+                            openEditEventModal(this.dataset.id);
+                        });
+                        chip.addEventListener('contextmenu', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            showContextMenu(e, this, { type: 'event', id: this.dataset.id });
+                        });
+                    });
+                } else {
+                    el.querySelectorAll('.mini-ev').forEach(chip => {
+                        chip.style.pointerEvents = 'none';
+                    });
+                }
+            });
+            resetSliderToCenter('weekSlider');
+        }
+
+        function buildWeekContent(startDate) {
             const dates = [];
-            for (let i = 0; i < 7; i++) { const d = new Date(start);
+            for (let i = 0; i < 7; i++) { const d = new Date(startDate);
                 d.setDate(d.getDate() + i);
                 dates.push(d); }
-            const s = dates[0],
-                e = dates[6];
-            document.getElementById('weekTitle').textContent = (s.getMonth() + 1) + '/' + s.getDate() + ' - ' + (e.getMonth() +
-                1) + '/' + e.getDate();
-            document.getElementById('weekBadge').textContent = '本周';
-            const grid = document.getElementById('weekGrid');
             const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
             const todayStr = formatDate(today());
-            let html = `<div class="week-header"><div class="day-label"></div>`;
+            let html = '<div class="week-view" style="height:100%;">';
+            html += `<div class="week-header"><div class="day-label"></div>`;
             dates.forEach(d => {
                 const ds = formatDate(d);
-                const isToday = ds === todayStr;
                 html +=
-                    `<div class="day-label ${isToday?'today':''}">${weekdays[d.getDay()]}<br><strong>${d.getDate()}</strong></div>`;
+                    `<div class="day-label ${ds === todayStr ? 'today' : ''}">${weekdays[d.getDay()]}<br><strong>${d.getDate()}</strong></div>`;
             });
             html += `</div><div class="week-body">`;
             for (let h = 0; h < 24; h++) {
@@ -2150,35 +3057,16 @@
                     const d = dates[i];
                     const ds = formatDate(d);
                     const evs = getEventsForDate(ds).filter(e => parseInt(e.time.split(':')[0]) === h);
-                    const isToday = ds === todayStr;
-                    html += `<div class="cell" data-date="${ds}" data-hour="${h}" style="${isToday?'background:#f8faff;':''}">
-                        ${evs.map(e => `<span class="mini-ev" data-id="${e.id}" title="双击或右键编辑">${escapeHtml(e.title)} <span class="del-ev" data-id="${e.id}">×</span></span>`).join('')}
-                    </div>`;
+                    const locked = isDateTimePast(ds, h);
+                    const lockedClass = locked ? ' locked' : '';
+                    html +=
+                        `<div class="cell${lockedClass}" data-date="${ds}" data-hour="${h}" data-locked="${locked}" style="${ds === todayStr ? 'background:#f8faff;' : ''}">
+                                ${evs.map(e => `<span class="mini-ev" data-id="${e.id}" title="双击或右键编辑">${escapeHtml(e.title)} ${locked ? '' : `<span class="del-ev" data-id="${e.id}">×</span>`}</span>`).join('')}
+                            </div>`;
                 }
             }
-            html += `</div>`;
-            grid.innerHTML = html;
-            grid.querySelectorAll('.cell').forEach(el => el.addEventListener('click', function(e) {
-                if (e.target.closest('.mini-ev')) return;
-                openModal(this.dataset.date, parseInt(this.dataset.hour));
-            }));
-            grid.querySelectorAll('.mini-ev .del-ev').forEach(el => el.addEventListener('click', function(e) {
-                e.stopPropagation();
-                events = events.filter(ev => ev.id !== this.dataset.id);
-                DB.set('events', events);
-                renderWeekView();
-            }));
-            grid.querySelectorAll('.mini-ev').forEach(el => {
-                el.addEventListener('dblclick', function(e) {
-                    e.stopPropagation();
-                    openEditEventModal(this.dataset.id);
-                });
-                el.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    showContextMenu(e, this, { type: 'event', id: this.dataset.id });
-                });
-            });
+            html += '</div></div>';
+            return html;
         }
 
         function renderMonthView() {
@@ -2188,62 +3076,207 @@
                 month = base.getMonth();
             document.getElementById('monthTitle').textContent = year + '年' + (month + 1) + '月';
             document.getElementById('monthBadge').textContent = '本月';
+
+            const slider = document.getElementById('monthSlider');
+            const offsets = [-1, 0, 1];
+            let html = '';
+            offsets.forEach(off => {
+                const d = new Date(base);
+                d.setMonth(d.getMonth() + off);
+                html += `<div class="slide">${buildMonthContent(d.getFullYear(), d.getMonth())}</div>`;
+            });
+            slider.innerHTML = html;
+            slider.querySelectorAll('.month-view .day-cell').forEach(el => {
+                const locked = el.dataset.locked === 'true';
+                el.addEventListener('click', function(e) {
+                    if (locked) return;
+                    if (e.target.closest('.ev-label') && e.target.dataset.id) {
+                        e.stopPropagation();
+                        openEditEventModal(e.target.dataset.id);
+                        return;
+                    }
+                    openModal(this.dataset.date, 9);
+                });
+                if (!locked) {
+                    el.querySelectorAll('.ev-label[data-id]').forEach(label => {
+                        label.style.cursor = 'pointer';
+                        label.title = '点击编辑';
+                        label.addEventListener('contextmenu', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            showContextMenu(e, this, { type: 'event', id: this.dataset.id });
+                        });
+                    });
+                }
+            });
+            resetSliderToCenter('monthSlider');
+        }
+
+        function buildMonthContent(year, month) {
             const daysInMonth = getMonthDays(year, month);
             const firstDay = getDayOfWeek(year, month, 1);
-            const prevMonthDays = getMonthDays(year, month - 1);
-            const grid = document.getElementById('monthGrid');
-            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
             const todayStr = formatDate(today());
-            let html = `<div class="month-grid">`;
-            weekdays.forEach(w => { html +=
-                    `<div style="background:var(--bg);padding:6px 4px;text-align:center;font-weight:600;font-size:13px;color:var(--text-secondary);">${w}</div>`; });
+            let html = '<div class="month-view" style="height:100%;"><div class="month-grid">';
+            ['日', '一', '二', '三', '四', '五', '六'].forEach(w => {
+                html +=
+                    `<div style="background:var(--bg);padding:6px 4px;text-align:center;font-weight:600;font-size:13px;color:var(--text-secondary);">${w}</div>`;
+            });
             const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
             for (let i = 0; i < totalCells; i++) {
                 let day, isOtherMonth = false;
-                if (i < firstDay) { day = prevMonthDays - firstDay + i + 1;
-                    isOtherMonth = true; } else if (i >= firstDay + daysInMonth) { day = i - firstDay - daysInMonth + 1;
+                if (i < firstDay) { day = (getMonthDays(year, month - 1) - firstDay + i + 1);
+                    isOtherMonth = true; } else if (i >= firstDay + daysInMonth) { day = i - firstDay - daysInMonth +
+                    1;
                     isOtherMonth = true; } else { day = i - firstDay + 1; }
                 const d = new Date(year, month, day);
                 const ds = formatDate(d);
                 const isToday = ds === todayStr;
+                const locked = isPastDate(ds);
+                const lockedClass = locked ? ' locked' : '';
                 const evs = getEventsForDate(ds);
-                html += `<div class="day-cell" data-date="${ds}">
-                    <span class="day-num ${isToday?'today':''} ${isOtherMonth?'other-month':''}">${day}</span>
-                    <div class="ev-dots">
-                        ${evs.slice(0,3).map(e => `<span class="ev-label" data-id="${e.id}">${escapeHtml(e.title)}</span>`).join('')}
-                        ${evs.length>3?`<span class="ev-label" style="background:transparent;color:var(--text-secondary);">+${evs.length-3}</span>`:''}
-                    </div>
-                </div>`;
+                html +=
+                    `<div class="day-cell${lockedClass}" data-date="${ds}" data-locked="${locked}">
+                            <span class="day-num ${isToday ? 'today' : ''} ${isOtherMonth ? 'other-month' : ''}">${day}</span>
+                            <div class="ev-dots">
+                                ${evs.slice(0,3).map(e => `<span class="ev-label" data-id="${e.id}">${escapeHtml(e.title)}</span>`).join('')}
+                                ${evs.length>3 ? `<span class="ev-label" style="background:transparent;color:var(--text-secondary);">+${evs.length-3}</span>` : ''}
+                            </div>
+                        </div>`;
             }
-            html += `</div>`;
-            grid.innerHTML = html;
-            grid.querySelectorAll('.day-cell').forEach(el => el.addEventListener('click', function(e) {
-                if (e.target.closest('.ev-label') && e.target.dataset.id) {
-                    e.stopPropagation();
-                    openEditEventModal(e.target.dataset.id);
-                    return;
-                }
-                openModal(this.dataset.date, 9);
-            }));
-            grid.querySelectorAll('.ev-label[data-id]').forEach(el => {
-                el.style.cursor = 'pointer';
-                el.title = '点击编辑';
-                el.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    showContextMenu(e, this, { type: 'event', id: this.dataset.id });
-                });
-            });
+            html += '</div></div>';
+            return html;
+        }
+
+        function formatDateWeek(d) {
+            const w = ['日', '一', '二', '三', '四', '五', '六'];
+            return (d.getMonth() + 1) + '/' + d.getDate() + ' 周' + w[d.getDay()];
+        }
+
+        function resetSliderToCenter(sliderId) {
+            const slider = document.getElementById(sliderId);
+            slider.classList.add('no-transition');
+            slider.style.transform = 'translateX(-33.333%)';
+            void slider.offsetHeight;
+            slider.classList.remove('no-transition');
         }
 
         // ================================================================
-        //  弹窗
+        //  滑动控制器
+        // ================================================================
+        function initSwipe(wrapId, onSwipe) {
+            const wrap = document.getElementById(wrapId);
+            if (wrap.dataset.swipeInited === 'true') return;
+            wrap.dataset.swipeInited = 'true';
+
+            const slider = wrap.querySelector('.slider');
+            let startX = 0,
+                startY = 0;
+            let currentTranslate = -33.333;
+            let isDragging = false,
+                isHorizontal = false;
+            const threshold = 0.2;
+
+            function onStart(e) {
+                const touch = e.touches ? e.touches[0] : e;
+                startX = touch.clientX;
+                startY = touch.clientY;
+                isDragging = true;
+                isHorizontal = false;
+                slider.classList.add('no-transition');
+                if (e.cancelable) e.preventDefault();
+            }
+
+            function onMove(e) {
+                if (!isDragging) return;
+                const touch = e.touches ? e.touches[0] : e;
+                const dx = touch.clientX - startX;
+                const dy = touch.clientY - startY;
+                if (!isHorizontal) {
+                    if (Math.abs(dx) > Math.abs(dy) + 15) {
+                        isHorizontal = true;
+                    } else if (Math.abs(dy) > Math.abs(dx) + 15) {
+                        isDragging = false;
+                        slider.classList.remove('no-transition');
+                        return;
+                    } else {
+                        return;
+                    }
+                }
+                if (!isHorizontal) return;
+                e.preventDefault();
+                const containerWidth = wrap.offsetWidth;
+                const percent = (dx / containerWidth) * 100;
+                let newTranslate = currentTranslate + percent;
+                if (newTranslate > -33.333 + 33.333) newTranslate = -33.333 + 33.333;
+                if (newTranslate < -33.333 - 33.333) newTranslate = -33.333 - 33.333;
+                slider.style.transform = `translateX(${newTranslate}%)`;
+            }
+
+            function onEnd(e) {
+                if (!isDragging || !isHorizontal) {
+                    isDragging = false;
+                    slider.classList.remove('no-transition');
+                    return;
+                }
+                isDragging = false;
+                const containerWidth = wrap.offsetWidth;
+                const dx = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX) - startX;
+                const ratio = dx / containerWidth;
+                let direction = 0;
+                if (ratio < -threshold) direction = 1;
+                else if (ratio > threshold) direction = -1;
+
+                if (direction !== 0) {
+                    onSwipe(direction);
+                } else {
+                    resetSliderToCenter(slider.id);
+                }
+                currentTranslate = -33.333;
+            }
+
+            wrap.addEventListener('touchstart', onStart, { passive: false });
+            wrap.addEventListener('touchmove', onMove, { passive: false });
+            wrap.addEventListener('touchend', onEnd);
+            wrap.addEventListener('touchcancel', onEnd);
+
+            wrap.addEventListener('mousedown', function(e) {
+                if (e.button !== 0) return;
+                onStart(e);
+
+                function mouseMove(ev) { onMove(ev); }
+
+                function mouseUp(ev) {
+                    onEnd(ev);
+                    document.removeEventListener('mousemove', mouseMove);
+                    document.removeEventListener('mouseup', mouseUp);
+                }
+                document.addEventListener('mousemove', mouseMove);
+                document.addEventListener('mouseup', mouseUp);
+                e.preventDefault();
+            });
+            wrap.addEventListener('selectstart', function(e) { e.preventDefault(); });
+        }
+
+        function onDaySwipe(delta) { dayOffset += delta;
+            renderDayView(); }
+
+        function onWeekSwipe(delta) { const newStart = new Date(weekStartDate);
+            newStart.setDate(newStart.getDate() + delta * 7);
+            weekStartDate = newStart;
+            renderWeekView(); }
+
+        function onMonthSwipe(delta) { monthOffset += delta;
+            renderMonthView(); }
+
+        // ================================================================
+        //  事件弹窗
         // ================================================================
         let modalDate = '',
-            modalHour = 9;
-        let editingEventId = null;
+            modalHour = 9,
+            editingEventId = null;
 
         function openModal(date, hour) {
+            if (isDateTimePast(date, hour)) return;
             editingEventId = null;
             modalDate = date;
             modalHour = hour;
@@ -2266,7 +3299,7 @@
             if (editingEventId) {
                 const ev = events.find(e => e.id === editingEventId);
                 if (ev) { ev.title = title;
-                    ev.time = time || '09:00';
+                    ev.time = time;
                     ev.desc = desc;
                     ev.date = modalDate; }
             } else {
@@ -2275,6 +3308,21 @@
             DB.set('events', events);
             closeModal();
             refreshCurrentScheduleView();
+        }
+
+        function openEditEventModal(eventId) {
+            const ev = events.find(e => e.id === eventId);
+            if (!ev) return;
+            if (isDateTimePast(ev.date, parseInt(ev.time.split(':')[0]))) return;
+            editingEventId = eventId;
+            document.getElementById('modalTitle').textContent = '编辑事件 · ' + ev.date;
+            document.getElementById('modalEventTitle').value = ev.title;
+            document.getElementById('modalEventTime').value = ev.time;
+            document.getElementById('modalEventDesc').value = ev.desc || '';
+            modalDate = ev.date;
+            modalHour = parseInt(ev.time.split(':')[0]);
+            document.getElementById('eventModal').classList.add('open');
+            document.getElementById('modalEventTitle').focus();
         }
 
         function refreshCurrentScheduleView() {
@@ -2293,7 +3341,7 @@
         document.getElementById('modalConfirm').addEventListener('click', confirmModal);
         document.getElementById('eventModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') { if (document.getElementById('eventModal').classList.contains('open')) closeModal(); }
+            if (e.key === 'Escape' && document.getElementById('eventModal').classList.contains('open')) closeModal();
             if (e.key === 'Enter' && document.getElementById('eventModal').classList.contains('open')) {
                 if (['modalEventTitle', 'modalEventTime', 'modalEventDesc'].includes(document.activeElement.id))
                     confirmModal();
@@ -2301,27 +3349,83 @@
         });
 
         // ================================================================
-        //  页面切换 & 导航
+        //  Tab 滑动切换
         // ================================================================
+        let touchStartXTab = 0,
+            touchStartYTab = 0,
+            isSwipingTab = false;
+        const contentAreaTab = document.getElementById('noteContentArea');
+        const tabsContainer = document.getElementById('noteTabs');
+
+        function getActiveTabIndex() {
+            const tabs = tabsContainer.querySelectorAll('.tab');
+            for (let i = 0; i < tabs.length; i++)
+                if (tabs[i].classList.contains('active')) return i;
+            return 0;
+        }
+
+        function switchTabByIndex(index) {
+            const tabs = tabsContainer.querySelectorAll('.tab');
+            if (index >= 0 && index < tabs.length) tabs[index].click();
+        }
+        contentAreaTab.addEventListener('touchstart', function(e) {
+            touchStartXTab = e.touches[0].clientX;
+            touchStartYTab = e.touches[0].clientY;
+            isSwipingTab = false;
+        }, { passive: true });
+        contentAreaTab.addEventListener('touchmove', function(e) {
+            const dx = e.touches[0].clientX - touchStartXTab;
+            const dy = e.touches[0].clientY - touchStartYTab;
+            if (Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy) * 1.2) { isSwipingTab = true;
+                e.preventDefault(); }
+        }, { passive: false });
+        contentAreaTab.addEventListener('touchend', function(e) {
+            if (!isSwipingTab) return;
+            const dx = e.changedTouches[0].clientX - touchStartXTab;
+            if (Math.abs(dx) < 40) return;
+            const idx = getActiveTabIndex();
+            if (dx < 0) switchTabByIndex(idx + 1);
+            else switchTabByIndex(idx - 1);
+            isSwipingTab = false;
+        });
+
+        document.querySelectorAll('#notePage .tabs .tab').forEach(el => {
+            el.addEventListener('click', function() {
+                const parent = this.closest('.page');
+                parent.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const tabId = this.dataset.tab;
+                parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(tabId).classList.add('active');
+                if (tabId === 'noteTab') { renderNoteCalendar();
+                    renderNoteList(); }
+            });
+        });
+
+        document.getElementById('todoAddBtn').addEventListener('click', function() {
+            const input = document.getElementById('todoInput');
+            addTodo(input.value);
+            input.value = '';
+            input.focus();
+        });
+        document.getElementById('todoInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') document.getElementById('todoAddBtn').click();
+        });
+
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
-            if (pageId === 'dayPlanPage') renderDayView();
-            else if (pageId === 'weekPlanPage') renderWeekView();
-            else if (pageId === 'monthPlanPage') renderMonthView();
-            else if (pageId === 'notePage') {
-                renderNoteCalendar();
-                renderNoteList();
-            }
+            if (pageId === 'dayPlanPage') { renderDayView();
+                initSwipe('daySliderWrap', onDaySwipe); } else if (pageId === 'weekPlanPage') { renderWeekView();
+                initSwipe('weekSliderWrap', onWeekSwipe); } else if (pageId === 'monthPlanPage') { renderMonthView();
+                initSwipe('monthSliderWrap', onMonthSwipe); } else if (pageId === 'notePage') { renderNoteCalendar();
+                renderNoteList(); }
         }
 
-        document.querySelectorAll('.home-card[data-page]').forEach(el => el.addEventListener('click', function() {
-            showPage(this.dataset.page);
-        }));
-        document.querySelectorAll('.back-btn[data-back]').forEach(el => el.addEventListener('click', function() {
-            showPage(this.dataset.back);
-        }));
-
+        document.querySelectorAll('.home-card[data-page]').forEach(el => el.addEventListener('click', function() { showPage(
+            this.dataset.page); }));
+        document.querySelectorAll('.back-btn[data-back]').forEach(el => el.addEventListener('click', function() { showPage(
+            this.dataset.back); }));
         document.querySelectorAll('.choice-card[data-plan]').forEach(el => {
             el.addEventListener('click', function() {
                 const plan = this.dataset.plan;
@@ -2331,34 +3435,34 @@
             });
         });
 
-        function setupNav(prefix, renderFn) {
-            const prev = document.getElementById(prefix + 'Prev');
-            const next = document.getElementById(prefix + 'Next');
-            const todayBtn = document.getElementById(prefix + 'Today');
-            if (prev) prev.addEventListener('click', function() {
-                if (prefix === 'day') dayOffset--;
-                else if (prefix === 'week') weekOffset--;
-                else if (prefix === 'month') monthOffset--;
-                renderFn();
+        function setupNav(prefix, renderFn, offsetType) {
+            document.getElementById(prefix + 'Prev').addEventListener('click', function() {
+                if (offsetType === 'day') { dayOffset--;
+                    renderFn(); } else if (offsetType === 'week') { weekStartDate.setDate(weekStartDate
+                        .getDate() - 7);
+                    renderFn(); } else { monthOffset--;
+                    renderFn(); }
             });
-            if (next) next.addEventListener('click', function() {
-                if (prefix === 'day') dayOffset++;
-                else if (prefix === 'week') weekOffset++;
-                else if (prefix === 'month') monthOffset++;
-                renderFn();
+            document.getElementById(prefix + 'Next').addEventListener('click', function() {
+                if (offsetType === 'day') { dayOffset++;
+                    renderFn(); } else if (offsetType === 'week') { weekStartDate.setDate(weekStartDate
+                        .getDate() + 7);
+                    renderFn(); } else { monthOffset++;
+                    renderFn(); }
             });
-            if (todayBtn) todayBtn.addEventListener('click', function() {
-                if (prefix === 'day') dayOffset = 0;
-                else if (prefix === 'week') weekOffset = 0;
-                else if (prefix === 'month') monthOffset = 0;
-                renderFn();
+            document.getElementById(prefix + 'Today').addEventListener('click', function() {
+                if (offsetType === 'day') { dayOffset = 0;
+                    renderFn(); } else if (offsetType === 'week') { const d = new Date();
+                    d.setDate(d.getDate() - d.getDay());
+                    weekStartDate = d;
+                    renderFn(); } else { monthOffset = 0;
+                    renderFn(); }
             });
         }
-        setupNav('day', renderDayView);
-        setupNav('week', renderWeekView);
-        setupNav('month', renderMonthView);
+        setupNav('day', renderDayView, 'day');
+        setupNav('week', renderWeekView, 'week');
+        setupNav('month', renderMonthView, 'month');
 
-        // 快捷键
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.shiftKey && e.key === 'N') { e.preventDefault();
                 showPage('notePage'); }
@@ -2368,28 +3472,23 @@
                 showPage('homePage'); }
         });
 
-        // ================================================================
-        //  启动
-        // ================================================================
         function init() {
             renderTodos();
-            // 默认选中今天
             noteSelectedDate = formatDate(today());
             renderNoteCalendar();
             renderNoteList();
             renderDayView();
             renderWeekView();
             renderMonthView();
-            // 如果noteTab是激活状态，刷新
-            if (document.getElementById('noteTab').classList.contains('active')) {
-                renderNoteCalendar();
-                renderNoteList();
-            }
+            initSwipe('daySliderWrap', onDaySwipe);
+            initSwipe('weekSliderWrap', onWeekSwipe);
+            initSwipe('monthSliderWrap', onMonthSwipe);
+            if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+            const label = document.getElementById('noteListDate').textContent;
+            document.getElementById('noteDateInput').placeholder = `写便条 (${label.replace('📅 ', '').replace(' 🔒', '')})`;
         }
         init();
-        console.log('📋 云笺 v2.0 已启动 (便条日历左右布局 + 触屏滑动)');
-        console.log('快捷键: Ctrl+Shift+H 主页 | Ctrl+Shift+N 日常 | Ctrl+Shift+C 日程');
-        console.log('✨ 新功能: 日历左右布局 · 触屏滑动切换 · 过去日期可写便条');
+        console.log('📋 云笺 v4.1 移动端日历完整显示优化版');
     </script>
 </body>
 </html>
