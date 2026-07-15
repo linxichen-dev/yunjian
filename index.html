@@ -29,6 +29,7 @@
         body {
             background: var(--bg);
             height: 100vh;
+            height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -304,135 +305,179 @@
             background: var(--primary-dark);
             transform: scale(0.97);
         }
-        .todo-list {
-            list-style: none;
-            padding: 0 0 60px 0;
-            flex: 1;
-        }
-        .todo-list li {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 10px 14px;
-            background: var(--bg);
-            border-radius: var(--radius-sm);
-            margin-bottom: 6px;
-            border: 1px solid transparent;
-            transition: var(--transition);
-            position: relative;
-        }
-        .todo-list li:hover {
-            border-color: var(--border);
-            background: var(--card);
-        }
-        .todo-list li .check {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: var(--transition);
-            font-size: 12px;
-            color: transparent;
-            background: var(--card);
-            margin-top: 3px;
-        }
-        .todo-list li .check.done {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: #fff;
-        }
-        .todo-list li .todo-content {
-            flex: 1;
-            min-width: 0;
-        }
-        .todo-list li .text {
-            display: block;
-            font-size: 15px;
-            word-break: break-word;
-            cursor: pointer;
-            line-height: 1.45;
-        }
-        .todo-list li .text.done-text {
-            text-decoration: line-through;
-            color: var(--text-secondary);
-        }
-        .todo-list li .text input.edit-input {
-            width: 100%;
-            padding: 4px 8px;
-            border: 1.5px solid var(--primary);
-            border-radius: 6px;
-            font-size: 14px;
-            outline: none;
-            background: var(--card);
-        }
-        .todo-list li .del {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 18px;
-            padding: 0 6px;
-            opacity: 0.4;
-            transition: var(--transition);
-            align-self: center;
-        }
-        .todo-list li .del:hover {
-            opacity: 1;
-            color: #e74c3c;
-        }
-        .todo-list li .type-badge {
-            font-size: 11px;
-            padding: 2px 10px;
-            border-radius: 12px;
-            background: var(--border);
-            color: var(--text-secondary);
-            white-space: nowrap;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 2px;
-        }
-        .todo-list li .type-badge .arrow {
-            font-size: 10px;
-            opacity: 0.7;
-            display: none;
-        }
-        .todo-list li .type-badge.hard {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-        .todo-list li .type-badge.flexible {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        .todo-list li .type-badge.today {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        .todo-list li .remind-info {
-            font-size: 11px;
-            color: var(--text-secondary);
-            white-space: nowrap;
-        }
-        .todo-list li .todo-meta {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px 8px;
-            margin-top: 5px;
-            min-height: 20px;
-        }
-        .todo-list li .plan-detail {
-            font-size: 11px;
-            color: var(--text-secondary);
-            white-space: nowrap;
-        }
+   .todo-list {
+    flex: 1;
+    list-style: none;
+    padding: 0 0 60px;
+}
+
+.todo-list li {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    margin-bottom: 6px;
+    padding: 8px 11px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    transition: var(--transition);
+}
+
+.todo-list li:hover {
+    border-color: var(--border);
+    background: var(--card);
+}
+
+.todo-list li .check {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    background: var(--card);
+    color: transparent;
+    font-size: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.todo-list li .check.done {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: #fff;
+}
+
+.todo-list li .todo-content {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.todo-list li .text {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 48px;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.35;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.todo-list li .text.done-text {
+    color: var(--text-secondary);
+    text-decoration: line-through;
+}
+
+.todo-list li .text input.edit-input {
+    width: 100%;
+    min-width: 48px;
+    padding: 3px 7px;
+    border: 1.5px solid var(--primary);
+    border-radius: 6px;
+    outline: none;
+    background: var(--card);
+    font-size: 13px;
+}
+
+.todo-list li .del {
+    align-self: center;
+    flex-shrink: 0;
+    padding: 0 5px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    font-size: 18px;
+    line-height: 1;
+    opacity: 0.4;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.todo-list li .del:hover {
+    color: #e74c3c;
+    opacity: 1;
+}
+
+.todo-list li .todo-meta {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 5px;
+    min-height: 0;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.todo-list li .type-badge {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 2px;
+    min-height: 22px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: var(--border);
+    color: var(--text-secondary);
+    font-size: 10px;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.todo-list li .type-badge:hover {
+    filter: brightness(0.97);
+    transform: translateY(-1px);
+}
+
+.todo-list li .type-badge .arrow {
+    display: inline;
+    font-size: 9px;
+    opacity: 0.7;
+}
+
+.todo-list li .type-badge.today {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.todo-list li .type-badge.cycle {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.todo-list li .type-badge.deadline {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.todo-list li .type-badge.flexible {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.todo-list li .remind-info,
+.todo-list li .plan-detail {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+    font-size: 10px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
         .empty-state {
             text-align: center;
             padding: 40px 0;
@@ -857,81 +902,114 @@
             margin-bottom: 8px;
             opacity: 0.4;
         }
-        .schedule-view {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        .schedule-nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 6px 0 14px;
-            flex-shrink: 0;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .schedule-nav .nav-title {
-            font-size: 17px;
-            font-weight: 600;
-            min-width: 120px;
-            text-align: center;
-        }
-        .schedule-nav .nav-btn {
-            background: var(--bg);
-            border: none;
-            padding: 6px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-weight: 500;
-            color: var(--text-secondary);
-            touch-action: manipulation;
-        }
-        .schedule-nav .nav-btn:hover {
-            background: var(--border);
-            color: var(--text);
-        }
-        .schedule-nav .nav-btn.today-btn {
-            background: var(--primary);
-            color: #fff;
-        }
-        .schedule-nav .nav-btn.today-btn:hover {
-            background: var(--primary-dark);
-        }
-        .slider-wrap {
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        .slider-wrap .slider {
-            display: flex;
-            width: 300%;
-            height: 100%;
-            transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
-            will-change: transform;
-        }
-        .slider-wrap .slider.no-transition {
-            transition: none !important;
-        }
-        .slider-wrap .slide {
-            width: 33.333%;
-            height: 100%;
-            flex-shrink: 0;
-            overflow-y: auto;
-            padding: 0 4px;
-        }
-        .slider-wrap .slide::-webkit-scrollbar {
-            width: 4px;
-        }
-        .slider-wrap .slide::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 8px;
-        }
+       .schedule-view {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    height: auto;
+    overflow: hidden;
+}
+
+.schedule-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 6px 0 14px;
+}
+
+.schedule-nav .nav-title {
+    min-width: 120px;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.schedule-nav .nav-btn {
+    flex-shrink: 0;
+    padding: 6px 16px;
+    border: none;
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: var(--transition);
+}
+
+.schedule-nav .nav-btn:hover {
+    background: var(--border);
+    color: var(--text);
+}
+
+.schedule-nav .nav-btn.today-btn {
+    background: var(--primary);
+    color: #fff;
+}
+
+.schedule-nav .nav-btn.today-btn:hover {
+    background: var(--primary-dark);
+}
+
+.slider-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.slider-wrap .slider {
+    display: flex;
+    width: 300%;
+    height: 100%;
+    min-height: 0;
+    transition:
+        transform 0.3s
+        cubic-bezier(0.25, 0.1, 0.25, 1);
+    will-change: transform;
+}
+
+.slider-wrap .slider.no-transition {
+    transition: none !important;
+}
+
+.slider-wrap .slide {
+    width: 33.333%;
+    height: 100%;
+    min-height: 0;
+    flex-shrink: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0 4px;
+    touch-action: pan-y;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 日、周视图底部留出空间，确保23点完整可见 */
+#daySlider .slide,
+#weekSlider .slide {
+    padding-bottom: 32px;
+    scroll-padding-bottom: 32px;
+}
+
+.slider-wrap .slide::-webkit-scrollbar {
+    width: 4px;
+}
+
+.slider-wrap .slide::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    background: var(--border);
+}
+
         .day-view .hour-row {
             display: flex;
             align-items: stretch;
@@ -1458,6 +1536,7 @@
         @media (max-width: 680px) {
             #app {
                 height: 96vh;
+                height: 96dvh;
                 max-height: none;
                 border-radius: 12px;
             }
@@ -1603,43 +1682,66 @@
                 margin-left: 10px;
             }
         }
-        @media (hover: none) and (pointer: coarse) {
-            .todo-list li .type-badge {
-                font-size: 13px;
-                padding: 6px 14px;
-                border-radius: 16px;
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-                font-weight: 500;
-                gap: 4px;
-            }
-            .todo-list li .type-badge .arrow {
-                display: inline;
-                font-size: 12px;
-            }
-            .todo-list li .del {
-                font-size: 22px;
-                padding: 4px 10px;
-                opacity: 0.6;
-            }
-            .todo-list li .check {
-                width: 24px;
-                height: 24px;
-                font-size: 14px;
-            }
-            .todo-list li .text {
-                font-size: 16px;
-            }
-            .todo-list li .text.done-text {
-                cursor: default;
-            }
-            .todo-list li[data-done="true"] .type-badge {
-                pointer-events: none;
-                opacity: 0.7;
-            }
-            .todo-list li[data-done="true"] .text {
-                pointer-events: none;
-            }
-        }
+       @media (hover: none) and (pointer: coarse) {
+    .todo-list li {
+        gap: 6px;
+        padding: 8px 9px;
+    }
+
+    .todo-list li .type-badge {
+        min-height: 24px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: 500;
+        gap: 2px;
+        box-shadow: none;
+        touch-action: manipulation;
+    }
+
+    .todo-list li .type-badge .arrow {
+        display: inline;
+        font-size: 9px;
+    }
+
+    .todo-list li .remind-info,
+    .todo-list li .plan-detail {
+        font-size: 10px;
+    }
+
+    .todo-list li .del {
+        font-size: 19px;
+        padding: 2px 5px;
+        opacity: 0.6;
+    }
+
+    .todo-list li .check {
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+        margin-top: 0;
+    }
+
+    .todo-list li .text {
+        font-size: 14px;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+
+    .todo-list li .text.done-text {
+        cursor: pointer;
+    }
+
+    .todo-list li[data-done="true"] .type-badge {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .todo-list li[data-done="true"] .text {
+        pointer-events: auto;
+    }
+}
+
     </style>
 </head>
 <body>
@@ -1679,7 +1781,7 @@
                         <button id="todoAddBtn">添加</button>
                     </div>
                     <ul class="todo-list" id="todoList"></ul>
-                    <button class="fab-add-todo" id="fabAddTodo" title="快速添加硬计划/灵活计划">+</button>
+                    <button class="fab-add-todo" id="fabAddTodo" title="快速添加硬计划/微习惯">+</button>
                 </div>
                 <div id="noteTab" class="tab-content">
                     <div class="note-layout">
@@ -1802,59 +1904,206 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="hardModal">
-        <div class="modal-box">
-            <h3>🔴 配置硬计划</h3>
-            <div class="hard-config">
-                <div class="mode-switch">
-                    <button class="active" data-mode="cycle">🔄 循环</button>
-                    <button data-mode="deadline">⏰ Deadline</button>
-                </div>
-                <div class="mode-panel active" data-mode="cycle">
-                    <div class="row">
-                        <label>周期</label>
-                        <select id="hardCycle">
-                            <option value="daily">每天</option>
-                            <option value="weekly">每周</option>
-                            <option value="monthly">每月</option>
-                        </select>
-                    </div>
-                    <div class="row">
-                        <label>时间</label>
-                        <input type="time" id="hardCycleTime" value="09:00" />
-                    </div>
-                </div>
-                <div class="mode-panel" data-mode="deadline">
-                    <div class="row">
-                        <label>日期</label>
-                        <input type="date" id="hardDeadlineDate" />
-                    </div>
-                    <div class="row">
-                        <label>时间</label>
-                        <input type="time" id="hardDeadlineTime" value="09:00" />
-                    </div>
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" id="hardModalCancel">取消</button>
-                <button class="btn-confirm" id="hardModalConfirm">确认</button>
-            </div>
-        </div>
-    </div>
+ <div class="modal-overlay" id="hardModal">
+    <div class="modal-box">
+        <h3 id="hardModalTitle">🔴 配置硬计划</h3>
 
-    <div class="modal-overlay" id="quickAddModal">
-        <div class="modal-box" style="max-width:400px;">
-            <h3>快速添加计划</h3>
-            <input type="text" id="quickAddTitle" placeholder="输入任务标题…" maxlength="80" />
-            <div class="modal-actions" style="justify-content:center; margin-top:20px;">
-                <button class="btn-confirm" id="quickAddHard" style="background:#fee2e2; color:#b91c1c; border:1px solid #e5b8b8;">🔴 硬计划</button>
-                <button class="btn-confirm" id="quickAddFlexible" style="background:#d1fae5; color:#065f46; border:1px solid #b8d9c2;">🌱 灵活计划</button>
+        <div class="hard-config">
+            <div class="mode-switch" id="hardModeSwitch">
+                <button
+                    class="active"
+                    data-mode="cycle"
+                >
+                    🔄 循环
+                </button>
+
+                <button data-mode="deadline">
+                    ⏳ Deadline
+                </button>
             </div>
-            <div class="modal-actions" style="justify-content:center;">
-                <button class="btn-cancel" id="quickAddCancel">取消</button>
+
+            <div
+                class="mode-panel active"
+                data-mode="cycle"
+            >
+                <div class="row">
+                    <label for="hardCycle">周期</label>
+
+                    <select id="hardCycle">
+                        <option value="daily">每日</option>
+                        <option value="weekly">每周</option>
+                        <option value="monthly">每月</option>
+                    </select>
+                </div>
+
+                <div
+                    class="row"
+                    id="hardWeekdayRow"
+                    style="display:none;"
+                >
+                    <label for="hardWeekday">星期</label>
+
+                    <select id="hardWeekday">
+                        <option value="1">周一</option>
+                        <option value="2">周二</option>
+                        <option value="3">周三</option>
+                        <option value="4">周四</option>
+                        <option value="5">周五</option>
+                        <option value="6">周六</option>
+                        <option value="0">周日</option>
+                    </select>
+                </div>
+
+                <div
+                    class="row"
+                    id="hardMonthDayRow"
+                    style="display:none;"
+                >
+                    <label for="hardMonthDay">日期</label>
+
+                    <select id="hardMonthDay">
+                        <option value="1">1日</option>
+                        <option value="2">2日</option>
+                        <option value="3">3日</option>
+                        <option value="4">4日</option>
+                        <option value="5">5日</option>
+                        <option value="6">6日</option>
+                        <option value="7">7日</option>
+                        <option value="8">8日</option>
+                        <option value="9">9日</option>
+                        <option value="10">10日</option>
+                        <option value="11">11日</option>
+                        <option value="12">12日</option>
+                        <option value="13">13日</option>
+                        <option value="14">14日</option>
+                        <option value="15">15日</option>
+                        <option value="16">16日</option>
+                        <option value="17">17日</option>
+                        <option value="18">18日</option>
+                        <option value="19">19日</option>
+                        <option value="20">20日</option>
+                        <option value="21">21日</option>
+                        <option value="22">22日</option>
+                        <option value="23">23日</option>
+                        <option value="24">24日</option>
+                        <option value="25">25日</option>
+                        <option value="26">26日</option>
+                        <option value="27">27日</option>
+                        <option value="28">28日</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <label for="hardCycleTime">时间</label>
+
+                    <input
+                        type="time"
+                        id="hardCycleTime"
+                        value="09:00"
+                    />
+                </div>
+            </div>
+
+            <div
+                class="mode-panel"
+                data-mode="deadline"
+            >
+                <div class="row">
+                    <label for="hardDeadlineDate">
+                        日期
+                    </label>
+
+                    <input
+                        type="date"
+                        id="hardDeadlineDate"
+                    />
+                </div>
+
+                <div class="row">
+                    <label for="hardDeadlineTime">
+                        时间
+                    </label>
+
+                    <input
+                        type="time"
+                        id="hardDeadlineTime"
+                        value="09:00"
+                    />
+                </div>
             </div>
         </div>
+
+        <div class="modal-actions">
+            <button
+                class="btn-cancel"
+                id="hardModalCancel"
+            >
+                取消
+            </button>
+
+            <button
+                class="btn-confirm"
+                id="hardModalConfirm"
+            >
+                确认
+            </button>
+        </div>
     </div>
+</div>
+
+<div class="modal-overlay" id="quickAddModal">
+    <div class="modal-box" style="max-width:400px;">
+        <h3>快速添加计划</h3>
+
+        <input
+            type="text"
+            id="quickAddTitle"
+            placeholder="输入任务标题…"
+            maxlength="80"
+        />
+
+        <div
+            class="modal-actions"
+            style="justify-content:center; margin-top:20px;"
+        >
+            <button
+                class="btn-confirm"
+                id="quickAddHard"
+                style="
+                    background:#fee2e2;
+                    color:#b91c1c;
+                    border:1px solid #e5b8b8;
+                "
+            >
+                🔴 硬计划
+            </button>
+
+            <button
+                class="btn-confirm"
+                id="quickAddFlexible"
+                style="
+                    background:#d1fae5;
+                    color:#065f46;
+                    border:1px solid #b8d9c2;
+                "
+            >
+                🌱 微习惯
+            </button>
+        </div>
+
+        <div
+            class="modal-actions"
+            style="justify-content:center;"
+        >
+            <button
+                class="btn-cancel"
+                id="quickAddCancel"
+            >
+                取消
+            </button>
+        </div>
+    </div>
+</div>
 
     <div class="modal-overlay" id="reminderModal">
         <div class="modal-box" style="max-width:480px;">
@@ -1895,715 +2144,2298 @@
             // ================================================================
             // 数据层
             // ================================================================
-            const DB = {
-                get(key, fallback) {
-                    try {
-                        const raw = localStorage.getItem('desk_' + key);
-                        return raw ? JSON.parse(raw) : fallback;
-                    } catch { return fallback; }
-                },
-                set(key, val) {
-                    localStorage.setItem('desk_' + key, JSON.stringify(val));
-                }
-            };
+           const DB = {
+    get(key, fallback) {
+        try {
+            const raw =
+                localStorage.getItem('desk_' + key);
 
-            let todos = DB.get('todos', []);
-            todos.forEach(t => {
-                if (t.completedAt === undefined) t.completedAt = null;
-                if (t.nextActiveTime === undefined) t.nextActiveTime = null;
+            return raw
+                ? JSON.parse(raw)
+                : fallback;
+        } catch {
+            return fallback;
+        }
+    },
+
+    set(key, value) {
+        localStorage.setItem(
+            'desk_' + key,
+            JSON.stringify(value)
+        );
+    }
+};
+
+function getTodoReferenceDate(todo) {
+    const firstReminder =
+        todo.remindTimes &&
+        todo.remindTimes.length > 0
+            ? normalizeReminderDateTime(
+                todo.remindTimes[0]
+            )
+            : '';
+
+    if (firstReminder) {
+        const reminderDate =
+            new Date(firstReminder);
+
+        if (!Number.isNaN(reminderDate.getTime())) {
+            return reminderDate;
+        }
+    }
+
+    if (todo.createdAt) {
+        const createdDate = new Date(
+            String(todo.createdAt).replace(' ', 'T')
+        );
+
+        if (!Number.isNaN(createdDate.getTime())) {
+            return createdDate;
+        }
+    }
+
+    return new Date();
+}
+
+let todos = DB.get('todos', []);
+
+if (!Array.isArray(todos)) {
+    todos = [];
+}
+
+/*
+ * 兼容旧版本保存的任务：
+ * 给旧循环任务补上星期几、每月几号等新字段。
+ */
+todos.forEach(todo => {
+    if (todo.completedAt === undefined) {
+        todo.completedAt = null;
+    }
+
+    if (todo.nextActiveTime === undefined) {
+        todo.nextActiveTime = null;
+    }
+
+    if (!Array.isArray(todo.remindTimes)) {
+        todo.remindTimes = [];
+    }
+
+    todo.remindTimes = todo.remindTimes
+        .map(normalizeReminderDateTime)
+        .filter(Boolean);
+
+    const isCycle =
+        todo.type === 'hard' &&
+        todo.hardConfig &&
+        todo.hardConfig.mode === 'cycle';
+
+    if (!isCycle) return;
+
+    const referenceDate =
+        getTodoReferenceDate(todo);
+
+    if (todo.hardConfig.value === 'weekly') {
+        const savedWeekday =
+            Number(todo.hardConfig.weekday);
+
+        if (
+            !Number.isInteger(savedWeekday) ||
+            savedWeekday < 0 ||
+            savedWeekday > 6
+        ) {
+            todo.hardConfig.weekday =
+                referenceDate.getDay();
+        }
+    }
+
+    if (todo.hardConfig.value === 'monthly') {
+        const savedMonthDay =
+            Number(todo.hardConfig.monthDay);
+
+        if (
+            !Number.isInteger(savedMonthDay) ||
+            savedMonthDay < 1 ||
+            savedMonthDay > 28
+        ) {
+            todo.hardConfig.monthDay = Math.min(
+                28,
+                Math.max(1, referenceDate.getDate())
+            );
+        }
+    }
+
+    /*
+     * 已完成的旧循环任务也改成：
+     * 下个周期当天00:00重新出现。
+     */
+    if (todo.done) {
+        const completedDate =
+            todo.completedAt
+                ? new Date(todo.completedAt)
+                : new Date();
+
+        const safeCompletedDate =
+            Number.isNaN(completedDate.getTime())
+                ? new Date()
+                : completedDate;
+
+        const activationDate =
+            getNextCycleActivationDate(
+                todo.hardConfig,
+                safeCompletedDate
+            );
+
+        todo.nextActiveTime =
+            activationDate.getTime();
+
+        todo.remindTimes = [
+            getCycleReminderForActivation(
+                todo.hardConfig,
+                activationDate
+            )
+        ];
+    }
+});
+
+DB.set('todos', todos);
+
+let notes = DB.get('notes', []);
+let events = DB.get('events', []);
+
+if (!Array.isArray(notes)) notes = [];
+if (!Array.isArray(events)) events = [];
+
+let dayOffset = 0;
+let monthOffset = 0;
+let weekStartDate = new Date();
+
+(function initWeekStart() {
+    const date = new Date();
+
+    date.setDate(
+        date.getDate() - date.getDay()
+    );
+
+    weekStartDate = date;
+})();
+
+let noteCalMonthOffset = 0;
+let noteSelectedDate = formatDate(new Date());
+let editingNoteId = null;
+let editingTodoId = null;
+
+/*
+ * 微习惯继续沿用原来的自动提醒节奏。
+ * 内部名称保留不变，以兼容旧数据。
+ */
+const FLEXIBLE_REVIEW_INTERVALS = [
+    { minutes: 20 },
+    { days: 1 },
+    { days: 2 },
+    { days: 4 },
+    { days: 7 },
+    { days: 15 },
+    { days: 30 }
+];
+
+const isTouchDevice =
+    window.matchMedia(
+        '(hover: none) and (pointer: coarse)'
+    ).matches;
+
+function today() {
+    const date = new Date();
+
+    return new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+    );
+}
+
+function formatDate(date) {
+    return (
+        date.getFullYear() +
+        '-' +
+        String(date.getMonth() + 1).padStart(2, '0') +
+        '-' +
+        String(date.getDate()).padStart(2, '0')
+    );
+}
+
+function formatTime(date) {
+    return (
+        String(date.getHours()).padStart(2, '0') +
+        ':' +
+        String(date.getMinutes()).padStart(2, '0')
+    );
+}
+
+function formatDateTime(date) {
+    return formatDate(date) + ' ' + formatTime(date);
+}
+
+function formatReminderDateTime(date) {
+    return formatDate(date) + 'T' + formatTime(date);
+}
+
+function normalizeReminderDateTime(value) {
+    return typeof value === 'string'
+        ? value.replace(' ', 'T')
+        : '';
+}
+
+function getEarliestTodayTime() {
+    const date = new Date();
+
+    date.setSeconds(0, 0);
+    date.setMinutes(date.getMinutes() + 1);
+
+    return date;
+}
+
+function addFlexibleInterval(from, interval) {
+    const date = new Date(from);
+
+    if (interval.minutes) {
+        date.setMinutes(
+            date.getMinutes() + interval.minutes
+        );
+    }
+
+    if (interval.days) {
+        date.setDate(
+            date.getDate() + interval.days
+        );
+    }
+
+    date.setSeconds(0, 0);
+
+    return formatReminderDateTime(date);
+}
+
+function getFlexibleInitialReminder() {
+    return addFlexibleInterval(
+        new Date(),
+        FLEXIBLE_REVIEW_INTERVALS[0]
+    );
+}
+
+function snapshotTodo(todo) {
+    return todo
+        ? JSON.parse(JSON.stringify(todo))
+        : null;
+}
+
+function restoreTodoSnapshot(snapshot) {
+    if (!snapshot) return;
+
+    const index = todos.findIndex(
+        todo => todo.id === snapshot.id
+    );
+
+    if (index >= 0) {
+        todos[index] = snapshot;
+    }
+}
+
+function formatReminderForDisplay(
+    value,
+    withDate = false
+) {
+    const normalized =
+        normalizeReminderDateTime(value);
+
+    if (
+        !normalized ||
+        !normalized.includes('T')
+    ) {
+        return '';
+    }
+
+    const [date, time] = normalized.split('T');
+
+    if (!withDate) {
+        return time;
+    }
+
+    const [year, month, day] =
+        date.split('-').map(Number);
+
+    const currentYear =
+        new Date().getFullYear();
+
+    const prefix =
+        year === currentYear
+            ? `${month}月${day}日`
+            : `${year}年${month}月${day}日`;
+
+    return `${prefix} ${time}`;
+}
+
+function isToday(date) {
+    const current = today();
+
+    return (
+        date.getFullYear() === current.getFullYear() &&
+        date.getMonth() === current.getMonth() &&
+        date.getDate() === current.getDate()
+    );
+}
+
+function isFutureDate(dateString) {
+    const date = new Date(dateString);
+    const current = today();
+
+    return date > current;
+}
+
+function isPastDate(dateString) {
+    const date = new Date(dateString);
+    const current = today();
+
+    return date < current;
+}
+
+function getMonthDays(year, month) {
+    return new Date(
+        year,
+        month + 1,
+        0
+    ).getDate();
+}
+
+function getDayOfWeek(year, month, day) {
+    return new Date(
+        year,
+        month,
+        day
+    ).getDay();
+}
+
+function getEventsForDate(dateString) {
+    return events.filter(
+        event => event.date === dateString
+    );
+}
+
+function getNotesForDate(dateString) {
+    return notes.filter(
+        note => note.date === dateString
+    );
+}
+
+function generateId() {
+    return (
+        Date.now().toString(36) +
+        '_' +
+        Math.random().toString(36).slice(2, 6)
+    );
+}
+
+function escapeHtml(value) {
+    const element =
+        document.createElement('div');
+
+    element.textContent = String(value);
+
+    return element.innerHTML;
+}
+
+function isDateTimePast(dateString, hour) {
+    const now = new Date();
+
+    const [year, month, day] =
+        dateString.split('-').map(Number);
+
+    const target = new Date(
+        year,
+        month - 1,
+        day,
+        hour,
+        0,
+        0
+    );
+
+    return target < now;
+}
+
+          function createTodo(
+    text,
+    type = 'today',
+    config = {}
+) {
+    const now = new Date();
+
+    const todo = {
+        id: generateId(),
+        text: text.trim(),
+        done: false,
+        type,
+        createdAt: formatDateTime(now),
+        remindTimes: [],
+        remindCount: 0,
+        hardConfig: null,
+        completedAt: null,
+        nextActiveTime: null
+    };
+
+    if (type === 'flexible') {
+        todo.remindTimes.push(
+            getFlexibleInitialReminder()
+        );
+
+        todo.remindCount = 0;
+    }
+
+    return todo;
+}
+
+function updateHardConfig(
+    todoId,
+    mode,
+    value,
+    time,
+    cycleOptions = {}
+) {
+    const todo = todos.find(
+        item => item.id === todoId
+    );
+
+    if (!todo) return;
+
+    todo.type = 'hard';
+    todo.remindCount = 0;
+    todo.nextActiveTime = null;
+
+    if (mode === 'cycle') {
+        const hardConfig = {
+            mode: 'cycle',
+            value,
+            time
+        };
+
+        if (value === 'weekly') {
+            hardConfig.weekday = Number(
+                cycleOptions.weekday
+            );
+        }
+
+        if (value === 'monthly') {
+            hardConfig.monthDay = Math.min(
+                28,
+                Math.max(
+                    1,
+                    Number(cycleOptions.monthDay) || 1
+                )
+            );
+        }
+
+        todo.hardConfig = hardConfig;
+
+        todo.remindTimes = [
+            getNextCycleReminderFromNow(
+                hardConfig,
+                new Date()
+            )
+        ];
+    } else {
+        todo.hardConfig = {
+            mode: 'deadline',
+            value,
+            time
+        };
+
+        todo.remindTimes = [
+            value + 'T' + time
+        ];
+    }
+
+    DB.set('todos', todos);
+    renderTodos();
+}
+
+function renderTodos() {
+    const list =
+        document.getElementById('todoList');
+
+    if (todos.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <div class="icon">📭</div>
+                <p>还没有待办事项</p>
+            </div>
+        `;
+
+        return;
+    }
+
+    const undone = todos.filter(
+        todo => !todo.done
+    );
+
+    const done = todos.filter(
+        todo => todo.done
+    );
+
+    done.sort((first, second) => {
+        const firstTime = first.completedAt
+            ? new Date(first.completedAt).getTime()
+            : 0;
+
+        const secondTime = second.completedAt
+            ? new Date(second.completedAt).getTime()
+            : 0;
+
+        return secondTime - firstTime;
+    });
+
+    const doneByType = {
+        today: done.filter(
+            todo => todo.type === 'today'
+        ),
+
+        cycle: done.filter(
+            todo =>
+                todo.type === 'hard' &&
+                (
+                    !todo.hardConfig ||
+                    todo.hardConfig.mode === 'cycle'
+                )
+        ),
+
+        deadline: done.filter(
+            todo =>
+                todo.type === 'hard' &&
+                todo.hardConfig &&
+                todo.hardConfig.mode === 'deadline'
+        ),
+
+        flexible: done.filter(
+            todo => todo.type === 'flexible'
+        )
+    };
+
+    let html = '';
+
+    if (undone.length > 0) {
+        html += undone
+            .map(todo => buildTodoItemHtml(todo))
+            .join('');
+    } else {
+        html += `
+            <div class="empty-state">
+                <div class="icon">✨</div>
+                <p>全部完成，太棒了！</p>
+            </div>
+        `;
+    }
+
+    if (done.length > 0) {
+        html += `
+            <div class="done-section-title">
+                <span class="icon">✅</span>
+                已完成 (${done.length})
+            </div>
+        `;
+
+        const typeGroups = [
+            {
+                label: '📅 今日计划',
+                items: doneByType.today
+            },
+            {
+                label: '🔄 循环',
+                items: doneByType.cycle
+            },
+            {
+                label: '⏳ Deadline',
+                items: doneByType.deadline
+            },
+            {
+                label: '🌱 微习惯',
+                items: doneByType.flexible
+            }
+        ];
+
+        typeGroups.forEach(group => {
+            if (group.items.length === 0) return;
+
+            html += `
+                <div class="done-group-title">
+                    ${group.label}
+                </div>
+
+                <div class="done-group-items">
+                    ${group.items
+                        .map(todo =>
+                            buildTodoItemHtml(todo, true)
+                        )
+                        .join('')}
+                </div>
+            `;
+        });
+    }
+
+    list.innerHTML = html;
+    attachTodoEvents(list);
+}
+
+function escapeAttribute(value) {
+    return escapeHtml(String(value))
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function buildTodoItemHtml(
+    todo,
+    isDoneGroup = false
+) {
+    let typeLabel = '';
+    let detailInfo = '';
+
+    if (todo.type === 'today') {
+        typeLabel = `
+            <span class="type-badge today">
+                📅 今日计划
+                <span class="arrow">▾</span>
+            </span>
+        `;
+
+        const todayString = formatDate(today());
+
+        const reminder = (todo.remindTimes || [])
+            .map(normalizeReminderDateTime)
+            .find(value =>
+                value.startsWith(todayString + 'T')
+            );
+
+        if (reminder) {
+            detailInfo = `
+                <span class="remind-info">
+                    ⏰ ${formatReminderForDisplay(reminder)}
+                </span>
+            `;
+        } else if (!todo.done) {
+            detailInfo = `
+                <span class="remind-info">
+                    未设置提醒
+                </span>
+            `;
+        }
+    } else if (
+        todo.type === 'hard' &&
+        todo.hardConfig &&
+        todo.hardConfig.mode === 'deadline'
+    ) {
+        typeLabel = `
+            <span class="type-badge deadline">
+                ⏳ Deadline
+                <span class="arrow">▾</span>
+            </span>
+        `;
+
+        detailInfo = `
+            <span class="remind-info">
+                ⏰ ${formatReminderForDisplay(
+                    todo.hardConfig.value +
+                    'T' +
+                    todo.hardConfig.time,
+                    true
+                )}
+            </span>
+        `;
+    } else if (todo.type === 'hard') {
+        typeLabel = `
+            <span class="type-badge cycle">
+                🔄 循环
+                <span class="arrow">▾</span>
+            </span>
+        `;
+
+        if (
+            todo.hardConfig &&
+            todo.hardConfig.mode === 'cycle'
+        ) {
+            const weekdays = [
+                '周日',
+                '周一',
+                '周二',
+                '周三',
+                '周四',
+                '周五',
+                '周六'
+            ];
+
+            let cycleText = '每天';
+
+            if (todo.hardConfig.value === 'weekly') {
+                cycleText =
+                    '每' +
+                    weekdays[
+                        Number(todo.hardConfig.weekday) || 0
+                    ];
+            } else if (
+                todo.hardConfig.value === 'monthly'
+            ) {
+                cycleText =
+                    '每月' +
+                    (
+                        Number(
+                            todo.hardConfig.monthDay
+                        ) || 1
+                    ) +
+                    '日';
+            }
+
+            detailInfo = `
+                <span class="plan-detail">
+                    ${cycleText}
+                </span>
+
+                <span class="remind-info">
+                    ⏰ ${todo.hardConfig.time}
+                </span>
+            `;
+        } else {
+            detailInfo = `
+                <span class="plan-detail">
+                    待设置
+                </span>
+            `;
+        }
+    } else if (todo.type === 'flexible') {
+        typeLabel = `
+            <span class="type-badge flexible">
+                🌱 微习惯
+                <span class="arrow">▾</span>
+            </span>
+        `;
+    }
+
+    const doneClass =
+        todo.done ? 'done-text' : '';
+
+    const checkedClass =
+        todo.done ? 'done' : '';
+
+    return `
+        <li
+            data-id="${todo.id}"
+            data-done="${todo.done}"
+        >
+            <span
+                class="check ${checkedClass}"
+                data-id="${todo.id}"
+            >
+                ${todo.done ? '✓' : ''}
+            </span>
+
+            <div class="todo-content">
+                <span
+                    class="text ${doneClass}"
+                    data-id="${todo.id}"
+                    title="${escapeAttribute(todo.text)}"
+                >
+                    ${escapeHtml(todo.text)}
+                </span>
+
+                <div class="todo-meta">
+                    ${typeLabel}
+                    ${detailInfo}
+                </div>
+            </div>
+
+            <button
+                class="del"
+                data-id="${todo.id}"
+                aria-label="删除任务"
+            >
+                ×
+            </button>
+        </li>
+    `;
+}
+
+
+          function getNextCycleReminderFromNow(
+    config,
+    from = new Date()
+) {
+    const [hour, minute] = String(config.time || '09:00')
+        .split(':')
+        .map(Number);
+
+    let reminder;
+
+    if (config.value === 'daily') {
+        reminder = new Date(from);
+        reminder.setHours(hour, minute, 0, 0);
+
+        if (reminder <= from) {
+            reminder.setDate(reminder.getDate() + 1);
+        }
+    } else if (config.value === 'weekly') {
+        const weekday =
+            Number.isInteger(Number(config.weekday))
+                ? Number(config.weekday)
+                : from.getDay();
+
+        let daysToAdd =
+            (weekday - from.getDay() + 7) % 7;
+
+        reminder = new Date(from);
+        reminder.setDate(
+            reminder.getDate() + daysToAdd
+        );
+        reminder.setHours(hour, minute, 0, 0);
+
+        if (reminder <= from) {
+            reminder.setDate(reminder.getDate() + 7);
+        }
+    } else {
+        const monthDay = Math.min(
+            28,
+            Math.max(1, Number(config.monthDay) || 1)
+        );
+
+        reminder = new Date(
+            from.getFullYear(),
+            from.getMonth(),
+            monthDay,
+            hour,
+            minute,
+            0,
+            0
+        );
+
+        if (reminder <= from) {
+            reminder = new Date(
+                from.getFullYear(),
+                from.getMonth() + 1,
+                monthDay,
+                hour,
+                minute,
+                0,
+                0
+            );
+        }
+    }
+
+    return formatReminderDateTime(reminder);
+}
+
+function getNextCycleActivationDate(
+    config,
+    from = new Date()
+) {
+    let activation;
+
+    if (config.value === 'daily') {
+        activation = new Date(
+            from.getFullYear(),
+            from.getMonth(),
+            from.getDate() + 1,
+            0,
+            0,
+            0,
+            0
+        );
+    } else if (config.value === 'weekly') {
+        const weekday =
+            Number.isInteger(Number(config.weekday))
+                ? Number(config.weekday)
+                : from.getDay();
+
+        let daysToAdd =
+            (weekday - from.getDay() + 7) % 7;
+
+        if (daysToAdd === 0) {
+            daysToAdd = 7;
+        }
+
+        activation = new Date(
+            from.getFullYear(),
+            from.getMonth(),
+            from.getDate() + daysToAdd,
+            0,
+            0,
+            0,
+            0
+        );
+    } else {
+        const monthDay = Math.min(
+            28,
+            Math.max(1, Number(config.monthDay) || 1)
+        );
+
+        activation = new Date(
+            from.getFullYear(),
+            from.getMonth(),
+            monthDay,
+            0,
+            0,
+            0,
+            0
+        );
+
+        if (activation <= from) {
+            activation = new Date(
+                from.getFullYear(),
+                from.getMonth() + 1,
+                monthDay,
+                0,
+                0,
+                0,
+                0
+            );
+        }
+    }
+
+    return activation;
+}
+
+function getCycleReminderForActivation(
+    config,
+    activationDate
+) {
+    const reminder = new Date(activationDate);
+    const [hour, minute] = String(config.time || '09:00')
+        .split(':')
+        .map(Number);
+
+    reminder.setHours(hour, minute, 0, 0);
+
+    return formatReminderDateTime(reminder);
+}
+
+function showTodoTitleModal(id) {
+    const todo = todos.find(item => item.id === id);
+    if (!todo) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay open';
+
+    overlay.innerHTML = `
+        <div
+            class="modal-box"
+            style="max-width:420px; text-align:left;"
+        >
+            <h3 style="text-align:center;">任务标题</h3>
+
+            <div
+                style="
+                    margin-top:16px;
+                    padding:14px 16px;
+                    border-radius:10px;
+                    background:var(--bg);
+                    line-height:1.7;
+                    word-break:break-word;
+                    white-space:pre-wrap;
+                "
+            >${escapeHtml(todo.text)}</div>
+
+            <div
+                class="modal-actions"
+                style="justify-content:center;"
+            >
+                ${
+                    todo.done
+                        ? ''
+                        : `
+                            <button
+                                class="btn-confirm"
+                                data-action="edit"
+                            >
+                                编辑
+                            </button>
+                        `
+                }
+
+                <button
+                    class="btn-cancel"
+                    data-action="close"
+                >
+                    关闭
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    function closeTitleModal() {
+        overlay.remove();
+        document.removeEventListener(
+            'keydown',
+            handleTitleModalKeydown
+        );
+    }
+
+    function handleTitleModalKeydown(e) {
+        if (e.key === 'Escape') {
+            closeTitleModal();
+        }
+    }
+
+    overlay
+        .querySelector('[data-action="close"]')
+        .addEventListener('click', closeTitleModal);
+
+    const editButton =
+        overlay.querySelector('[data-action="edit"]');
+
+    if (editButton) {
+        editButton.addEventListener('click', function() {
+            closeTitleModal();
+
+            setTimeout(function() {
+                startEditTodo(id);
+            }, 0);
+        });
+    }
+
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+            closeTitleModal();
+        }
+    });
+
+    document.addEventListener(
+        'keydown',
+        handleTitleModalKeydown
+    );
+}
+
+function attachTodoEvents(container) {
+    container
+        .querySelectorAll('.check')
+        .forEach(element => {
+            element.addEventListener('click', function(e) {
+                e.stopPropagation();
+
+                const id = this.dataset.id;
+                const todo = todos.find(
+                    item => item.id === id
+                );
+
+                if (!todo) return;
+
+                if (todo.done) {
+                    todo.done = false;
+                    todo.completedAt = null;
+                    todo.nextActiveTime = null;
+
+                    regenerateRemind(todo);
+                } else {
+                    const now = new Date();
+
+                    todo.done = true;
+                    todo.completedAt = now.toISOString();
+
+                    const isCycle =
+                        todo.type === 'hard' &&
+                        todo.hardConfig &&
+                        todo.hardConfig.mode === 'cycle';
+
+                    if (isCycle) {
+                        const activationDate =
+                            getNextCycleActivationDate(
+                                todo.hardConfig,
+                                now
+                            );
+
+                        todo.nextActiveTime =
+                            activationDate.getTime();
+
+                        todo.remindTimes = [
+                            getCycleReminderForActivation(
+                                todo.hardConfig,
+                                activationDate
+                            )
+                        ];
+                    } else {
+                        todo.nextActiveTime = null;
+                        todo.remindTimes = [];
+                    }
+                }
+
+                DB.set('todos', todos);
+                renderTodos();
+            });
+        });
+
+    container
+        .querySelectorAll('.del')
+        .forEach(element => {
+            element.addEventListener('click', function(e) {
+                e.stopPropagation();
+
+                const id = this.dataset.id;
+
+                todos = todos.filter(
+                    item => item.id !== id
+                );
+
+                DB.set('todos', todos);
+                renderTodos();
+            });
+        });
+
+    container
+        .querySelectorAll('.text')
+        .forEach(element => {
+            element.addEventListener('click', function(e) {
+                if (e.target.closest('.edit-input')) return;
+
+                e.stopPropagation();
+                showTodoTitleModal(this.dataset.id);
             });
 
-            let notes = DB.get('notes', []);
-            let events = DB.get('events', []);
+            if (!isTouchDevice) {
+                element.addEventListener(
+                    'contextmenu',
+                    function(e) {
+                        e.preventDefault();
 
-            let dayOffset = 0;
-            let monthOffset = 0;
-            let weekStartDate = new Date();
-            (function initWeekStart() {
-                const d = new Date();
-                d.setDate(d.getDate() - d.getDay());
-                weekStartDate = d;
-            })();
+                        showContextMenu(e, this, {
+                            type: 'todo',
+                            id: this.dataset.id
+                        });
+                    }
+                );
+            }
+        });
 
-            let noteCalMonthOffset = 0;
-            let noteSelectedDate = formatDate(new Date());
-            let editingNoteId = null;
-            let editingTodoId = null;
+    container
+        .querySelectorAll('.type-badge')
+        .forEach(badge => {
+            const listItem = badge.closest('li');
+            if (!listItem) return;
 
-            const FLEXIBLE_REVIEW_INTERVALS = [
-                { minutes: 20 }, { days: 1 }, { days: 2 }, { days: 4 }, { days: 7 }, { days: 15 }, { days: 30 }
+            const id = listItem.dataset.id;
+            const todo = todos.find(
+                item => item.id === id
+            );
+
+            if (!todo || todo.done) {
+                badge.style.pointerEvents = 'none';
+                return;
+            }
+
+            badge.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                showTypeSelectForTodo(id);
+            });
+        });
+
+    if (isTouchDevice) {
+        const todoList =
+            document.getElementById('todoList');
+
+        if (
+            todoList &&
+            !todoList.dataset.contextPrevented
+        ) {
+            todoList.addEventListener(
+                'contextmenu',
+                function(e) {
+                    e.preventDefault();
+                }
+            );
+
+            todoList.dataset.contextPrevented = 'true';
+        }
+    }
+}
+
+function regenerateRemind(todo) {
+    const now = new Date();
+
+    if (todo.type === 'today') {
+        const earliest = getEarliestTodayTime();
+
+        todo.remindTimes =
+            formatDate(earliest) === formatDate(now)
+                ? [formatReminderDateTime(earliest)]
+                : [];
+    } else if (todo.type === 'flexible') {
+        todo.remindTimes = [
+            getFlexibleInitialReminder()
+        ];
+
+        todo.remindCount = 0;
+    } else if (
+        todo.type === 'hard' &&
+        todo.hardConfig
+    ) {
+        if (todo.hardConfig.mode === 'cycle') {
+            todo.remindTimes = [
+                getNextCycleReminderFromNow(
+                    todo.hardConfig,
+                    now
+                )
             ];
-            const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+        } else if (
+            todo.hardConfig.mode === 'deadline'
+        ) {
+            const deadline =
+                todo.hardConfig.value +
+                'T' +
+                todo.hardConfig.time;
 
-            function today() {
-                const d = new Date();
-                return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-            }
+            todo.remindTimes =
+                new Date(deadline) > now
+                    ? [deadline]
+                    : [];
+        }
+    }
+}
 
-            function formatDate(d) {
-                return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-            }
+function startEditTodo(id) {
+    const todo = todos.find(item => item.id === id);
+    if (!todo || todo.done) return;
 
-            function formatTime(d) {
-                return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-            }
+    const list =
+        document.getElementById('todoList');
 
-            function formatDateTime(d) {
-                return formatDate(d) + ' ' + formatTime(d);
-            }
+    const listItem =
+        list.querySelector(`li[data-id="${id}"]`);
 
-            function formatReminderDateTime(d) {
-                return formatDate(d) + 'T' + formatTime(d);
-            }
+    if (!listItem) return;
 
-            function normalizeReminderDateTime(value) {
-                return typeof value === 'string' ? value.replace(' ', 'T') : '';
-            }
+    const textElement =
+        listItem.querySelector('.text');
 
-            function getEarliestTodayTime() {
-                const d = new Date();
-                d.setSeconds(0, 0);
-                d.setMinutes(d.getMinutes() + 1);
-                return d;
-            }
+    textElement.textContent = '';
 
-            function getNextCycleReminder(value, time, from = new Date()) {
-                const [hour, minute] = time.split(':').map(Number);
-                const d = new Date(from);
-                d.setHours(hour, minute, 0, 0);
-                if (d <= from) {
-                    if (value === 'daily') d.setDate(d.getDate() + 1);
-                    else if (value === 'weekly') d.setDate(d.getDate() + 7);
-                    else if (value === 'monthly') d.setMonth(d.getMonth() + 1);
-                }
-                return formatReminderDateTime(d);
-            }
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'edit-input';
+    input.value = todo.text;
+    input.maxLength = 80;
 
-            function addFlexibleInterval(from, interval) {
-                const d = new Date(from);
-                if (interval.minutes) d.setMinutes(d.getMinutes() + interval.minutes);
-                if (interval.days) d.setDate(d.getDate() + interval.days);
-                d.setSeconds(0, 0);
-                return formatReminderDateTime(d);
-            }
+    textElement.appendChild(input);
+    input.focus();
+    input.select();
 
-            function getFlexibleInitialReminder() {
-                return addFlexibleInterval(new Date(), FLEXIBLE_REVIEW_INTERVALS[0]);
-            }
+    let hasFinished = false;
 
-            function snapshotTodo(todo) {
-                return todo ? JSON.parse(JSON.stringify(todo)) : null;
-            }
+    function finishEdit(save) {
+        if (hasFinished) return;
+        hasFinished = true;
 
-            function restoreTodoSnapshot(snapshot) {
-                if (!snapshot) return;
-                const index = todos.findIndex(t => t.id === snapshot.id);
-                if (index >= 0) todos[index] = snapshot;
-            }
+        if (save) {
+            const newText = input.value.trim();
 
-            function formatReminderForDisplay(value, withDate = false) {
-                const normalized = normalizeReminderDateTime(value);
-                if (!normalized || !normalized.includes('T')) return '';
-                const [date, time] = normalized.split('T');
-                if (!withDate) return time;
-                const [year, month, day] = date.split('-').map(Number);
-                const prefix = year === new Date().getFullYear() ? `${month}月${day}日` : `${year}年${month}月${day}日`;
-                return `${prefix} ${time}`;
-            }
-
-            function isToday(d) {
-                const t = today();
-                return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
-            }
-
-            function isFutureDate(dateStr) {
-                const d = new Date(dateStr);
-                const t = today();
-                return d.getFullYear() > t.getFullYear() || (d.getFullYear() === t.getFullYear() && d.getMonth() > t.getMonth()) ||
-                    (d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() > t.getDate());
-            }
-
-            function isPastDate(dateStr) {
-                const d = new Date(dateStr);
-                const t = today();
-                return d.getFullYear() < t.getFullYear() || (d.getFullYear() === t.getFullYear() && d.getMonth() < t.getMonth()) ||
-                    (d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() < t.getDate());
-            }
-
-            function getMonthDays(y, m) {
-                return new Date(y, m + 1, 0).getDate();
-            }
-
-            function getDayOfWeek(y, m, d) {
-                return new Date(y, m, d).getDay();
-            }
-
-            function getEventsForDate(dateStr) {
-                return events.filter(e => e.date === dateStr);
-            }
-
-            function getNotesForDate(dateStr) {
-                return notes.filter(n => n.date === dateStr);
-            }
-
-            function generateId() {
-                return Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
-            }
-
-            function escapeHtml(str) {
-                const div = document.createElement('div');
-                div.textContent = str;
-                return div.innerHTML;
-            }
-
-            function isDateTimePast(dateStr, hour) {
-                const now = new Date();
-                const [y, m, d] = dateStr.split('-').map(Number);
-                const target = new Date(y, m - 1, d, hour, 0, 0);
-                return target < now;
-            }
-
-            function getNextMidnight() {
-                const d = new Date();
-                d.setDate(d.getDate() + 1);
-                d.setHours(0, 0, 0, 0);
-                return d.getTime();
-            }
-
-            function createTodo(text, type = 'today', config = {}) {
-                const now = new Date();
-                const base = {
-                    id: generateId(),
-                    text: text.trim(),
-                    done: false,
-                    type: type,
-                    createdAt: formatDateTime(now),
-                    remindTimes: [],
-                    remindCount: 0,
-                    hardConfig: null,
-                    completedAt: null,
-                    nextActiveTime: null
-                };
-                if (type === 'flexible') {
-                    base.remindTimes.push(getFlexibleInitialReminder());
-                    base.remindCount = 0;
-                }
-                return base;
-            }
-
-            function updateHardConfig(todoId, mode, value, time) {
-                const todo = todos.find(t => t.id === todoId);
-                if (!todo) return;
-                todo.type = 'hard';
-                todo.hardConfig = { mode, value, time };
-                let remindDateTime = '';
-                if (mode === 'cycle') {
-                    remindDateTime = getNextCycleReminder(value, time);
-                } else if (mode === 'deadline') {
-                    remindDateTime = value + 'T' + time;
-                }
-                if (remindDateTime) todo.remindTimes = [remindDateTime];
+            if (newText) {
+                todo.text = newText;
                 DB.set('todos', todos);
-                renderTodos();
             }
+        }
 
-            function renderTodos() {
-                const list = document.getElementById('todoList');
-                if (todos.length === 0) {
-                    list.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>还没有待办事项</p></div>`;
-                    return;
-                }
-                const undone = todos.filter(t => !t.done);
-                const done = todos.filter(t => t.done);
-                done.sort((a, b) => {
-                    const timeA = a.completedAt ? new Date(a.completedAt).getTime() : 0;
-                    const timeB = b.completedAt ? new Date(b.completedAt).getTime() : 0;
-                    return timeB - timeA;
-                });
-                const doneByType = {
-                    today: done.filter(t => t.type === 'today'),
-                    hard: done.filter(t => t.type === 'hard'),
-                    flexible: done.filter(t => t.type === 'flexible')
-                };
-                let html = '';
-                if (undone.length > 0) {
-                    html += undone.map(t => buildTodoItemHtml(t)).join('');
-                } else {
-                    html += `<div class="empty-state"><div class="icon">✨</div><p>全部完成，太棒了！</p></div>`;
-                }
-                if (done.length > 0) {
-                    html += `<div class="done-section-title"><span class="icon">✅</span> 已完成 (${done.length})</div>`;
-                    const typeGroups = [
-                        { key: 'today', label: '📅 今日计划', items: doneByType.today },
-                        { key: 'hard', label: '🔴 硬计划', items: doneByType.hard },
-                        { key: 'flexible', label: '🌱 灵活计划', items: doneByType.flexible }
-                    ];
-                    typeGroups.forEach(group => {
-                        if (group.items.length > 0) {
-                            html += `<div class="done-group-title">${group.label}</div>`;
-                            html += `<div class="done-group-items">`;
-                            html += group.items.map(t => buildTodoItemHtml(t, true)).join('');
-                            html += `</div>`;
-                        }
-                    });
-                }
-                list.innerHTML = html;
-                attachTodoEvents(list);
-            }
+        renderTodos();
+    }
 
-            function buildTodoItemHtml(t, isDoneGroup = false) {
-                let typeLabel = '';
-                let detailInfo = '';
-                if (t.type === 'today') {
-                    typeLabel = '<span class="type-badge today">📅 今日计划<span class="arrow">▾</span></span>';
-                    const todayStr = formatDate(today());
-                    const remind = (t.remindTimes || []).map(normalizeReminderDateTime).find(r => r.startsWith(todayStr + 'T'));
-                    detailInfo = remind ? `<span class="remind-info">⏰ ${formatReminderForDisplay(remind)}</span>` : '<span class="remind-info">未设置提醒</span>';
-                } else if (t.type === 'hard') {
-                    typeLabel = '<span class="type-badge hard">🔴 硬计划<span class="arrow">▾</span></span>';
-                    if (t.hardConfig && t.hardConfig.mode === 'cycle') {
-                        const cycleLabel = t.hardConfig.value === 'daily' ? '每天' : t.hardConfig.value === 'weekly' ? '每周' : '每月';
-                        detailInfo = `<span class="plan-detail">循环·${cycleLabel}</span><span class="remind-info">⏰ ${t.hardConfig.time}</span>`;
-                    } else if (t.hardConfig && t.hardConfig.mode === 'deadline') {
-                        detailInfo = `<span class="plan-detail">Deadline</span><span class="remind-info">⏰ ${formatReminderForDisplay(t.hardConfig.value + 'T' + t.hardConfig.time, true)}</span>`;
-                    } else {
-                        detailInfo = '<span class="plan-detail">待设置</span>';
-                    }
-                } else if (t.type === 'flexible') {
-                    typeLabel = '<span class="type-badge flexible">🌱 灵活计划<span class="arrow">▾</span></span>';
-                }
-                const doneClass = t.done ? 'done-text' : '';
-                const checked = t.done ? 'done' : '';
-                return `<li data-id="${t.id}" data-done="${t.done}">
-                    <span class="check ${checked}" data-id="${t.id}">${t.done ? '✓' : ''}</span>
-                    <div class="todo-content">
-                        <span class="text ${doneClass}" data-id="${t.id}">${escapeHtml(t.text)}</span>
-                        <div class="todo-meta">${typeLabel}${detailInfo}</div>
-                    </div>
-                    <button class="del" data-id="${t.id}">×</button>
-                </li>`;
-            }
+    input.addEventListener('blur', function() {
+        finishEdit(true);
+    });
 
-            function attachTodoEvents(container) {
-                container.querySelectorAll('.check').forEach(el => {
-                    el.addEventListener('click', function() {
-                        const id = this.dataset.id;
-                        const todo = todos.find(t => t.id === id);
-                        if (!todo) return;
-                        if (todo.done) {
-                            todo.done = false;
-                            todo.completedAt = null;
-                            todo.nextActiveTime = null;
-                            regenerateRemind(todo);
-                            DB.set('todos', todos);
-                            renderTodos();
-                        } else {
-                            todo.done = true;
-                            todo.completedAt = new Date().toISOString();
-                            if (todo.type === 'hard' && todo.hardConfig && todo.hardConfig.mode === 'cycle') {
-                                todo.nextActiveTime = getNextMidnight();
-                            } else {
-                                todo.nextActiveTime = null;
-                            }
-                            todo.remindTimes = [];
-                            DB.set('todos', todos);
-                            renderTodos();
-                        }
-                    });
-                });
-                container.querySelectorAll('.del').forEach(el => {
-                    el.addEventListener('click', function() {
-                        const id = this.dataset.id;
-                        todos = todos.filter(t => t.id !== id);
-                        DB.set('todos', todos);
-                        renderTodos();
-                    });
-                });
-                if (isTouchDevice) {
-                    container.querySelectorAll('.text').forEach(el => {
-                        const todo = todos.find(t => t.id === el.dataset.id);
-                        if (!todo || todo.done) { el.style.pointerEvents = 'none'; return; }
-                        el.addEventListener('click', function(e) { e.stopPropagation();
-                            startEditTodo(this.dataset.id); });
-                    });
-                    container.querySelectorAll('.type-badge').forEach(badge => {
-                        const li = badge.closest('li');
-                        if (!li) return;
-                        const id = li.dataset.id;
-                        const todo = todos.find(t => t.id === id);
-                        if (!todo || todo.done) { badge.style.pointerEvents = 'none'; return; }
-                        badge.addEventListener('click', function(e) { e.stopPropagation();
-                            e.preventDefault();
-                            showTypeSelectForTodo(id, true); });
-                    });
-                    const todoList = document.getElementById('todoList');
-                    if (todoList && !todoList.dataset.contextPrevented) {
-                        todoList.addEventListener('contextmenu', function(e) { e.preventDefault(); });
-                        todoList.dataset.contextPrevented = 'true';
-                    }
-                } else {
-                    container.querySelectorAll('.text').forEach(el => {
-                        el.addEventListener('dblclick', function() { startEditTodo(this.dataset.id); });
-                        el.addEventListener('contextmenu', function(e) { e.preventDefault();
-                            showContextMenu(e, this, { type: 'todo', id: this.dataset.id }); });
-                    });
-                }
-            }
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            finishEdit(true);
+        }
 
-            function regenerateRemind(todo) {
-                const now = new Date();
-                if (todo.type === 'today') {
-                    const earliest = getEarliestTodayTime();
-                    todo.remindTimes = formatDate(earliest) === formatDate(now) ? [formatReminderDateTime(earliest)] : [];
-                } else if (todo.type === 'flexible') {
-                    todo.remindTimes = [getFlexibleInitialReminder()];
-                    todo.remindCount = 0;
-                } else if (todo.type === 'hard' && todo.hardConfig) {
-                    if (todo.hardConfig.mode === 'cycle') {
-                        todo.remindTimes = [getNextCycleReminder(todo.hardConfig.value, todo.hardConfig.time)];
-                    } else if (todo.hardConfig.mode === 'deadline') {
-                        const deadline = todo.hardConfig.value + 'T' + todo.hardConfig.time;
-                        todo.remindTimes = new Date(deadline) > now ? [deadline] : [];
-                    }
-                }
-            }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            finishEdit(false);
+        }
+    });
+}
 
-            function startEditTodo(id) {
-                const todo = todos.find(t => t.id === id);
-                if (!todo || todo.done) return;
-                const list = document.getElementById('todoList');
-                const li = list.querySelector(`li[data-id="${id}"]`);
-                if (!li) return;
-                const textSpan = li.querySelector('.text');
-                textSpan.innerHTML = `<input type="text" class="edit-input" value="${escapeHtml(todo.text)}" maxlength="80" />`;
-                const input = textSpan.querySelector('.edit-input');
-                input.focus();
-                input.select();
+function addTodo(text) {
+    if (!text.trim()) return false;
 
-                function finishEdit(save) {
-                    if (save) { const newText = input.value.trim(); if (newText) { todo.text = newText;
-                            DB.set('todos', todos); } }
-                    renderTodos();
-                }
-                input.addEventListener('blur', function() { finishEdit(true); });
-                input.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') { e.preventDefault();
-                        finishEdit(true); }
-                    if (e.key === 'Escape') { e.preventDefault();
-                        finishEdit(false); }
-                });
-            }
+    const newTodo = createTodo(text, 'today');
 
-            function addTodo(text) {
-                if (!text.trim()) return false;
-                const newTodo = createTodo(text, 'today');
-                todos.push(newTodo);
-                DB.set('todos', todos);
-                renderTodos();
-                openTodayTimeEditModal(newTodo, true);
-                return true;
-            }
+    todos.push(newTodo);
+    DB.set('todos', todos);
+    renderTodos();
+
+    openTodayTimeEditModal(newTodo, true);
+
+    return true;
+}
 
             let hardModalTargetId = null;
             let hardModalIsNewTodo = false;
             let hardModalRestoreSnapshot = null;
 
-            function openHardModal(todo, isNewTodo = false, restoreSnapshot = null) {
-                hardModalTargetId = todo.id;
-                hardModalIsNewTodo = isNewTodo;
-                hardModalRestoreSnapshot = restoreSnapshot || snapshotTodo(todo);
-                const now = new Date();
-                const nextMinute = getEarliestTodayTime();
-                const config = todo.hardConfig;
-                document.getElementById('hardDeadlineDate').setAttribute('min', formatDate(now));
-                document.getElementById('hardCycle').value = config && config.mode === 'cycle' ? config.value : 'daily';
-                document.getElementById('hardCycleTime').value = config && config.mode === 'cycle' ? config.time : formatTime(
-                    nextMinute);
-                if (config && config.mode === 'deadline' && new Date(config.value + 'T' + config.time) > now) {
-                    document.getElementById('hardDeadlineDate').value = config.value;
-                    document.getElementById('hardDeadlineTime').value = config.time;
-                } else {
-                    document.getElementById('hardDeadlineDate').value = formatDate(nextMinute);
-                    document.getElementById('hardDeadlineTime').value = formatTime(nextMinute);
-                }
-                switchHardMode(config && config.mode === 'deadline' ? 'deadline' : 'cycle');
-                document.getElementById('hardModal').classList.add('open');
+           let hardModalLockedMode = false;
+
+function openHardModal(
+    todo,
+    isNewTodo = false,
+    restoreSnapshot = null,
+    preferredMode = null,
+    lockMode = false
+) {
+    hardModalTargetId = todo.id;
+    hardModalIsNewTodo = isNewTodo;
+    hardModalRestoreSnapshot =
+        restoreSnapshot || snapshotTodo(todo);
+    hardModalLockedMode = lockMode;
+
+    const now = new Date();
+    const nextMinute = getEarliestTodayTime();
+    const config = todo.hardConfig;
+
+    const initialMode =
+        preferredMode ||
+        (config && config.mode) ||
+        'cycle';
+
+    const modeSwitch =
+        document.getElementById('hardModeSwitch');
+
+    const modalTitle =
+        document.getElementById('hardModalTitle');
+
+    modeSwitch.style.display =
+        lockMode ? 'none' : 'flex';
+
+    if (lockMode) {
+        modalTitle.textContent =
+            initialMode === 'deadline'
+                ? '⏳ 配置 Deadline'
+                : '🔄 配置循环';
+    } else {
+        modalTitle.textContent = '🔴 配置硬计划';
+    }
+
+    const cycleValue =
+        config && config.mode === 'cycle'
+            ? config.value
+            : 'daily';
+
+    const cycleTime =
+        config &&
+        config.mode === 'cycle' &&
+        config.time
+            ? config.time
+            : formatTime(nextMinute);
+
+    const weekday =
+        config &&
+        config.mode === 'cycle' &&
+        config.weekday !== undefined
+            ? Number(config.weekday)
+            : now.getDay();
+
+    const monthDay =
+        config &&
+        config.mode === 'cycle' &&
+        config.monthDay
+            ? Number(config.monthDay)
+            : Math.min(28, now.getDate());
+
+    document.getElementById('hardCycle').value =
+        cycleValue;
+
+    document.getElementById('hardCycleTime').value =
+        cycleTime;
+
+    document.getElementById('hardWeekday').value =
+        String(weekday);
+
+    document.getElementById('hardMonthDay').value =
+        String(monthDay);
+
+    const deadlineDateInput =
+        document.getElementById('hardDeadlineDate');
+
+    const deadlineTimeInput =
+        document.getElementById('hardDeadlineTime');
+
+    deadlineDateInput.setAttribute(
+        'min',
+        formatDate(now)
+    );
+
+    if (
+        config &&
+        config.mode === 'deadline' &&
+        new Date(config.value + 'T' + config.time) > now
+    ) {
+        deadlineDateInput.value = config.value;
+        deadlineTimeInput.value = config.time;
+    } else {
+        deadlineDateInput.value = formatDate(nextMinute);
+        deadlineTimeInput.value = formatTime(nextMinute);
+    }
+
+    switchHardMode(initialMode);
+    updateCycleOptionVisibility();
+
+    document
+        .getElementById('hardModal')
+        .classList.add('open');
+}
+
+function switchHardMode(mode) {
+    document
+        .querySelectorAll(
+            '.hard-config .mode-switch button'
+        )
+        .forEach(button => {
+            button.classList.toggle(
+                'active',
+                button.dataset.mode === mode
+            );
+        });
+
+    document
+        .querySelectorAll('.hard-config .mode-panel')
+        .forEach(panel => {
+            panel.classList.toggle(
+                'active',
+                panel.dataset.mode === mode
+            );
+        });
+
+    if (hardModalLockedMode) {
+        document.getElementById(
+            'hardModalTitle'
+        ).textContent =
+            mode === 'deadline'
+                ? '⏳ 配置 Deadline'
+                : '🔄 配置循环';
+    }
+
+    updateCycleOptionVisibility();
+}
+
+function updateCycleOptionVisibility() {
+    const cycleSelect =
+        document.getElementById('hardCycle');
+
+    const weekdayRow =
+        document.getElementById('hardWeekdayRow');
+
+    const monthDayRow =
+        document.getElementById('hardMonthDayRow');
+
+    if (!cycleSelect || !weekdayRow || !monthDayRow) {
+        return;
+    }
+
+    weekdayRow.style.display =
+        cycleSelect.value === 'weekly'
+            ? 'flex'
+            : 'none';
+
+    monthDayRow.style.display =
+        cycleSelect.value === 'monthly'
+            ? 'flex'
+            : 'none';
+}
+
+function resetHardModalState() {
+    hardModalTargetId = null;
+    hardModalIsNewTodo = false;
+    hardModalRestoreSnapshot = null;
+    hardModalLockedMode = false;
+}
+
+document
+    .querySelectorAll(
+        '.hard-config .mode-switch button'
+    )
+    .forEach(button => {
+        button.addEventListener('click', function() {
+            if (hardModalLockedMode) return;
+            switchHardMode(this.dataset.mode);
+        });
+    });
+
+document
+    .getElementById('hardCycle')
+    .addEventListener(
+        'change',
+        updateCycleOptionVisibility
+    );
+
+document
+    .getElementById('hardModalCancel')
+    .addEventListener('click', function() {
+        document
+            .getElementById('hardModal')
+            .classList.remove('open');
+
+        if (hardModalIsNewTodo && hardModalTargetId) {
+            todos = todos.filter(
+                todo => todo.id !== hardModalTargetId
+            );
+        } else {
+            restoreTodoSnapshot(
+                hardModalRestoreSnapshot
+            );
+        }
+
+        DB.set('todos', todos);
+        renderTodos();
+        resetHardModalState();
+    });
+
+document
+    .getElementById('hardModalConfirm')
+    .addEventListener('click', function() {
+        const todo = todos.find(
+            item => item.id === hardModalTargetId
+        );
+
+        if (!todo) {
+            alert('任务不存在');
+            return;
+        }
+
+        const activeButton =
+            document.querySelector(
+                '.hard-config .mode-switch button.active'
+            );
+
+        const activeMode =
+            activeButton
+                ? activeButton.dataset.mode
+                : 'cycle';
+
+        if (activeMode === 'cycle') {
+            const cycle =
+                document.getElementById('hardCycle').value;
+
+            const time =
+                document.getElementById(
+                    'hardCycleTime'
+                ).value;
+
+            if (!time) {
+                alert('请选择时间');
+                return;
             }
 
-            function switchHardMode(mode) {
-                document.querySelectorAll('.hard-config .mode-switch button').forEach(btn => { btn.classList.toggle('active', btn
-                        .dataset.mode === mode); });
-                document.querySelectorAll('.hard-config .mode-panel').forEach(panel => { panel.classList.toggle('active', panel
-                        .dataset.mode === mode); });
+            const cycleOptions = {};
+
+            if (cycle === 'weekly') {
+                cycleOptions.weekday = Number(
+                    document.getElementById(
+                        'hardWeekday'
+                    ).value
+                );
             }
-            document.querySelectorAll('.hard-config .mode-switch button').forEach(btn => { btn.addEventListener('click', function() {
-                    switchHardMode(this.dataset.mode); }); });
-            document.getElementById('hardModalCancel').addEventListener('click', function() {
-                document.getElementById('hardModal').classList.remove('open');
-                if (hardModalIsNewTodo && hardModalTargetId) { todos = todos.filter(t => t.id !== hardModalTargetId); } else { restoreTodoSnapshot
-                        (hardModalRestoreSnapshot); }
-                DB.set('todos', todos);
-                renderTodos();
-                hardModalTargetId = null;
-                hardModalIsNewTodo = false;
-                hardModalRestoreSnapshot = null;
-            });
-            document.getElementById('hardModalConfirm').addEventListener('click', function() {
-                const todo = todos.find(t => t.id === hardModalTargetId);
-                if (!todo) { alert('任务不存在'); return; }
-                const activeMode = document.querySelector('.hard-config .mode-switch .active').dataset.mode;
-                if (activeMode === 'cycle') {
-                    const cycle = document.getElementById('hardCycle').value;
-                    const time = document.getElementById('hardCycleTime').value;
-                    if (!time) { alert('请选择时间'); return; }
-                    updateHardConfig(todo.id, 'cycle', cycle, time);
-                } else {
-                    const date = document.getElementById('hardDeadlineDate').value;
-                    const time = document.getElementById('hardDeadlineTime').value;
-                    if (!date || !time) { alert('请选择日期和时间'); return; }
-                    const now = new Date();
-                    const selected = new Date(date + 'T' + time);
-                    if (selected <= now) { alert('Deadline 只能选择未来时间'); return; }
-                    updateHardConfig(todo.id, 'deadline', date, time);
+
+            if (cycle === 'monthly') {
+                cycleOptions.monthDay = Number(
+                    document.getElementById(
+                        'hardMonthDay'
+                    ).value
+                );
+            }
+
+            updateHardConfig(
+                todo.id,
+                'cycle',
+                cycle,
+                time,
+                cycleOptions
+            );
+        } else {
+            const date =
+                document.getElementById(
+                    'hardDeadlineDate'
+                ).value;
+
+            const time =
+                document.getElementById(
+                    'hardDeadlineTime'
+                ).value;
+
+            if (!date || !time) {
+                alert('请选择日期和时间');
+                return;
+            }
+
+            const selected =
+                new Date(date + 'T' + time);
+
+            if (selected <= new Date()) {
+                alert(
+                    'Deadline 只能选择未来时间'
+                );
+                return;
+            }
+
+            updateHardConfig(
+                todo.id,
+                'deadline',
+                date,
+                time
+            );
+        }
+
+        document
+            .getElementById('hardModal')
+            .classList.remove('open');
+
+        resetHardModalState();
+    });
+
+document
+    .getElementById('fabAddTodo')
+    .addEventListener('click', function() {
+        document.getElementById(
+            'quickAddTitle'
+        ).value = '';
+
+        document
+            .getElementById('quickAddModal')
+            .classList.add('open');
+
+        document
+            .getElementById('quickAddTitle')
+            .focus();
+    });
+
+document
+    .getElementById('quickAddCancel')
+    .addEventListener('click', function() {
+        document
+            .getElementById('quickAddModal')
+            .classList.remove('open');
+    });
+
+document
+    .getElementById('quickAddHard')
+    .addEventListener('click', function() {
+        const title =
+            document.getElementById(
+                'quickAddTitle'
+            ).value.trim();
+
+        if (!title) {
+            alert('请输入任务标题');
+            return;
+        }
+
+        const newTodo = createTodo(title, 'hard');
+
+        todos.push(newTodo);
+        DB.set('todos', todos);
+        renderTodos();
+
+        document
+            .getElementById('quickAddModal')
+            .classList.remove('open');
+
+        openHardModal(newTodo, true);
+    });
+
+document
+    .getElementById('quickAddFlexible')
+    .addEventListener('click', function() {
+        const title =
+            document.getElementById(
+                'quickAddTitle'
+            ).value.trim();
+
+        if (!title) {
+            alert('请输入任务标题');
+            return;
+        }
+
+        const newTodo =
+            createTodo(title, 'flexible');
+
+        todos.push(newTodo);
+        DB.set('todos', todos);
+        renderTodos();
+
+        document
+            .getElementById('quickAddModal')
+            .classList.remove('open');
+    });
+
+       function checkReminders() {
+    const now = new Date();
+    const nowDate = formatDate(now);
+    const nowTime = formatTime(now);
+    const triggeredList = [];
+
+    todos.forEach(todo => {
+        todo.remindTimes = (todo.remindTimes || [])
+            .map(normalizeReminderDateTime)
+            .filter(Boolean);
+
+        const isCycle =
+            todo.type === 'hard' &&
+            todo.hardConfig &&
+            todo.hardConfig.mode === 'cycle';
+
+        /*
+         * 已完成的循环任务：
+         * 到下个周期当天00:00后，重新变成未完成。
+         */
+        if (todo.done && isCycle && todo.nextActiveTime) {
+            if (now.getTime() >= Number(todo.nextActiveTime)) {
+                todo.done = false;
+                todo.completedAt = null;
+                todo.nextActiveTime = null;
+
+                /*
+                 * 新规则会提前保留下个周期的提醒时间。
+                 * 旧数据没有保留时，再重新生成一次。
+                 */
+                if (todo.remindTimes.length === 0) {
+                    regenerateRemind(todo);
                 }
-                document.getElementById('hardModal').classList.remove('open');
-                hardModalTargetId = null;
-                hardModalIsNewTodo = false;
-                hardModalRestoreSnapshot = null;
-            });
+            }
+        }
 
-            document.getElementById('fabAddTodo').addEventListener('click', function() {
-                document.getElementById('quickAddTitle').value = '';
-                document.getElementById('quickAddModal').classList.add('open');
-                document.getElementById('quickAddTitle').focus();
-            });
-            document.getElementById('quickAddCancel').addEventListener('click', function() { document.getElementById(
-                    'quickAddModal').classList.remove('open'); });
-            document.getElementById('quickAddHard').addEventListener('click', function() {
-                const title = document.getElementById('quickAddTitle').value.trim();
-                if (!title) { alert('请输入任务标题'); return; }
-                const newTodo = createTodo(title, 'hard');
-                todos.push(newTodo);
-                DB.set('todos', todos);
-                renderTodos();
-                document.getElementById('quickAddModal').classList.remove('open');
-                openHardModal(newTodo, true);
-            });
-            document.getElementById('quickAddFlexible').addEventListener('click', function() {
-                const title = document.getElementById('quickAddTitle').value.trim();
-                if (!title) { alert('请输入任务标题'); return; }
-                const newTodo = createTodo(title, 'flexible');
-                todos.push(newTodo);
-                DB.set('todos', todos);
-                renderTodos();
-                document.getElementById('quickAddModal').classList.remove('open');
-            });
+        if (todo.done) return;
 
-            function checkReminders() {
-                const now = new Date();
-                const nowDate = formatDate(now);
-                const nowTime = formatTime(now);
-                const triggeredList = [];
-                todos.forEach(todo => {
-                    todo.remindTimes = (todo.remindTimes || []).map(normalizeReminderDateTime).filter(Boolean);
-                    if (todo.done && todo.type === 'hard' && todo.hardConfig && todo.hardConfig.mode === 'cycle' && todo
-                        .nextActiveTime) {
-                        if (now.getTime() >= todo.nextActiveTime) {
-                            todo.done = false;
-                            todo.completedAt = null;
-                            todo.nextActiveTime = null;
-                            regenerateRemind(todo);
-                        }
-                    }
-                    if (todo.done) return;
-                    const newRemindTimes = [];
-                    let hasTriggered = false;
-                    todo.remindTimes.forEach(rt => {
-                        const [date, time] = rt.split('T');
-                        if (date < nowDate || (date === nowDate && time <= nowTime)) {
-                            if (!hasTriggered) { triggeredList.push({ todo, remindTime: rt });
-                                hasTriggered = true; }
-                            if (todo.type === 'hard' && todo.hardConfig && todo.hardConfig.mode === 'cycle') { const
-                                next = generateNextCycleReminder(todo.hardConfig, rt); if (next) newRemindTimes.push(
-                                    next); } else if (todo.type === 'flexible') {
-                                if (todo.remindCount < FLEXIBLE_REVIEW_INTERVALS.length - 1) { todo.remindCount++; const
-                                        next = generateFlexibleNext(todo); if (next) newRemindTimes.push(next); }
-                            }
-                        } else { newRemindTimes.push(rt); }
-                    });
-                    todo.remindTimes = newRemindTimes;
+        const newRemindTimes = [];
+        let hasTriggered = false;
+
+        todo.remindTimes.forEach(remindTime => {
+            const [date, time] = remindTime.split('T');
+
+            const hasArrived =
+                date < nowDate ||
+                (date === nowDate && time <= nowTime);
+
+            if (!hasArrived) {
+                newRemindTimes.push(remindTime);
+                return;
+            }
+
+            if (!hasTriggered) {
+                triggeredList.push({
+                    todo,
+                    remindTime
                 });
-                if (triggeredList.length > 0) { showReminderModal(triggeredList); }
-                DB.set('todos', todos);
-                if (Notification.permission === 'granted' && triggeredList.length) { triggeredList.forEach(({ todo }) => { new Notification(
-                            '云笺提醒', { body: todo.text }); }); }
-                renderTodos();
+
+                hasTriggered = true;
             }
 
-            function showReminderModal(list) {
-                const modal = document.getElementById('reminderModal');
-                const listEl = document.getElementById('reminderList');
-                listEl.innerHTML = list.map(({ todo }) => { return `<li data-id="${todo.id}"><span class="reminder-text">${escapeHtml(todo.text)}</span><button class="ok-btn">OK</button></li>`; }).join(
-                    '');
-                modal.classList.add('open');
-                listEl.querySelectorAll('.ok-btn').forEach(btn => { btn.addEventListener('click', function() { this.closest('li')
-                        .remove(); if (listEl.children.length === 0) modal.classList.remove('open'); }); });
+            if (isCycle) {
+                const nextReminder = generateNextCycleReminder(
+                    todo.hardConfig,
+                    remindTime,
+                    now
+                );
+
+                if (nextReminder) {
+                    newRemindTimes.push(nextReminder);
+                }
+            } else if (todo.type === 'flexible') {
+                if (
+                    todo.remindCount <
+                    FLEXIBLE_REVIEW_INTERVALS.length - 1
+                ) {
+                    todo.remindCount++;
+
+                    const nextReminder =
+                        generateFlexibleNext(todo);
+
+                    if (nextReminder) {
+                        newRemindTimes.push(nextReminder);
+                    }
+                }
+            }
+        });
+
+        todo.remindTimes = [...new Set(newRemindTimes)];
+    });
+
+    if (triggeredList.length > 0) {
+        showReminderModal(triggeredList);
+    }
+
+    DB.set('todos', todos);
+
+    if (
+        'Notification' in window &&
+        Notification.permission === 'granted' &&
+        triggeredList.length > 0
+    ) {
+        triggeredList.forEach(({ todo }) => {
+            new Notification('云笺提醒', {
+                body: todo.text
+            });
+        });
+    }
+
+    renderTodos();
+}
+
+function showReminderModal(list) {
+    const modal = document.getElementById('reminderModal');
+    const listElement = document.getElementById('reminderList');
+
+    listElement.innerHTML = list
+        .map(({ todo }) => {
+            return `
+                <li data-id="${todo.id}">
+                    <span class="reminder-text">
+                        ${escapeHtml(todo.text)}
+                    </span>
+                    <button class="ok-btn">OK</button>
+                </li>
+            `;
+        })
+        .join('');
+
+    modal.classList.add('open');
+
+    listElement
+        .querySelectorAll('.ok-btn')
+        .forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('li').remove();
+
+                if (listElement.children.length === 0) {
+                    modal.classList.remove('open');
+                }
+            });
+        });
+}
+
+function generateNextCycleReminder(
+    config,
+    currentReminder,
+    afterDate = new Date()
+) {
+    const normalized =
+        normalizeReminderDateTime(currentReminder);
+
+    if (!normalized || !normalized.includes('T')) {
+        return '';
+    }
+
+    const [datePart, timePart] = normalized.split('T');
+    const [hour, minute] = timePart.split(':').map(Number);
+
+    let nextDate = new Date(
+        datePart + 'T' + timePart
+    );
+
+    function moveForwardOneCycle() {
+        if (config.value === 'daily') {
+            nextDate.setDate(nextDate.getDate() + 1);
+        } else if (config.value === 'weekly') {
+            const selectedWeekday =
+                Number.isInteger(Number(config.weekday))
+                    ? Number(config.weekday)
+                    : nextDate.getDay();
+
+            let daysToAdd =
+                (selectedWeekday - nextDate.getDay() + 7) % 7;
+
+            if (daysToAdd === 0) {
+                daysToAdd = 7;
             }
 
-            function generateNextCycleReminder(config, currentRemind) {
-                const [date, time] = normalizeReminderDateTime(currentRemind).split('T');
-                const d = new Date(date + 'T' + time);
-                if (config.value === 'daily') d.setDate(d.getDate() + 1);
-                else if (config.value === 'weekly') d.setDate(d.getDate() + 7);
-                else if (config.value === 'monthly') d.setMonth(d.getMonth() + 1);
-                return formatReminderDateTime(d);
-            }
+            nextDate.setDate(
+                nextDate.getDate() + daysToAdd
+            );
+        } else if (config.value === 'monthly') {
+            const selectedDay = Math.min(
+                28,
+                Math.max(
+                    1,
+                    Number(config.monthDay) ||
+                    nextDate.getDate()
+                )
+            );
 
-            function generateFlexibleNext(todo) { const interval = FLEXIBLE_REVIEW_INTERVALS[todo.remindCount]; return interval ?
-                    addFlexibleInterval(new Date(), interval) : ''; }
+            nextDate = new Date(
+                nextDate.getFullYear(),
+                nextDate.getMonth() + 1,
+                selectedDay,
+                hour,
+                minute,
+                0,
+                0
+            );
+        }
+
+        nextDate.setHours(hour, minute, 0, 0);
+    }
+
+    moveForwardOneCycle();
+
+    /*
+     * 如果网页很久没有打开，直接跳过已经错过的周期，
+     * 避免每30秒连续补弹很多旧提醒。
+     */
+    let safetyCount = 0;
+
+    while (
+        nextDate <= afterDate &&
+        safetyCount < 400
+    ) {
+        moveForwardOneCycle();
+        safetyCount++;
+    }
+
+    return formatReminderDateTime(nextDate);
+}
+
+function generateFlexibleNext(todo) {
+    const interval =
+        FLEXIBLE_REVIEW_INTERVALS[todo.remindCount];
+
+    return interval
+        ? addFlexibleInterval(new Date(), interval)
+        : '';
+}
+
             setInterval(checkReminders, 30000);
             setTimeout(checkReminders, 1000);
 
             const contextMenu = document.getElementById('contextMenu');
             let contextMenuData = null;
 
-            function showContextMenu(e, target, data) {
-                if (isTouchDevice) return;
-                e.preventDefault();
-                contextMenuData = data;
-                let x = e.clientX,
-                    y = e.clientY;
-                const w = 180,
-                    h = 150;
-                if (x + w > window.innerWidth) x = window.innerWidth - w - 10;
-                if (y + h > window.innerHeight) y = window.innerHeight - h - 10;
-                contextMenu.style.left = x + 'px';
-                contextMenu.style.top = y + 'px';
-                contextMenu.classList.add('show');
-                const editTimeItem = document.getElementById('contextEditTime');
-                const editTypeItem = contextMenu.querySelector('[data-action="editType"]');
-                const editTitleItem = contextMenu.querySelector('[data-action="editTitle"]');
-                const deleteItem = contextMenu.querySelector('.menu-item.danger');
-                editTimeItem.style.display = '';
-                editTypeItem.style.display = '';
-                editTitleItem.style.display = '';
-                editTimeItem.classList.remove('disabled');
-                editTypeItem.classList.remove('disabled');
-                editTitleItem.classList.remove('disabled');
-                deleteItem.classList.remove('disabled');
-                if (data.type === 'todo') {
-                    const todo = todos.find(t => t.id === data.id);
-                    if (todo && todo.done) { editTimeItem.classList.add('disabled');
-                        editTypeItem.classList.add('disabled');
-                        editTitleItem.classList.add('disabled'); } else if (todo && todo.type === 'flexible') { editTimeItem
-                            .classList.add('disabled'); }
-                } else if (data.type === 'event') {
-                    const ev = events.find(e => e.id === data.id);
-                    if (ev && isDateTimePast(ev.date, parseInt(ev.time.split(':')[0]))) { editTimeItem.classList.add('disabled');
-                        editTypeItem.classList.add('disabled');
-                        deleteItem.classList.add('disabled'); }
-                    editTypeItem.style.display = 'none';
-                } else if (data.type === 'note') {
-                    editTypeItem.style.display = 'none';
-                    editTimeItem.style.display = 'none';
-                    const note = notes.find(n => n.id === data.id);
-                    if (note && isFutureDate(note.date)) { editTitleItem.classList.add('disabled');
-                        deleteItem.classList.add('disabled'); }
-                }
-            }
+           function showContextMenu(e, target, data) {
+    if (isTouchDevice) return;
 
-            function hideContextMenu() { contextMenu.classList.remove('show');
-                contextMenuData = null; }
-            document.addEventListener('click', hideContextMenu);
-            document.addEventListener('scroll', hideContextMenu, true);
-            document.addEventListener('keydown', function(e) { if (e.key === 'Escape') hideContextMenu(); });
-            contextMenu.addEventListener('click', function(e) {
-                const actionItem = e.target.closest('.menu-item');
-                if (!actionItem || !contextMenuData) return;
-                if (actionItem.classList.contains('disabled')) return;
-                e.stopPropagation();
-                const action = actionItem.dataset.action;
-                if (action === 'editTitle') {
-                    if (contextMenuData.type === 'todo') startEditTodo(contextMenuData.id);
-                    else if (contextMenuData.type === 'note') startEditNoteFromList(contextMenuData.id);
-                    else if (contextMenuData.type === 'event') openEditEventModal(contextMenuData.id);
-                } else if (action === 'editType') {
-                    if (contextMenuData.type === 'todo') showTypeSelectForTodo(contextMenuData.id, false);
-                } else if (action === 'editTime') {
-                    if (contextMenuData.type === 'todo') {
-                        const todo = todos.find(t => t.id === contextMenuData.id);
-                        if (!todo || todo.type === 'flexible') return;
-                        if (todo.type === 'hard') openHardModal(todo);
-                        else openTodayTimeEditModal(todo);
-                    }
-                } else if (action === 'delete') {
-                    if (contextMenuData.type === 'todo') { todos = todos.filter(t => t.id !== contextMenuData.id);
-                        DB.set('todos', todos);
-                        renderTodos(); } else if (contextMenuData.type === 'note') { notes = notes.filter(n => n.id !==
-                            contextMenuData.id);
-                        DB.set('notes', notes);
-                        renderNoteList();
-                        renderNoteCalendar(); } else if (contextMenuData.type === 'event') { events = events.filter(ev => ev
-                            .id !== contextMenuData.id);
-                        DB.set('events', events);
-                        refreshCurrentScheduleView(); }
+    e.preventDefault();
+    contextMenuData = data;
+
+    let x = e.clientX;
+    let y = e.clientY;
+    const width = 180;
+    const height = 150;
+
+    if (x + width > window.innerWidth) {
+        x = window.innerWidth - width - 10;
+    }
+
+    if (y + height > window.innerHeight) {
+        y = window.innerHeight - height - 10;
+    }
+
+    contextMenu.style.left = x + 'px';
+    contextMenu.style.top = y + 'px';
+    contextMenu.classList.add('show');
+
+    const editTimeItem = document.getElementById('contextEditTime');
+    const editTypeItem = contextMenu.querySelector('[data-action="editType"]');
+    const editTitleItem = contextMenu.querySelector('[data-action="editTitle"]');
+    const deleteItem = contextMenu.querySelector('.menu-item.danger');
+
+    editTimeItem.style.display = '';
+    editTypeItem.style.display = '';
+    editTitleItem.style.display = '';
+
+    editTimeItem.classList.remove('disabled');
+    editTypeItem.classList.remove('disabled');
+    editTitleItem.classList.remove('disabled');
+    deleteItem.classList.remove('disabled');
+
+    if (data.type === 'todo') {
+        const todo = todos.find(t => t.id === data.id);
+
+        if (todo && todo.done) {
+            editTimeItem.classList.add('disabled');
+            editTypeItem.classList.add('disabled');
+            editTitleItem.classList.add('disabled');
+        } else if (todo && todo.type === 'flexible') {
+            editTimeItem.classList.add('disabled');
+        }
+    } else if (data.type === 'event') {
+        const event = events.find(item => item.id === data.id);
+
+        if (
+            event &&
+            isDateTimePast(event.date, parseInt(event.time.split(':')[0]))
+        ) {
+            editTimeItem.classList.add('disabled');
+            editTypeItem.classList.add('disabled');
+            editTitleItem.classList.add('disabled');
+            deleteItem.classList.add('disabled');
+        }
+
+        editTypeItem.style.display = 'none';
+    } else if (data.type === 'note') {
+        editTypeItem.style.display = 'none';
+        editTimeItem.style.display = 'none';
+
+        const note = notes.find(item => item.id === data.id);
+
+        if (note && isFutureDate(note.date)) {
+            editTitleItem.classList.add('disabled');
+            deleteItem.classList.add('disabled');
+        }
+    }
+}
+
+function hideContextMenu() {
+    contextMenu.classList.remove('show');
+    contextMenuData = null;
+}
+
+document.addEventListener('click', hideContextMenu);
+document.addEventListener('scroll', hideContextMenu, true);
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') hideContextMenu();
+});
+
+contextMenu.addEventListener('click', function(e) {
+    const actionItem = e.target.closest('.menu-item');
+
+    if (!actionItem || !contextMenuData) return;
+    if (actionItem.classList.contains('disabled')) return;
+
+    e.stopPropagation();
+
+    const action = actionItem.dataset.action;
+
+    if (action === 'editTitle') {
+        if (contextMenuData.type === 'todo') {
+            startEditTodo(contextMenuData.id);
+        } else if (contextMenuData.type === 'note') {
+            startEditNoteFromList(contextMenuData.id);
+        } else if (contextMenuData.type === 'event') {
+            openEditEventModal(contextMenuData.id);
+        }
+    } else if (action === 'editType') {
+        if (contextMenuData.type === 'todo') {
+            showTypeSelectForTodo(contextMenuData.id);
+        }
+    } else if (action === 'editTime') {
+        if (contextMenuData.type === 'todo') {
+            const todo = todos.find(
+                item => item.id === contextMenuData.id
+            );
+
+            if (!todo || todo.type === 'flexible') return;
+
+            if (todo.type === 'today') {
+                openTodayTimeEditModal(todo);
+            } else if (todo.type === 'hard') {
+                const mode =
+                    todo.hardConfig &&
+                    todo.hardConfig.mode === 'deadline'
+                        ? 'deadline'
+                        : 'cycle';
+
+                openHardModal(
+                    todo,
+                    false,
+                    null,
+                    mode,
+                    true
+                );
+            }
+        }
+    } else if (action === 'delete') {
+        if (contextMenuData.type === 'todo') {
+            todos = todos.filter(
+                item => item.id !== contextMenuData.id
+            );
+
+            DB.set('todos', todos);
+            renderTodos();
+        } else if (contextMenuData.type === 'note') {
+            notes = notes.filter(
+                item => item.id !== contextMenuData.id
+            );
+
+            DB.set('notes', notes);
+            renderNoteList();
+            renderNoteCalendar();
+        } else if (contextMenuData.type === 'event') {
+            events = events.filter(
+                item => item.id !== contextMenuData.id
+            );
+
+            DB.set('events', events);
+            refreshCurrentScheduleView();
+        }
+    }
+
+    hideContextMenu();
+});
+
+function showTypeSelectForTodo(id) {
+    const todo = todos.find(item => item.id === id);
+    if (!todo || todo.done) return;
+
+    const types = [
+        {
+            label: '今日计划',
+            value: 'today',
+            bg: '#dbeafe',
+            color: '#1e40af',
+            border: '#b8c9e8'
+        },
+        {
+            label: '循环',
+            value: 'cycle',
+            bg: '#fee2e2',
+            color: '#b91c1c',
+            border: '#e5b8b8'
+        },
+        {
+            label: 'Deadline',
+            value: 'deadline',
+            bg: '#fee2e2',
+            color: '#b91c1c',
+            border: '#e5b8b8'
+        },
+        {
+            label: '微习惯',
+            value: 'flexible',
+            bg: '#d1fae5',
+            color: '#065f46',
+            border: '#b8d9c2'
+        }
+    ];
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay open';
+
+    overlay.innerHTML = `
+        <div class="modal-box" style="max-width:300px;">
+            <h3>选择类型</h3>
+
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                ${types.map(type => `
+                    <button
+                        class="btn-confirm"
+                        data-type="${type.value}"
+                        style="
+                            margin:4px 0;
+                            background:${type.bg};
+                            color:${type.color};
+                            border:1px solid ${type.border};
+                            font-weight:500;
+                        "
+                    >
+                        ${type.label}
+                    </button>
+                `).join('')}
+            </div>
+
+            <div
+                class="modal-actions"
+                style="justify-content:center; margin-top:10px;"
+            >
+                <button class="btn-cancel" id="typeSelectCancel">
+                    取消
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    overlay
+        .querySelector('#typeSelectCancel')
+        .addEventListener('click', function() {
+            overlay.remove();
+        });
+
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) overlay.remove();
+    });
+
+    overlay
+        .querySelectorAll('button[data-type]')
+        .forEach(button => {
+            button.addEventListener('click', function() {
+                const newType = this.dataset.type;
+                const previousSnapshot = snapshotTodo(
+                    todos.find(item => item.id === id)
+                );
+
+                const changedTodo = changeTodoType(id, newType);
+                overlay.remove();
+
+                if (!changedTodo) return;
+
+                if (newType === 'today') {
+                    openTodayTimeEditModal(
+                        changedTodo,
+                        false,
+                        previousSnapshot
+                    );
+                } else if (newType === 'cycle') {
+                    openHardModal(
+                        changedTodo,
+                        false,
+                        previousSnapshot,
+                        'cycle',
+                        true
+                    );
+                } else if (newType === 'deadline') {
+                    openHardModal(
+                        changedTodo,
+                        false,
+                        previousSnapshot,
+                        'deadline',
+                        true
+                    );
                 }
-                hideContextMenu();
             });
+        });
+}
 
-            function showTypeSelectForTodo(id, isTouch = false) {
-                const types = [
-                    { label: '今日计划', value: 'today', bg: '#dbeafe', color: '#1e40af', border: '#b8c9e8' },
-                    { label: '硬计划', value: 'hard', bg: '#fee2e2', color: '#b91c1c', border: '#e5b8b8' },
-                    { label: '灵活计划', value: 'flexible', bg: '#d1fae5', color: '#065f46', border: '#b8d9c2' }
-                ];
-                const overlay = document.createElement('div');
-                overlay.className = 'modal-overlay open';
-                overlay.innerHTML = `
-                    <div class="modal-box" style="max-width:300px;">
-                        <h3>选择类型</h3>
-                        <div style="display:flex; flex-direction:column; gap:10px;">
-                            ${types.map(t => `<button class="btn-confirm" style="margin:4px 0; background:${t.bg}; color:${t.color}; border:1px solid ${t.border}; font-weight:500;" data-type="${t.value}">${t.label}</button>`).join('')}
-                        </div>
-                        <div class="modal-actions" style="justify-content:center; margin-top:10px;">
-                            <button class="btn-cancel" id="typeSelectCancel">取消</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(overlay);
-                overlay.querySelector('#typeSelectCancel').addEventListener('click', () => overlay.remove());
-                overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
-                overlay.querySelectorAll('button[data-type]').forEach(btn => { btn.addEventListener('click', function() { const
-                        newType = this.dataset.type; const previousSnapshot = snapshotTodo(todos.find(t => t.id ===
-                        id)); const todo = changeTodoType(id, newType);
-                    overlay.remove(); if (!todo) return; if (newType === 'hard') openHardModal(todo, false,
-                        previousSnapshot); else if (newType === 'today') openTodayTimeEditModal(todo, false,
-                        previousSnapshot); }); });
-            }
+function changeTodoType(id, newType) {
+    const todo = todos.find(item => item.id === id);
+    if (!todo) return null;
 
-            function changeTodoType(id, newType) {
-                const todo = todos.find(t => t.id === id);
-                if (!todo) return null;
-                if (todo.type === newType) { DB.set('todos', todos);
-                    renderTodos(); return todo; }
-                todo.type = newType;
-                if (newType === 'today') { todo.remindTimes = [];
-                    todo.hardConfig = null;
-                    todo.remindCount = 0;
-                    todo.nextActiveTime = null; } else if (newType === 'hard') { todo.remindTimes = [];
-                    todo.hardConfig = null;
-                    todo.remindCount = 0;
-                    todo.nextActiveTime = null;
-                    DB.set('todos', todos);
-                    renderTodos(); return todo; } else if (newType === 'flexible') { todo.remindTimes = [
-                        getFlexibleInitialReminder() ];
-                    todo.remindCount = 0;
-                    todo.hardConfig = null;
-                    todo.nextActiveTime = null; }
-                DB.set('todos', todos);
-                renderTodos();
-                return todo;
-            }
+    let currentType = todo.type;
+
+    if (todo.type === 'hard' && todo.hardConfig) {
+        currentType = todo.hardConfig.mode;
+    }
+
+    if (currentType === newType) {
+        DB.set('todos', todos);
+        renderTodos();
+        return todo;
+    }
+
+    todo.remindTimes = [];
+    todo.remindCount = 0;
+    todo.nextActiveTime = null;
+
+    if (newType === 'today') {
+        todo.type = 'today';
+        todo.hardConfig = null;
+    } else if (newType === 'cycle') {
+        todo.type = 'hard';
+        todo.hardConfig = null;
+    } else if (newType === 'deadline') {
+        todo.type = 'hard';
+        todo.hardConfig = null;
+    } else if (newType === 'flexible') {
+        todo.type = 'flexible';
+        todo.hardConfig = null;
+        todo.remindTimes = [getFlexibleInitialReminder()];
+    }
+
+    DB.set('todos', todos);
+    renderTodos();
+
+    return todo;
+}
+
 
             let timeEditTargetId = null;
             let timeEditIsNewTodo = false;
@@ -3110,80 +4942,165 @@
                 void slider.offsetHeight;
                 slider.classList.remove('no-transition'); }
 
-            function initSwipe(wrapId, onSwipe) {
-                const wrap = document.getElementById(wrapId);
-                if (wrap.dataset.swipeInited === 'true') return;
-                wrap.dataset.swipeInited = 'true';
-                const slider = wrap.querySelector('.slider');
-                let startX = 0,
-                    startY = 0,
-                    currentTranslate = -33.333,
-                    isDragging = false,
-                    isHorizontal = false;
-                const threshold = 0.2;
+       function initSwipe(wrapId, onSwipe) {
+    const wrap = document.getElementById(wrapId);
+    if (wrap.dataset.swipeInited === 'true') return;
 
-                function onStart(e) {
-                    const touch = e.touches ? e.touches[0] : e;
-                    startX = touch.clientX;
-                    startY = touch.clientY;
-                    isDragging = true;
-                    isHorizontal = false;
-                    slider.classList.add('no-transition');
-                }
+    wrap.dataset.swipeInited = 'true';
+    const slider = wrap.querySelector('.slider');
 
-                function onMove(e) {
-                    if (!isDragging) return;
-                    const touch = e.touches ? e.touches[0] : e;
-                    const dx = touch.clientX - startX,
-                        dy = touch.clientY - startY;
-                    if (!isHorizontal) {
-                        if (Math.abs(dx) > Math.abs(dy) + 15) isHorizontal = true;
-                        else if (Math.abs(dy) > Math.abs(dx) + 15) { isDragging = false;
-                            slider.classList.remove('no-transition'); return; } else return;
-                    }
-                    if (!isHorizontal) return;
-                    e.preventDefault();
-                    const containerWidth = wrap.offsetWidth;
-                    const percent = (dx / containerWidth) * 100;
-                    let newTranslate = currentTranslate + percent;
-                    if (newTranslate > -33.333 + 33.333) newTranslate = -33.333 + 33.333;
-                    if (newTranslate < -33.333 - 33.333) newTranslate = -33.333 - 33.333;
-                    slider.style.transform = `translateX(${newTranslate}%)`;
-                }
+    let startX = 0;
+    let startY = 0;
+    let isDragging = false;
+    let isHorizontal = false;
 
-                function onEnd(e) {
-                    if (!isDragging || !isHorizontal) { isDragging = false;
-                        slider.classList.remove('no-transition'); return; }
-                    isDragging = false;
-                    const containerWidth = wrap.offsetWidth;
-                    const dx = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX) - startX;
-                    const ratio = dx / containerWidth;
-                    let direction = 0;
-                    if (ratio < -threshold) direction = 1;
-                    else if (ratio > threshold) direction = -1;
-                    if (direction !== 0) onSwipe(direction);
-                    else resetSliderToCenter(slider.id);
-                    currentTranslate = -33.333;
-                }
-                wrap.addEventListener('touchstart', onStart, { passive: false });
-                wrap.addEventListener('touchmove', onMove, { passive: false });
-                wrap.addEventListener('touchend', onEnd);
-                wrap.addEventListener('touchcancel', onEnd);
-                wrap.addEventListener('mousedown', function(e) {
-                    if (e.button !== 0) return;
-                    onStart(e);
+    const centerPosition = -33.333;
+    const threshold = 0.2;
 
-                    function mouseMove(ev) { onMove(ev); }
+    function onStart(e) {
+        const point = e.touches ? e.touches[0] : e;
 
-                    function mouseUp(ev) { onEnd(ev);
-                        document.removeEventListener('mousemove', mouseMove);
-                        document.removeEventListener('mouseup', mouseUp); }
-                    document.addEventListener('mousemove', mouseMove);
-                    document.addEventListener('mouseup', mouseUp);
-                    e.preventDefault();
-                });
-                wrap.addEventListener('selectstart', function(e) { e.preventDefault(); });
+        startX = point.clientX;
+        startY = point.clientY;
+        isDragging = true;
+        isHorizontal = false;
+
+        slider.classList.add('no-transition');
+    }
+
+    function onMove(e) {
+        if (!isDragging) return;
+
+        const point = e.touches ? e.touches[0] : e;
+        const dx = point.clientX - startX;
+        const dy = point.clientY - startY;
+
+        if (!isHorizontal) {
+            if (Math.abs(dx) > Math.abs(dy) + 15) {
+                isHorizontal = true;
+            } else if (Math.abs(dy) > Math.abs(dx) + 15) {
+                isDragging = false;
+                slider.classList.remove('no-transition');
+                return;
+            } else {
+                return;
             }
+        }
+
+        if (e.cancelable) e.preventDefault();
+
+        const containerWidth = wrap.offsetWidth || 1;
+        const percent = (dx / containerWidth) * 100;
+
+        let newTranslate = centerPosition + percent;
+        newTranslate = Math.max(
+            -66.666,
+            Math.min(0, newTranslate)
+        );
+
+        slider.style.transform =
+            `translateX(${newTranslate}%)`;
+    }
+
+    function onEnd(e) {
+        if (!isDragging || !isHorizontal) {
+            isDragging = false;
+            isHorizontal = false;
+            slider.classList.remove('no-transition');
+            return;
+        }
+
+        isDragging = false;
+
+        const point =
+            e.changedTouches && e.changedTouches[0]
+                ? e.changedTouches[0]
+                : e;
+
+        const containerWidth = wrap.offsetWidth || 1;
+
+        const dx =
+            typeof point.clientX === 'number'
+                ? point.clientX - startX
+                : 0;
+
+        const ratio = dx / containerWidth;
+        let direction = 0;
+
+        if (ratio < -threshold) {
+            direction = 1;
+        } else if (ratio > threshold) {
+            direction = -1;
+        }
+
+        if (direction !== 0) {
+            onSwipe(direction);
+        } else {
+            resetSliderToCenter(slider.id);
+        }
+
+        isHorizontal = false;
+    }
+
+    wrap.addEventListener(
+        'touchstart',
+        onStart,
+        { passive: true }
+    );
+
+    wrap.addEventListener(
+        'touchmove',
+        onMove,
+        { passive: false }
+    );
+
+    wrap.addEventListener('touchend', onEnd);
+    wrap.addEventListener('touchcancel', onEnd);
+
+    wrap.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+
+        onStart(e);
+
+        function mouseMove(event) {
+            onMove(event);
+        }
+
+        function mouseUp(event) {
+            onEnd(event);
+
+            document.removeEventListener(
+                'mousemove',
+                mouseMove
+            );
+
+            document.removeEventListener(
+                'mouseup',
+                mouseUp
+            );
+        }
+
+        document.addEventListener(
+            'mousemove',
+            mouseMove
+        );
+
+        document.addEventListener(
+            'mouseup',
+            mouseUp
+        );
+
+        e.preventDefault();
+    });
+
+    wrap.addEventListener(
+        'selectstart',
+        function(e) {
+            e.preventDefault();
+        }
+    );
+}
+
 
             function onDaySwipe(delta) { dayOffset += delta;
                 renderDayView(); }
