@@ -2483,18 +2483,33 @@ function isToday(date) {
     );
 }
 
-function isFutureDate(dateString) {
-    const date = new Date(dateString);
-    const current = today();
+function parseLocalDate(dateString) {
+    const [year, month, day] =
+        dateString.split('-').map(Number);
 
-    return date > current;
+    return new Date(
+        year,
+        month - 1,
+        day,
+        0,
+        0,
+        0,
+        0
+    );
+}
+
+function isFutureDate(dateString) {
+    return (
+        parseLocalDate(dateString).getTime() >
+        today().getTime()
+    );
 }
 
 function isPastDate(dateString) {
-    const date = new Date(dateString);
-    const current = today();
-
-    return date < current;
+    return (
+        parseLocalDate(dateString).getTime() <
+        today().getTime()
+    );
 }
 
 function getMonthDays(year, month) {
