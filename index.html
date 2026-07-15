@@ -519,30 +519,70 @@
         .done-group-items {
             margin-left: 20px;
         }
-        .fab-add-todo {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            font-size: 28px;
-            font-weight: 400;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-            z-index: 10;
-            line-height: 1;
-        }
-        .fab-add-todo:hover {
-            background: var(--primary-dark);
-            transform: scale(1.08);
-        }
+       #todoTab {
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#todoTab .todo-list {
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-right: 4px;
+    padding-bottom: 82px;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+#todoTab .todo-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+#todoTab .todo-list::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: var(--border);
+}
+
+.fab-add-todo {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    z-index: 20;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 52px;
+    height: 52px;
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+
+    cursor: pointer;
+    touch-action: manipulation;
+    box-shadow: 0 8px 22px rgba(74, 108, 247, 0.32);
+    transition: var(--transition);
+}
+
+.fab-add-todo:hover {
+    background: var(--primary-dark);
+    box-shadow: 0 10px 26px rgba(74, 108, 247, 0.4);
+    transform: translateY(-2px) scale(1.05);
+}
+
+.fab-add-todo:active {
+    transform: scale(0.95);
+}
+
         .note-layout {
             display: flex;
             gap: 20px;
@@ -3125,102 +3165,188 @@ function getCycleReminderForActivation(
 }
 
 function showTodoTitleModal(id) {
-    const todo = todos.find(item => item.id === id);
+    const todo = todos.find(
+        item => item.id === id
+    );
+
     if (!todo) return;
 
+    const originalText = todo.text;
     const overlay = document.createElement('div');
+
     overlay.className = 'modal-overlay open';
 
-    overlay.innerHTML = `
-        <div
-            class="modal-box"
-            style="max-width:420px; text-align:left;"
-        >
-            <h3 style="text-align:center;">任务标题</h3>
-
+    if (todo.done) {
+        overlay.innerHTML = `
             <div
-                style="
-                    margin-top:16px;
-                    padding:14px 16px;
-                    border-radius:10px;
-                    background:var(--bg);
-                    line-height:1.7;
-                    word-break:break-word;
-                    white-space:pre-wrap;
-                "
-            >${escapeHtml(todo.text)}</div>
-
-            <div
-                class="modal-actions"
-                style="justify-content:center;"
+                class="modal-box"
+                style="max-width:420px; text-align:left;"
             >
-                ${
-                    todo.done
-                        ? ''
-                        : `
-                            <button
-                                class="btn-confirm"
-                                data-action="edit"
-                            >
-                                编辑
-                            </button>
-                        `
-                }
+                <h3 style="text-align:center;">
+                    任务内容
+                </h3>
 
-                <button
-                    class="btn-cancel"
-                    data-action="close"
+                <div
+                    style="
+                        margin-top:16px;
+                        padding:14px 16px;
+                        border-radius:10px;
+                        background:var(--bg);
+                        line-height:1.7;
+                        word-break:break-word;
+                    "
                 >
-                    关闭
-                </button>
+                    ${escapeHtml(originalText)}
+                </div>
+
+                <div
+                    class="modal-actions"
+                    style="justify-content:center;"
+                >
+                    <button
+                        class="btn-cancel"
+                        data-action="cancel"
+                    >
+                        关闭
+                    </button>
+                </div>
             </div>
-        </div>
-    `;
+        `;
+    } else {
+        overlay.innerHTML = `
+            <div
+                class="modal-box"
+                style="max-width:420px; text-align:left;"
+            >
+                <h3 style="text-align:center;">
+                    编辑任务
+                </h3>
+
+                <textarea
+                    data-role="title-input"
+                    maxlength="80"
+                    rows="3"
+                    style="
+                        width:100%;
+                        margin-top:16px;
+                        padding:10px 12px;
+                        border:1.5px solid var(--border);
+                        border-radius:8px;
+                        outline:none;
+                        resize:none;
+                        font-size:14px;
+                        line-height:1.6;
+                    "
+                ></textarea>
+
+                <div
+                    class="modal-actions"
+                    style="justify-content:center;"
+                >
+                    <button
+                        class="btn-cancel"
+                        data-action="cancel"
+                    >
+                        取消
+                    </button>
+
+                    <button
+                        class="btn-confirm"
+                        data-action="confirm"
+                    >
+                        确定
+                    </button>
+                </div>
+            </div>
+        `;
+    }
 
     document.body.appendChild(overlay);
 
-    function closeTitleModal() {
+    const input = overlay.querySelector(
+        '[data-role="title-input"]'
+    );
+
+    if (input) {
+        input.value = originalText;
+
+        setTimeout(function() {
+            input.focus();
+            input.select();
+        }, 0);
+    }
+
+    function closeModal() {
         overlay.remove();
+
         document.removeEventListener(
             'keydown',
-            handleTitleModalKeydown
+            handleKeydown
         );
     }
 
-    function handleTitleModalKeydown(e) {
+    function saveTitle() {
+        if (!input) return;
+
+        const newText = input.value
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        if (!newText) {
+            alert('任务标题不能为空');
+            input.focus();
+            return;
+        }
+
+        todo.text = newText;
+
+        DB.set('todos', todos);
+        closeModal();
+        renderTodos();
+    }
+
+    function handleKeydown(e) {
         if (e.key === 'Escape') {
-            closeTitleModal();
+            closeModal();
+        }
+
+        if (
+            e.key === 'Enter' &&
+            !e.shiftKey &&
+            input
+        ) {
+            e.preventDefault();
+            saveTitle();
         }
     }
 
     overlay
-        .querySelector('[data-action="close"]')
-        .addEventListener('click', closeTitleModal);
+        .querySelector('[data-action="cancel"]')
+        .addEventListener('click', closeModal);
 
-    const editButton =
-        overlay.querySelector('[data-action="edit"]');
+    const confirmButton = overlay.querySelector(
+        '[data-action="confirm"]'
+    );
 
-    if (editButton) {
-        editButton.addEventListener('click', function() {
-            closeTitleModal();
-
-            setTimeout(function() {
-                startEditTodo(id);
-            }, 0);
-        });
+    if (confirmButton) {
+        confirmButton.addEventListener(
+            'click',
+            saveTitle
+        );
     }
 
     overlay.addEventListener('click', function(e) {
         if (e.target === overlay) {
-            closeTitleModal();
+            closeModal();
         }
     });
 
     document.addEventListener(
         'keydown',
-        handleTitleModalKeydown
+        handleKeydown
     );
 }
+
 
 function attachTodoEvents(container) {
     container
