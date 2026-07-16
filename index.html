@@ -527,15 +527,20 @@
     padding: 0;
     border: none;
     border-radius: 50%;
-    background: #6B8AFF;           /* 更淡的蓝色 */
+    background: #6B8AFF;
     color: #fff;
     font-size: 30px;
     font-weight: 400;
     line-height: 1;
     cursor: pointer;
     touch-action: manipulation;
-    box-shadow: none;               /* 去掉阴影 */
+    box-shadow: none;
     transition: var(--transition);
+
+    /* ===== 新增的防选中三行（加在最后） ===== */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
 }
 .fab-add-todo:hover {
     background: #5A7AEE;
@@ -4121,7 +4126,7 @@ fabAddTodo.addEventListener('pointerdown', function(e) {
         fabLongPressTriggered = true;
         if (navigator.vibrate) navigator.vibrate(15);
         openFabTypeMenu();
-    }, 320);
+    }, 450);
 });
 
 function cancelFabLongPress() {
