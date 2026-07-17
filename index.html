@@ -3687,7 +3687,7 @@ function startEditTodo(id) {
 
     textElement.appendChild(input);
     input.focus();
-    input.select();
+    input.setSelectionRange(input.value.length, input.value.length);
 
     let hasFinished = false;
 
