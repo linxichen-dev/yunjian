@@ -533,7 +533,7 @@
     font-weight: 400;
     line-height: 1;
     cursor: pointer;
-    touch-action: manipulation;
+    touch-action: none;
     box-shadow: none;
     transition: var(--transition);
 
@@ -4119,6 +4119,13 @@ fabAddTodo.addEventListener('pointerdown', function(e) {
         return;
     }
 
+    if (e.cancelable) e.preventDefault();
+
+if (this.setPointerCapture) {
+    this.setPointerCapture(e.pointerId);
+}
+
+
     if (navigator.vibrate) navigator.vibrate(5);
 
     fabLongPressTriggered = false;
@@ -4138,6 +4145,11 @@ function cancelFabLongPress() {
 fabAddTodo.addEventListener('pointerup', cancelFabLongPress);
 fabAddTodo.addEventListener('pointercancel', cancelFabLongPress);
 fabAddTodo.addEventListener('pointerleave', cancelFabLongPress);
+fabAddTodo.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+});
+
+
 
 fabAddTodo.addEventListener('click', function(e) {
     e.preventDefault();
