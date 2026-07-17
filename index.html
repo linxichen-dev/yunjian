@@ -551,6 +551,36 @@ html.fab-selection-lock * {
     -webkit-touch-callout: none !important;
 }
 
+/* ===== 清单长按拖拽排序 ===== */
+html.todo-sort-selection-lock,
+html.todo-sort-selection-lock * {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-touch-callout: none !important;
+}
+
+.todo-sort-placeholder {
+    box-sizing: border-box;
+    margin-bottom: 6px;
+    border: 2px dashed #8fa5ff !important;
+    border-radius: var(--radius-sm);
+    background: rgba(107, 138, 255, 0.12) !important;
+    transition: none !important;
+}
+
+.todo-list li.todo-sort-dragging {
+    position: fixed !important;
+    z-index: 10000 !important;
+    margin: 0 !important;
+    pointer-events: none !important;
+    opacity: 0.96;
+    transform: scale(1.02);
+    transition: none !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+    cursor: grabbing;
+}
+
+
 
 .fab-add-todo:hover {
     background: #5A7AEE;
@@ -2831,18 +2861,6 @@ function renderTodos() {
         todo => todo.done
     );
 
-    
-    done.sort((first, second) => {
-        const firstTime = first.completedAt
-            ? new Date(first.completedAt).getTime()
-            : 0;
-
-        const secondTime = second.completedAt
-            ? new Date(second.completedAt).getTime()
-            : 0;
-
-        return secondTime - firstTime;
-    });
 
    const hasCustomTag = todo =>
     todo.tagId &&
@@ -3629,6 +3647,556 @@ function attachTodoEvents(container) {
         }
     }
 }
+
+function initTodoLongPressSort() {
+    const list = document.getElementById('todoList');
+
+    if (
+        !list ||
+        list.dataset.longPressSortInited === 'true'
+    ) {
+        return;
+    }
+
+    list.dataset.longPressSortInited = 'true';
+
+    const HOLD_DELAY = 380;
+    const MOVE_TOLERANCE = 10;
+
+    let timer = null;
+    let item = null;
+    let container = null;
+    let placeholder = null;
+    let dragging = false;
+
+    let startX = 0;
+    let startY = 0;
+    let lastX = 0;
+    let lastY = 0;
+    let offsetY = 0;
+
+    let touchId = null;
+    let ignoreMouseUntil = 0;
+    let suppressClickUntil = 0;
+
+    let selectionLocked = false;
+    let unlockTimer = null;
+
+    function clearSelection() {
+        const selection = window.getSelection
+            ? window.getSelection()
+            : null;
+
+        if (selection && selection.rangeCount) {
+            selection.removeAllRanges();
+        }
+    }
+
+    function lockSelection() {
+        clearTimeout(unlockTimer);
+
+        selectionLocked = true;
+
+        document.documentElement.classList.add(
+            'todo-sort-selection-lock'
+        );
+
+        clearSelection();
+    }
+
+    function unlockSelection(delay = 0) {
+        clearSelection();
+        clearTimeout(unlockTimer);
+
+        const unlock = function() {
+            clearSelection();
+            selectionLocked = false;
+
+            document.documentElement.classList.remove(
+                'todo-sort-selection-lock'
+            );
+        };
+
+        if (delay) {
+            unlockTimer = setTimeout(unlock, delay);
+        } else {
+            unlock();
+        }
+    }
+
+    function cancelTimer() {
+        clearTimeout(timer);
+        timer = null;
+    }
+
+    function beginPress(target, x, y) {
+        cancelTimer();
+
+        item = target;
+
+        startX = x;
+        startY = y;
+        lastX = x;
+        lastY = y;
+
+        lockSelection();
+
+        timer = setTimeout(
+            startDrag,
+            HOLD_DELAY
+        );
+    }
+
+    function startDrag() {
+        if (!item || dragging) return;
+
+        cancelTimer();
+
+        dragging = true;
+        container = item.parentElement;
+
+        const rect = item.getBoundingClientRect();
+
+        offsetY = lastY - rect.top;
+
+        placeholder = document.createElement('li');
+        placeholder.className = 'todo-sort-placeholder';
+        placeholder.style.height = rect.height + 'px';
+
+        container.insertBefore(
+            placeholder,
+            item
+        );
+
+        item.classList.add('todo-sort-dragging');
+
+        item.style.width = rect.width + 'px';
+        item.style.height = rect.height + 'px';
+        item.style.left = rect.left + 'px';
+        item.style.top = rect.top + 'px';
+
+        /*
+         * 防止拖拽结束产生的 click
+         * 误触标题、完成按钮或删除按钮。
+         */
+        suppressClickUntil = Date.now() + 800;
+
+        clearSelection();
+
+        if (navigator.vibrate) {
+            navigator.vibrate(15);
+        }
+    }
+
+    function movePlaceholder(y) {
+        const siblings = Array.from(
+            container.children
+        ).filter(node =>
+            node !== item &&
+            node !== placeholder &&
+            node.matches('li[data-id]')
+        );
+
+        const before = siblings.find(node => {
+            const rect =
+                node.getBoundingClientRect();
+
+            return y < rect.top + rect.height / 2;
+        });
+
+        if (before) {
+            container.insertBefore(
+                placeholder,
+                before
+            );
+
+            return;
+        }
+
+        /*
+         * 未完成任务直接位于 todoList 下。
+         * 占位符不能移动到“已完成”区域后面。
+         */
+        if (container === list) {
+            const completedArea = Array.from(
+                container.children
+            ).find(node =>
+                node !== item &&
+                node !== placeholder &&
+                !node.matches('li[data-id]')
+            );
+
+            container.insertBefore(
+                placeholder,
+                completedArea || null
+            );
+        } else {
+            /*
+             * 已完成任务只在当前分类容器中排序。
+             */
+            container.appendChild(placeholder);
+        }
+    }
+
+    function autoScroll(y) {
+        const rect = list.getBoundingClientRect();
+
+        if (y < rect.top + 48) {
+            list.scrollTop -= 12;
+        }
+
+        if (y > rect.bottom - 48) {
+            list.scrollTop += 12;
+        }
+    }
+
+    function move(x, y, event) {
+        lastX = x;
+        lastY = y;
+
+        if (!item) return;
+
+        /*
+         * 长按生效前移动超过10px，
+         * 说明用户是在正常滑动列表。
+         */
+        if (!dragging) {
+            const distance = Math.hypot(
+                x - startX,
+                y - startY
+            );
+
+            if (distance > MOVE_TOLERANCE) {
+                cancelTimer();
+                item = null;
+                unlockSelection();
+            }
+
+            return;
+        }
+
+        if (event.cancelable) {
+            event.preventDefault();
+        }
+
+        item.style.top =
+            y - offsetY + 'px';
+
+        autoScroll(y);
+        movePlaceholder(y);
+        clearSelection();
+    }
+
+    function saveOrder() {
+        const nodes = Array.from(
+            container.children
+        ).filter(node =>
+            node === placeholder ||
+            (
+                node !== item &&
+                node.matches('li[data-id]')
+            )
+        );
+
+        const insertAt =
+            nodes.indexOf(placeholder);
+
+        const ids = nodes
+            .filter(node => node !== placeholder)
+            .map(node =>
+                String(node.dataset.id)
+            );
+
+        ids.splice(
+            insertAt,
+            0,
+            String(item.dataset.id)
+        );
+
+        const idSet = new Set(ids);
+
+        const todoMap = new Map(
+            todos.map(todo => [
+                String(todo.id),
+                todo
+            ])
+        );
+
+        let index = 0;
+
+        /*
+         * 只改变当前显示分组内任务的顺序，
+         * 其他任务保持原位。
+         */
+        todos = todos.map(todo => {
+            if (!idSet.has(String(todo.id))) {
+                return todo;
+            }
+
+            return todoMap.get(ids[index++]);
+        });
+
+        DB.set('todos', todos);
+    }
+
+    function finish(save) {
+        cancelTimer();
+
+        const wasDragging = dragging;
+
+        if (wasDragging && save) {
+            saveOrder();
+        }
+
+        if (item) {
+            item.classList.remove(
+                'todo-sort-dragging'
+            );
+
+            item.style.width = '';
+            item.style.height = '';
+            item.style.left = '';
+            item.style.top = '';
+        }
+
+        if (placeholder) {
+            placeholder.remove();
+        }
+
+        dragging = false;
+        item = null;
+        container = null;
+        placeholder = null;
+        touchId = null;
+
+        /*
+         * 拖拽后延迟500ms解除选择锁，
+         * 防止手机浏览器松手后补建文本选区。
+         */
+        unlockSelection(
+            wasDragging ? 500 : 0
+        );
+
+        if (wasDragging) {
+            renderTodos();
+        }
+    }
+
+    function findTouch(touches) {
+        return Array.from(touches).find(
+            touch =>
+                touch.identifier === touchId
+        );
+    }
+
+    /* ===== 移动端 ===== */
+
+    list.addEventListener(
+        'touchstart',
+        function(e) {
+            if (e.touches.length !== 1) return;
+
+            const target = e.target.closest(
+                'li[data-id]'
+            );
+
+            if (
+                !target ||
+                e.target.closest('.edit-input')
+            ) {
+                return;
+            }
+
+            const touch = e.touches[0];
+
+            touchId = touch.identifier;
+
+            /*
+             * 防止触摸结束后产生的模拟鼠标事件。
+             */
+            ignoreMouseUntil =
+                Date.now() + 800;
+
+            beginPress(
+                target,
+                touch.clientX,
+                touch.clientY
+            );
+        },
+        {
+            passive: true
+        }
+    );
+
+    list.addEventListener(
+        'touchmove',
+        function(e) {
+            const touch = findTouch(e.touches);
+
+            if (!touch) return;
+
+            move(
+                touch.clientX,
+                touch.clientY,
+                e
+            );
+        },
+        {
+            passive: false
+        }
+    );
+
+    list.addEventListener(
+        'touchend',
+        function(e) {
+            if (!findTouch(e.changedTouches)) {
+                return;
+            }
+
+            if (
+                dragging &&
+                e.cancelable
+            ) {
+                e.preventDefault();
+            }
+
+            finish(dragging);
+        },
+        {
+            passive: false
+        }
+    );
+
+    list.addEventListener(
+        'touchcancel',
+        function() {
+            finish(false);
+        }
+    );
+
+    /* ===== PC端 ===== */
+
+    list.addEventListener(
+        'mousedown',
+        function(e) {
+            if (
+                e.button !== 0 ||
+                Date.now() < ignoreMouseUntil
+            ) {
+                return;
+            }
+
+            const target = e.target.closest(
+                'li[data-id]'
+            );
+
+            if (
+                !target ||
+                e.target.closest('.edit-input')
+            ) {
+                return;
+            }
+
+            e.preventDefault();
+
+            beginPress(
+                target,
+                e.clientX,
+                e.clientY
+            );
+        }
+    );
+
+    document.addEventListener(
+        'mousemove',
+        function(e) {
+            if (!item) return;
+
+            move(
+                e.clientX,
+                e.clientY,
+                e
+            );
+        }
+    );
+
+    document.addEventListener(
+        'mouseup',
+        function(e) {
+            if (
+                e.button === 0 &&
+                item
+            ) {
+                finish(dragging);
+            }
+        }
+    );
+
+    /*
+     * 捕获阶段阻止拖拽后的误点击。
+     */
+    list.addEventListener(
+        'click',
+        function(e) {
+            if (
+                Date.now() >=
+                suppressClickUntil
+            ) {
+                return;
+            }
+
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        },
+        true
+    );
+
+    /*
+     * 下面继续复用上次修复FAB选择文字的思路：
+     * 锁定整个页面，而不是只锁当前任务。
+     */
+    document.addEventListener(
+        'selectstart',
+        function(e) {
+            if (selectionLocked) {
+                e.preventDefault();
+            }
+        },
+        true
+    );
+
+    document.addEventListener(
+        'selectionchange',
+        function() {
+            if (selectionLocked) {
+                clearSelection();
+            }
+        }
+    );
+
+    document.addEventListener(
+        'contextmenu',
+        function(e) {
+            if (!selectionLocked) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+            clearSelection();
+        },
+        true
+    );
+
+    document.addEventListener(
+        'dragstart',
+        function(e) {
+            if (selectionLocked) {
+                e.preventDefault();
+            }
+        },
+        true
+    );
+}
+
 
 function regenerateRemind(todo) {
     const now = new Date();
@@ -5797,6 +6365,8 @@ function changeTodoType(id, newType) {
                         initNoteCalSwipe(); } }); });
 
             function init() { renderTodos();
+                initTodoLongPressSort();
+
                 noteSelectedDate = formatDate(today());
                 renderNoteCalendar();
                 renderNoteList();
