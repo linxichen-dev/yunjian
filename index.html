@@ -542,6 +542,16 @@
     -webkit-user-select: none;
     -webkit-touch-callout: none;
 }
+
+/* 仅在长按加号期间启用 */
+html.fab-selection-lock,
+html.fab-selection-lock * {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-touch-callout: none !important;
+}
+
+
 .fab-add-todo:hover {
     background: #5A7AEE;
     transform: translateY(-2px) scale(1.05);
@@ -4072,6 +4082,80 @@ const quickAddTitle = document.getElementById('quickAddTitle');
 let quickAddType = 'inbox';
 let fabLongPressTimer = null;
 let fabLongPressTriggered = false;
+let fabSelectionLocked = false;
+let fabSelectionUnlockTimer = null;
+
+function clearFabPageSelection() {
+    const selection = window.getSelection
+        ? window.getSelection()
+        : null;
+
+    if (selection && selection.rangeCount > 0) {
+        selection.removeAllRanges();
+    }
+}
+
+function lockFabPageSelection() {
+    clearTimeout(fabSelectionUnlockTimer);
+
+    fabSelectionLocked = true;
+
+    document.documentElement.classList.add(
+        'fab-selection-lock'
+    );
+
+    clearFabPageSelection();
+}
+
+function unlockFabPageSelectionSoon() {
+    clearFabPageSelection();
+    clearTimeout(fabSelectionUnlockTimer);
+
+    /*
+     * 不要在 pointerup 时立即解除。
+     * 某些手机浏览器会在松手后才创建选区。
+     */
+    fabSelectionUnlockTimer = setTimeout(function() {
+        clearFabPageSelection();
+
+        fabSelectionLocked = false;
+
+        document.documentElement.classList.remove(
+            'fab-selection-lock'
+        );
+    }, 500);
+}
+document.addEventListener(
+    'selectstart',
+    function(e) {
+        if (fabSelectionLocked) {
+            e.preventDefault();
+        }
+    },
+    true
+);
+
+document.addEventListener(
+    'selectionchange',
+    function() {
+        if (fabSelectionLocked) {
+            clearFabPageSelection();
+        }
+    }
+);
+
+document.addEventListener(
+    'contextmenu',
+    function(e) {
+        if (!fabSelectionLocked) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        clearFabPageSelection();
+    },
+    true
+);
+
 
 function setFabTypeMenuOpen(isOpen) {
     fabTypeMenu.classList.toggle('open', isOpen);
@@ -4119,6 +4203,9 @@ fabAddTodo.addEventListener('pointerdown', function(e) {
         return;
     }
 
+        lockFabPageSelection();
+
+
     if (e.cancelable) e.preventDefault();
 
 if (this.setPointerCapture) {
@@ -4132,6 +4219,9 @@ if (this.setPointerCapture) {
     clearTimeout(fabLongPressTimer);
     fabLongPressTimer = setTimeout(function() {
         fabLongPressTriggered = true;
+
+        clearFabPageSelection();
+
         if (navigator.vibrate) navigator.vibrate(15);
         openFabTypeMenu();
     }, 450);
@@ -4148,6 +4238,26 @@ fabAddTodo.addEventListener('pointerleave', cancelFabLongPress);
 fabAddTodo.addEventListener('selectstart', function(e) {
     e.preventDefault();
 });
+function finishFabTouchPress() {
+    if (!fabSelectionLocked) return;
+
+    cancelFabLongPress();
+    clearFabPageSelection();
+    unlockFabPageSelectionSoon();
+}
+
+document.addEventListener(
+    'pointerup',
+    finishFabTouchPress,
+    true
+);
+
+document.addEventListener(
+    'pointercancel',
+    finishFabTouchPress,
+    true
+);
+
 
 
 
