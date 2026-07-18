@@ -580,6 +580,121 @@ html.todo-sort-selection-lock * {
     cursor: grabbing;
 }
 
+/* FAB：有文字时变成“确认” */
+.fab-add-todo.confirm-mode {
+  width: 88px;
+  border-radius: 18px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.fab-input-panel.confirm-space {
+  right: 112px;
+}
+.fab-add-todo.more-mode {
+  width: 58px;
+  border-radius: 50%;
+  font-size: 21px;
+  letter-spacing: 2px;
+}
+
+/* 分类弹窗 */
+.quick-tag-box, .tag-edit-box {
+  max-width: 390px;
+}
+#tagEditModal {
+  z-index: 1200;
+}
+.tag-color-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 8px 0 16px;
+}
+.modal-box .tag-color-option {
+  display: inline-flex;
+  margin: 0;
+  cursor: pointer;
+}
+.tag-color-option input {
+  display: none;
+}
+.tag-color-dot {
+  display: block;
+  width: 34px;
+  height: 34px;
+  border: 3px solid #e5e7eb;
+  border-radius: 50%;
+  transition: 0.15s;
+}
+.tag-color-option input:checked + .tag-color-dot {
+  border-color: var(--primary);
+  transform: scale(1.08);
+  box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.12);
+}
+.tag-library-title {
+  margin: 12px 0 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+}
+.tag-library {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 36px;
+  margin-bottom: 16px;
+}
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 7px 5px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.tag-chip.is-selected {
+  outline: 2px solid var(--primary);
+}
+.tag-chip.is-new {
+  outline: 3px solid #f59e0b;
+}
+.tag-delete {
+  padding: 0 2px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0.65;
+}
+.quick-tag-create {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.quick-tag-create input {
+  flex: 1;
+}
+.quick-tag-create button {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+}
+/* 标签长按时锁定整个页面，避免再次选中后方文字 */
+html.tag-press-lock,
+html.tag-press-lock * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
 
 
 .fab-add-todo:hover {
@@ -609,7 +724,7 @@ html.todo-sort-selection-lock * {
     visibility: visible;
     opacity: 1;
     transform: scale(1);
-    pointer-events: auto;
+    pointer-events: none;
 }
 
 /* ===== 三个扇形按钮 ===== */
@@ -2250,11 +2365,42 @@ html.todo-sort-selection-lock * {
         <span style="position:absolute; top:-4px; right:-4px; font-size:14px; display:none;">✓</span>
     </label>
 </div>
+
         <div class="modal-actions">
             <button class="btn-cancel" id="tagModalCancel">取消</button>
             <button class="btn-confirm" id="tagModalConfirm">创建</button>
         </div>
     </div>
+</div>
+
+<!-- FAB：选择或创建分类 -->
+<div class="modal-overlay" id="quickTagModal">
+  <div class="modal-box quick-tag-box">
+    <h3>选择或创建分类</h3>
+    <label>新建标签颜色</label>
+    <div class="tag-color-list" id="quickTagColorList"></div>
+    <div class="tag-library-title">📂 我的标签库</div>
+    <div class="tag-library" id="quickTagLibrary"></div>
+    <div class="quick-tag-create">
+      <input type="text" id="quickTagName" maxlength="20" placeholder="输入新标签名称" >
+      <button type="button" id="quickTagCreate">创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- 全局统一的标签编辑弹窗 -->
+<div class="modal-overlay" id="tagEditModal">
+  <div class="modal-box tag-edit-box">
+    <h3>编辑标签</h3>
+    <label>标签名称</label>
+    <input type="text" id="tagEditName" maxlength="20" >
+    <label>标签颜色</label>
+    <div class="tag-color-list" id="tagEditColorList"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="tagEditCancel">取消</button>
+      <button class="btn-confirm" id="tagEditSave">保存</button>
+    </div>
+  </div>
 </div>
 
     <div class="modal-overlay" id="timeEditModal">
@@ -4304,21 +4450,22 @@ function startEditTodo(id) {
 }
 
 function addTodo(text, type = 'inbox') {
-    if (!text.trim()) return false;
-
-    const newTodo = createTodo(text, type);
-
-    todos.push(newTodo);
-    DB.set('todos', todos);
-    renderTodos();
-
-    if (type === 'today') {
-        openTodayTimeEditModal(newTodo, true);
-    } else if (type === 'hard') {
-        openHardModal(newTodo, true);
-    }
-
-    return true;
+  if (!text.trim()) return false;
+  const customTag = userTags.find( tag => tag.id === type );
+  const realType = customTag ? 'inbox' : type;
+  const newTodo = createTodo( text, realType );
+  if (customTag) {
+    applyCustomTag( newTodo, customTag.id );
+  }
+  todos.push(newTodo);
+  DB.set('todos', todos);
+  renderTodos();
+  if (realType === 'today') {
+    openTodayTimeEditModal( newTodo, true );
+  } else if (realType === 'hard') {
+    openHardModal( newTodo, true );
+  }
+  return true;
 }
 
             let hardModalTargetId = null;
@@ -4648,6 +4795,44 @@ const fabTypeMenu = document.getElementById('fabTypeMenu');
 const fabInputPanel = document.getElementById('fabInputPanel');
 const quickAddTitle = document.getElementById('quickAddTitle');
 let quickAddType = 'inbox';
+function getQuickAddPlaceholder() {
+  const tag = userTags.find( tag => tag.id === quickAddType );
+  if (tag) {
+    return `📂 ${tag.name}：请输入...`;
+  }
+  const placeholders = {
+    inbox: '输入待办事项，回车保存…',
+    today: '输入今日计划，回车保存…',
+    flexible: '输入微习惯，回车保存…',
+    hard: '输入硬计划，回车保存…'
+  };
+  return placeholders[quickAddType] || placeholders.inbox;
+}
+
+function updateQuickAddPlaceholder() {
+  quickAddTitle.placeholder = getQuickAddPlaceholder();
+}
+
+function updateFabVisual() {
+  const menuOpen = fabTypeMenu.classList.contains('open');
+  const hasText = quickAddTitle.value.trim().length > 0;
+  const confirmMode = hasText && !menuOpen;
+  fabAddTodo.classList.toggle( 'confirm-mode', confirmMode );
+  fabAddTodo.classList.toggle( 'more-mode', menuOpen );
+  fabInputPanel.classList.toggle( 'confirm-space', confirmMode );
+  fabAddTodo.textContent = menuOpen ? '···' : confirmMode ? '确认' : '+';
+}
+
+function submitQuickAdd() {
+  const text = quickAddTitle.value.trim();
+  if (!text) return false;
+  if (!addTodo(text, quickAddType)) {
+    return false;
+  }
+  quickAddTitle.value = '';
+  closeFabQuickAdd();
+  return true;
+}
 let fabLongPressTimer = null;
 let fabLongPressTriggered = false;
 let fabSelectionLocked = false;
@@ -4726,9 +4911,187 @@ document.addEventListener(
 
 
 function setFabTypeMenuOpen(isOpen) {
-    fabTypeMenu.classList.toggle('open', isOpen);
-    fabTypeMenu.setAttribute('aria-hidden', String(!isOpen));
+  fabTypeMenu.classList.toggle( 'open', isOpen );
+  fabTypeMenu.setAttribute( 'aria-hidden', String(!isOpen) );
+  updateFabVisual();
 }
+
+const TAG_COLORS = [ '#cffafe', '#fef3c7', '#e0e7ff', '#ffe4e6', '#ecfccb' ];
+let quickTagNewId = null;
+let editingTagId = null;
+let tagEditAfterSave = null;
+
+function renderTagColorOptions( containerId, inputName, selectedColor ) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = TAG_COLORS.map(color => `
+    <label class="tag-color-option">
+      <input type="radio" name="${inputName}" value="${color}" ${color === selectedColor ? 'checked' : ''} >
+      <span class="tag-color-dot" style="background:${color};" ></span>
+    </label>
+  `).join('');
+}
+
+function deleteUserTag(tagId) {
+  const tag = userTags.find( tag => tag.id === tagId );
+  if (!tag) return false;
+  if (!confirm( `确定要删除分类“${tag.name}”吗？\n所有使用此分类的任务将变为“待归类”。` )) {
+    return false;
+  }
+  todos.forEach(todo => {
+    if (todo.tagId === tagId) {
+      todo.tagId = null;
+    }
+  });
+  userTags = userTags.filter( tag => tag.id !== tagId );
+  DB.set('todos', todos);
+  DB.set('userTags', userTags);
+  if (quickAddType === tagId) {
+    quickAddType = 'inbox';
+  }
+  updateQuickAddPlaceholder();
+  updateFabVisual();
+  renderTodos();
+  return true;
+}
+
+function renderQuickTagLibrary() {
+  const container = document.getElementById( 'quickTagLibrary' );
+  container.innerHTML = userTags.length ? userTags.map(tag => `
+    <span class="tag-chip ${quickAddType === tag.id ? 'is-selected' : ''} ${quickTagNewId === tag.id ? 'is-new' : ''}" data-tagid="${tag.id}" style=" background:${tag.color}; color:${getContrastColor(tag.color)}; " >
+      <span>${escapeHtml(tag.name)}</span>
+      <button type="button" class="tag-delete" data-delid="${tag.id}" >✕</button>
+    </span>
+  `).join('') : '暂无自定义标签';
+  container .querySelectorAll('.tag-chip') .forEach(chip => {
+    const tagId = chip.dataset.tagid;
+    chip.addEventListener( 'click', function(e) {
+      if ( e.target.closest( '.tag-delete' ) ) {
+        return;
+      }
+      quickAddType = tagId;
+      quickTagNewId = null;
+      closeQuickTagModal(false);
+      openFabInput(tagId);
+    } );
+    chip .querySelector('.tag-delete') .addEventListener( 'click', function(e) {
+      e.stopPropagation();
+      if ( deleteUserTag(tagId) ) {
+        renderQuickTagLibrary();
+      }
+    } );
+    bindTagEditGesture( chip, tagId, renderQuickTagLibrary );
+  });
+}
+
+function openQuickTagModal() {
+  quickTagNewId = null;
+  setFabTypeMenuOpen(false);
+  renderTagColorOptions( 'quickTagColorList', 'quickTagColor', TAG_COLORS[0] );
+  renderQuickTagLibrary();
+  document.getElementById( 'quickTagName' ).value = '';
+  document.getElementById( 'quickTagModal' ).classList.add('open');
+}
+
+function closeQuickTagModal( resetFab = true ) {
+  document.getElementById( 'quickTagModal' ).classList.remove('open');
+  quickTagNewId = null;
+  if (resetFab) {
+    closeFabQuickAdd();
+  } else {
+    updateFabVisual();
+  }
+}
+
+document.getElementById( 'quickTagCreate' ).addEventListener('click', function() {
+  const input = document.getElementById( 'quickTagName' );
+  const name = input.value .replace(/\s+/g, ' ') .trim();
+  if (!name) {
+    input.focus();
+    return;
+  }
+  const duplicated = userTags.some(tag => tag.name.trim().toLocaleLowerCase() === name.toLocaleLowerCase() );
+  if (duplicated) {
+    alert('已经存在同名标签');
+    input.select();
+    return;
+  }
+  const colorInput = document.querySelector( 'input[name="quickTagColor"]:checked' );
+  const newTag = {
+    id: generateId(),
+    name,
+    color: colorInput ? colorInput.value : TAG_COLORS[0]
+  };
+  userTags.push(newTag);
+  DB.set('userTags', userTags);
+  quickTagNewId = newTag.id;
+  input.value = '';
+  renderQuickTagLibrary();
+  input.focus();
+});
+
+document.getElementById( 'quickTagModal' ).addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeQuickTagModal(true);
+  }
+});
+
+function openTagEditModal( tagId, afterSave ) {
+  const tag = userTags.find( tag => tag.id === tagId );
+  if (!tag) return;
+  editingTagId = tagId;
+  tagEditAfterSave = afterSave || null;
+  document.getElementById( 'tagEditName' ).value = tag.name;
+  renderTagColorOptions( 'tagEditColorList', 'tagEditColor', tag.color );
+  document.getElementById( 'tagEditModal' ).classList.add('open');
+}
+
+function closeTagEditModal() {
+  document.getElementById( 'tagEditModal' ).classList.remove('open');
+  editingTagId = null;
+  tagEditAfterSave = null;
+}
+
+document.getElementById( 'tagEditSave' ).addEventListener('click', function() {
+  const tag = userTags.find( tag => tag.id === editingTagId );
+  if (!tag) {
+    closeTagEditModal();
+    return;
+  }
+  const input = document.getElementById( 'tagEditName' );
+  const name = input.value .replace(/\s+/g, ' ') .trim();
+  if (!name) {
+    input.focus();
+    return;
+  }
+  const duplicated = userTags.some(other => other.id !== tag.id && other.name.trim().toLocaleLowerCase() === name.toLocaleLowerCase() );
+  if (duplicated) {
+    alert('已经存在同名标签');
+    input.select();
+    return;
+  }
+  const colorInput = document.querySelector( 'input[name="tagEditColor"]:checked' );
+  tag.name = name;
+  if (colorInput) {
+    tag.color = colorInput.value;
+  }
+  DB.set('userTags', userTags);
+  renderTodos();
+  updateQuickAddPlaceholder();
+  const afterSave = tagEditAfterSave;
+  closeTagEditModal();
+  if ( document.getElementById( 'quickTagModal' ).classList.contains('open') ) {
+    renderQuickTagLibrary();
+  }
+  if (afterSave) afterSave();
+});
+
+document.getElementById( 'tagEditCancel' ).addEventListener( 'click', closeTagEditModal );
+document.getElementById( 'tagEditModal' ).addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeTagEditModal();
+  }
+});
+
 
 function setFabInputOpen(isOpen) {
     fabInputPanel.classList.toggle('open', isOpen);
@@ -4741,28 +5104,22 @@ function openFabTypeMenu() {
 }
 
 function openFabInput(type = 'inbox') {
-    const placeholders = {
-        inbox: '输入待办事项，回车保存…',
-        today: '输入今日计划，回车保存…',
-        flexible: '输入微习惯，回车保存…',
-        hard: '输入硬计划，回车保存…'
-    };
-
-    quickAddType = type;
-    quickAddTitle.value = '';
-    quickAddTitle.placeholder = placeholders[type];
-    setFabTypeMenuOpen(false);
-    setFabInputOpen(true);
-
-    requestAnimationFrame(() => {
-        quickAddTitle.focus();
-    });
+  quickAddType = type;
+  quickAddTitle.value = '';
+  updateQuickAddPlaceholder();
+  setFabTypeMenuOpen(false);
+  setFabInputOpen(true);
+  updateFabVisual();
+  requestAnimationFrame(() => {
+    quickAddTitle.focus();
+  });
 }
 
 function closeFabQuickAdd() {
-    setFabTypeMenuOpen(false);
-    setFabInputOpen(false);
-    quickAddTitle.value = '';
+  setFabTypeMenuOpen(false);
+  setFabInputOpen(false);
+  quickAddTitle.value = '';
+  updateFabVisual();
 }
 
 fabAddTodo.addEventListener('pointerdown', function(e) {
@@ -4827,18 +5184,29 @@ document.addEventListener(
 );
 
 
-
-
-fabAddTodo.addEventListener('click', function(e) {
-    e.preventDefault();
-
-    if (fabLongPressTriggered) {
-        fabLongPressTriggered = false;
-        return;
-    }
-
-    openFabInput('inbox');
-});
+fabAddTodo.addEventListener( 'click', function(e) {
+  e.preventDefault();
+  if (fabLongPressTriggered) {
+    fabLongPressTriggered = false;
+    return;
+  }
+  /* 当前显示“···” */
+  if ( fabTypeMenu.classList.contains('open') ) {
+    openQuickTagModal();
+    return;
+  }
+  /* 当前显示“确认” */
+  if (quickAddTitle.value.trim()) {
+    submitQuickAdd();
+    return;
+  }
+  /* 输入框已经打开，只重新聚焦 */
+  if ( fabInputPanel.classList.contains('open') ) {
+    quickAddTitle.focus();
+    return;
+  }
+  openFabInput('inbox');
+} );
 
 fabAddTodo.addEventListener('contextmenu', function(e) {
     e.preventDefault();
@@ -4855,18 +5223,17 @@ fabTypeMenu
         });
     });
 
-quickAddTitle.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
+quickAddTitle.addEventListener( 'keydown', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    submitQuickAdd();
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    closeFabQuickAdd();
+  }
+} );
 
-        if (addTodo(this.value, quickAddType)) {
-            closeFabQuickAdd();
-        }
-    } else if (e.key === 'Escape') {
-        e.preventDefault();
-        closeFabQuickAdd();
-    }
-});
+quickAddTitle.addEventListener( 'input', updateFabVisual );
 
 document.addEventListener('pointerdown', function(e) {
     if (
@@ -5362,28 +5729,26 @@ function showTypeSelectForTodo(id) {
             renderTodos();
             overlay.remove();
         });
+
+bindTagEditGesture( el, el.dataset.tagid, function() {
+  if ( document.body.contains(overlay) ) {
+    overlay.remove();
+    showTypeSelectForTodo(id);
+  }
+} );
+
     });
 
     // ---- 删除标签功能 ----
 overlay.querySelectorAll('#tagLibraryContainer [data-delid]').forEach(el => {
-    el.addEventListener('click', function(e) {
-        e.stopPropagation(); // 阻止触发切换标签
-        const tagId = this.dataset.delid;
-        const tag = userTags.find(t => t.id === tagId);
-        if (!tag) return;
-        if (!confirm(`确定要删除分类“${tag.name}”吗？\n所有使用此分类的任务将变为“待归类”。`)) return;
-
-        // 1. 把所有使用这个标签的任务，变成“待归类”（清空 tagId）
-        todos.forEach(t => { if (t.tagId === tagId) t.tagId = null; });
-        // 2. 从标签库里删除这个标签
-        userTags = userTags.filter(t => t.id !== tagId);
-        // 3. 保存数据
-        DB.set('todos', todos);
-        DB.set('userTags', userTags);
-        // 4. 关闭当前窗口，刷新列表
+    // 在同一个 forEach 循环里，替换删除监听器
+el.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const tagId = this.dataset.delid;
+    if (deleteUserTag(tagId)) {
         overlay.remove();
-        renderTodos();
-    });
+    }
+});
 });
 
 
@@ -6380,7 +6745,73 @@ function changeTodoType(id, newType) {
                     .requestPermission(); const label = document.getElementById('noteListDate').textContent;
                 document.getElementById('noteDateInput').placeholder = `写便条 (${label.replace('📅 ', '').replace(' 🔒', '')})`; }
             init();
+
+function bindTagEditGesture( chip, tagId, afterSave ) {
+  let timer = null;
+  let startX = 0;
+  let startY = 0;
+  let suppressClickUntil = 0;
+
+  chip.addEventListener( 'contextmenu', function(e) {
+    if ( e.target.closest( '.tag-delete, [data-delid]' ) ) {
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    openTagEditModal( tagId, afterSave );
+  } );
+
+  chip.addEventListener( 'touchstart', function(e) {
+    if ( e.touches.length !== 1 || e.target.closest( '.tag-delete, [data-delid]' ) ) {
+      return;
+    }
+    const touch = e.touches[0];
+    startX = touch.clientX;
+    startY = touch.clientY;
+    document.documentElement .classList.add( 'tag-press-lock' );
+    clearFabPageSelection();
+    timer = setTimeout(function() {
+      timer = null;
+      suppressClickUntil = Date.now() + 700;
+      clearFabPageSelection();
+      if (navigator.vibrate) {
+        navigator.vibrate(15);
+      }
+      openTagEditModal( tagId, afterSave );
+    }, 500);
+  }, { passive: true } );
+
+  chip.addEventListener( 'touchmove', function(e) {
+    if (!timer) return;
+    const touch = e.touches[0];
+    if ( Math.hypot( touch.clientX - startX, touch.clientY - startY ) > 10 ) {
+      clearTimeout(timer);
+      timer = null;
+      document.documentElement .classList.remove( 'tag-press-lock' );
+    }
+  }, { passive: true } );
+
+  function finishTouch() {
+    clearTimeout(timer);
+    timer = null;
+    setTimeout(function() {
+      document.documentElement .classList.remove( 'tag-press-lock' );
+      clearFabPageSelection();
+    }, 350);
+  }
+  chip.addEventListener( 'touchend', finishTouch );
+  chip.addEventListener( 'touchcancel', finishTouch );
+
+  chip.addEventListener( 'click', function(e) {
+    if ( Date.now() < suppressClickUntil ) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  }, true );
+}
+
         })();
+
     </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"ecc6cfd0e0a14cedb231a95e9f5a150d","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
