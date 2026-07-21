@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!-- PWA 配置 -->
+<link rel="manifest" href="/yunjian/manifest.json" />
+<meta name="theme-color" content="#4A6CF7" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="apple-touch-icon" href="/yunjian/icons/icon-192x192.png" />
     <title>云笺</title>
     <style>
         /* ========== 全局 ========== */
@@ -2020,6 +2026,23 @@ html.tag-press-lock * {
                 <div class="sub">计划、复盘、日程，一"笺"安排</div>
             </div>
             <div class="home-grid">
+                <!-- 安装按钮（默认隐藏，JS控制显示） -->
+<div id="pwa-install-area" style="text-align:center; margin-bottom:20px; grid-column: 1 / -1;">
+  <button id="installBtn" style="display:none; padding:14px 28px; background:linear-gradient(135deg,#4A6CF7,#8B5CF6); color:#fff; border:none; border-radius:50px; font-size:18px; font-weight:600; cursor:pointer; box-shadow:0 6px 20px rgba(74,108,247,0.35); transition:transform 0.2s;">
+    📱 添加到桌面
+  </button>
+  
+  <!-- iOS / Via 手动引导（默认隐藏） -->
+  <div id="manualGuide" style="display:none; background:#f8f9ff; border-radius:16px; padding:20px 24px; text-align:left; border:1px solid #e0e7ff; margin-top:12px;">
+    <p style="font-weight:600; margin-bottom:8px; color:#1a1a2e;">📲 将“云笺”添加到主屏幕</p>
+    <ol style="padding-left:20px; margin:0; color:#5a5a7a; font-size:14px; line-height:1.8;">
+      <li>点击浏览器菜单 <strong>“分享”</strong> 或 <strong>“添加到...”</strong></li>
+      <li>滑动并选择 <strong>“添加到主屏幕”</strong></li>
+      <li>点击右上角 <strong>“添加”</strong> 即可</li>
+    </ol>
+  </div>
+</div>
+                
                 <div class="home-card" data-page="notePage">
                     <div class="icon">⚡</div>
                     <h3>你的日常</h3>
@@ -6813,6 +6836,92 @@ function bindTagEditGesture( chip, tagId, afterSave ) {
         })();
 
     </script>
+    <script>
+  (function() {
+    // =============================================
+    // PWA 安装逻辑（支持 Chrome/Edge/Android）
+    // =============================================
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+    const manualGuide = document.getElementById('manualGuide');
+
+    // 判断是否为 iOS
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    // 判断是否已处于 PWA 独立模式（已安装）
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+    // 如果已经安装了，隐藏所有按钮
+    if (isStandalone) {
+      if (installBtn) installBtn.style.display = 'none';
+      if (manualGuide) manualGuide.style.display = 'none';
+      return;
+    }
+
+    // ---------- Chrome / Edge / Android 弹窗支持 ----------
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (installBtn) {
+        installBtn.style.display = 'block';
+        installBtn.textContent = '📱 一键添加到桌面';
+      }
+    });
+
+    if (installBtn) {
+      installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const result = await deferredPrompt.userChoice;
+          if (result.outcome === 'accepted') {
+            installBtn.style.display = 'none';
+            manualGuide.style.display = 'none';
+          } else {
+            // 用户拒绝，显示手动引导
+            manualGuide.style.display = 'block';
+          }
+          deferredPrompt = null;
+        } else {
+          // 如果没有 deferredPrompt（如 Via、Firefox），直接显示手动引导
+          manualGuide.style.display = 'block';
+          installBtn.textContent = '📱 查看添加教程';
+        }
+      });
+    }
+
+    // ---------- iOS 特殊处理 ----------
+    if (isIOS) {
+      if (installBtn) {
+        installBtn.style.display = 'block';
+        installBtn.textContent = '📱 添加到主屏幕 (iOS)';
+      }
+      // 点击后显示手动引导
+      if (installBtn) {
+        installBtn.addEventListener('click', function() {
+          manualGuide.style.display = 'block';
+        });
+      }
+    }
+
+    // ---------- 如果 3 秒后 still 没有触发 beforeinstallprompt（Via/Firefox），显示手动引导按钮 ----------
+    setTimeout(() => {
+      if (!deferredPrompt && !isIOS && installBtn) {
+        // 如果按钮还没显示出来，说明浏览器不支持弹窗，显示手动引导
+        if (installBtn.style.display === 'none') {
+          installBtn.style.display = 'block';
+          installBtn.textContent = '📱 添加到桌面 (手动)';
+        }
+      }
+    }, 3000);
+
+    // ---------- 监听安装成功事件 ----------
+    window.addEventListener('appinstalled', () => {
+      console.log('✅ 云笺已成功安装');
+      installBtn.style.display = 'none';
+      manualGuide.style.display = 'none';
+    });
+
+  })();
+</script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"ecc6cfd0e0a14cedb231a95e9f5a150d","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
