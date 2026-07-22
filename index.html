@@ -588,19 +588,15 @@ html.todo-sort-selection-lock * {
 
 /* FAB：有文字时变成“确认” */
 .fab-add-todo.confirm-mode {
-  width: 88px;
+  width: auto;          /* 改为自适应 */
+  padding: 0 16px;      /* 左右内边距控制视觉宽度 */
   border-radius: 18px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
+  min-width: 60px;      /* 防止太窄（可选） */
 }
 .fab-input-panel.confirm-space {
-  right: 112px;
-}
-.fab-add-todo.more-mode {
-  width: 58px;
-  border-radius: 50%;
-  font-size: 21px;
-  letter-spacing: 2px;
+  right: 88px;          /* 根据实际宽度微调，保证不重叠 */
 }
 
 /* 分类弹窗 */
