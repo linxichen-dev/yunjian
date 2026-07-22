@@ -6836,7 +6836,7 @@ function bindTagEditGesture( chip, tagId, afterSave ) {
         })();
 
     </script>
-    <script>
+   <script>
   (function() {
     // =============================================
     // PWA 安装逻辑（支持 Chrome/Edge/Android）
@@ -6844,6 +6844,7 @@ function bindTagEditGesture( chip, tagId, afterSave ) {
     let deferredPrompt;
     const installBtn = document.getElementById('installBtn');
     const manualGuide = document.getElementById('manualGuide');
+    const pwaArea = document.getElementById('pwa-install-area');
 
     // 判断是否为 iOS
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -6852,9 +6853,19 @@ function bindTagEditGesture( chip, tagId, afterSave ) {
 
     // 如果已经安装了，隐藏所有按钮
     if (isStandalone) {
-      if (installBtn) installBtn.style.display = 'none';
-      if (manualGuide) manualGuide.style.display = 'none';
+      if (pwaArea) pwaArea.style.display = 'none';
       return;
+    }
+
+    // 定义切换手动指南的函数
+    function toggleManualGuide() {
+      if (manualGuide.style.display === 'block') {
+        manualGuide.style.display = 'none';
+        installBtn.textContent = '📱 添加到桌面 (手动)';
+      } else {
+        manualGuide.style.display = 'block';
+        installBtn.textContent = '📱 收起教程';
+      }
     }
 
     // ---------- Chrome / Edge / Android 弹窗支持 ----------
@@ -6864,28 +6875,35 @@ function bindTagEditGesture( chip, tagId, afterSave ) {
       if (installBtn) {
         installBtn.style.display = 'block';
         installBtn.textContent = '📱 一键添加到桌面';
+        // 点击时优先使用弹窗
+        installBtn.onclick = async function() {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const result = await deferredPrompt.userChoice;
+            if (result.outcome === 'accepted') {
+              installBtn.style.display = 'none';
+              manualGuide.style.display = 'none';
+            } else {
+              // 用户拒绝，显示手动引导
+              manualGuide.style.display = 'block';
+              installBtn.textContent = '📱 收起教程';
+              // 下次点击切换手动指南
+              installBtn.onclick = toggleManualGuide;
+            }
+            deferredPrompt = null;
+          }
+        };
       }
     });
 
-    if (installBtn) {
-      installBtn.addEventListener('click', async () => {
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          const result = await deferredPrompt.userChoice;
-          if (result.outcome === 'accepted') {
-            installBtn.style.display = 'none';
-            manualGuide.style.display = 'none';
-          } else {
-            // 用户拒绝，显示手动引导
-            manualGuide.style.display = 'block';
-          }
-          deferredPrompt = null;
-        } else {
-          // 如果没有 deferredPrompt（如 Via、Firefox），直接显示手动引导
-          manualGuide.style.display = 'block';
-          installBtn.textContent = '📱 查看添加教程';
-        }
-      });
+    // ---------- 如果没有弹窗支持（iOS、Via、Firefox等） ----------
+    if (!window.hasOwnProperty('beforeinstallprompt') && !isIOS) {
+      // 对于不支持 beforeinstallprompt 的浏览器（如 Via），直接显示手动按钮
+      if (installBtn) {
+        installBtn.style.display = 'block';
+        installBtn.textContent = '📱 添加到桌面 (手动)';
+        installBtn.onclick = toggleManualGuide;
+      }
     }
 
     // ---------- iOS 特殊处理 ----------
@@ -6893,31 +6911,23 @@ function bindTagEditGesture( chip, tagId, afterSave ) {
       if (installBtn) {
         installBtn.style.display = 'block';
         installBtn.textContent = '📱 添加到主屏幕 (iOS)';
-      }
-      // 点击后显示手动引导
-      if (installBtn) {
-        installBtn.addEventListener('click', function() {
-          manualGuide.style.display = 'block';
-        });
+        installBtn.onclick = toggleManualGuide;
       }
     }
 
-    // ---------- 如果 3 秒后 still 没有触发 beforeinstallprompt（Via/Firefox），显示手动引导按钮 ----------
+    // ---------- 备用：如果 3 秒后仍没有触发 beforeinstallprompt（某些浏览器） ----------
     setTimeout(() => {
-      if (!deferredPrompt && !isIOS && installBtn) {
-        // 如果按钮还没显示出来，说明浏览器不支持弹窗，显示手动引导
-        if (installBtn.style.display === 'none') {
-          installBtn.style.display = 'block';
-          installBtn.textContent = '📱 添加到桌面 (手动)';
-        }
+      if (!deferredPrompt && !isIOS && installBtn && installBtn.style.display === 'none') {
+        installBtn.style.display = 'block';
+        installBtn.textContent = '📱 添加到桌面 (手动)';
+        installBtn.onclick = toggleManualGuide;
       }
     }, 3000);
 
     // ---------- 监听安装成功事件 ----------
     window.addEventListener('appinstalled', () => {
       console.log('✅ 云笺已成功安装');
-      installBtn.style.display = 'none';
-      manualGuide.style.display = 'none';
+      if (pwaArea) pwaArea.style.display = 'none';
     });
 
   })();
