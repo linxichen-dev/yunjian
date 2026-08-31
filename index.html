@@ -3153,7 +3153,7 @@
             <span>日常</span>
         </button>
         <button type="button" data-main-nav="calendar" aria-label="日历总览">
-            <span class="nav-icon" aria-hidden="true">👁</span>
+            <span class="nav-icon" aria-hidden="true">◉</span>
             <span>总览</span>
         </button>
         <button type="button" data-main-nav="schedule" aria-label="日程">
@@ -5611,7 +5611,22 @@ function initCalFab() {
     function setMenuOpen(isOpen) { calFabTypeMenu.classList.toggle('open', isOpen); calFabTypeMenu.setAttribute('aria-hidden', String(!isOpen)); updateVisual(); }
     function setInputOpen(isOpen) { calFabInputPanel.classList.toggle('open', isOpen); calFabInputPanel.setAttribute('aria-hidden', String(!isOpen)); }
     function openTypeMenu() { setInputOpen(false); setMenuOpen(true); }
-    function openInput(type) { calQuickAddType = type; calQuickAddTitle.value = ''; setMenuOpen(false); setInputOpen(true); updateVisual(); requestAnimationFrame(() => calQuickAddTitle.focus()); }
+    function shouldAutoFocusCalInput() {
+        return !window.matchMedia || !window.matchMedia('(pointer: coarse)').matches;
+    }
+    function openInput(type) {
+        calQuickAddType = type;
+        calQuickAddTitle.value = '';
+        setMenuOpen(false);
+        setInputOpen(true);
+        updateVisual();
+        if (shouldAutoFocusCalInput()) {
+            requestAnimationFrame(() => {
+                try { calQuickAddTitle.focus({ preventScroll: true }); }
+                catch (_) { calQuickAddTitle.focus(); }
+            });
+        }
+    }
     function closeCalFab() { setMenuOpen(false); setInputOpen(false); calQuickAddTitle.value = ''; updateVisual(); }
 
     function submitCalQuickAdd() {
