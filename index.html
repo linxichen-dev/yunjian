@@ -5611,21 +5611,16 @@ function initCalFab() {
     function setMenuOpen(isOpen) { calFabTypeMenu.classList.toggle('open', isOpen); calFabTypeMenu.setAttribute('aria-hidden', String(!isOpen)); updateVisual(); }
     function setInputOpen(isOpen) { calFabInputPanel.classList.toggle('open', isOpen); calFabInputPanel.setAttribute('aria-hidden', String(!isOpen)); }
     function openTypeMenu() { setInputOpen(false); setMenuOpen(true); }
-    function shouldAutoFocusCalInput() {
-        return !window.matchMedia || !window.matchMedia('(pointer: coarse)').matches;
-    }
     function openInput(type) {
         calQuickAddType = type;
         calQuickAddTitle.value = '';
         setMenuOpen(false);
         setInputOpen(true);
         updateVisual();
-        if (shouldAutoFocusCalInput()) {
-            requestAnimationFrame(() => {
-                try { calQuickAddTitle.focus({ preventScroll: true }); }
-                catch (_) { calQuickAddTitle.focus(); }
-            });
-        }
+        requestAnimationFrame(() => {
+            try { calQuickAddTitle.focus({ preventScroll: true }); }
+            catch (_) { calQuickAddTitle.focus(); }
+        });
     }
     function closeCalFab() { setMenuOpen(false); setInputOpen(false); calQuickAddTitle.value = ''; updateVisual(); }
 
@@ -6453,7 +6448,7 @@ function closeModal() {
             function openTodoComposer(source) {
                 const els = getTodoComposerElements();
                 clearTimeout(todoComposerCloseTimer);
-                clearTimeout(todoComposerFocusTimer);
+                cancelAnimationFrame(todoComposerFocusTimer);
                 todoComposer.source = source === 'calendar' ? 'calendar' : 'main';
                 todoComposer.targetDate = todoComposer.source === 'calendar' ? (calSelectedDate || todayStr()) : todayStr();
                 if (todoComposer.targetDate < todayStr()) return;
@@ -6468,13 +6463,11 @@ function closeModal() {
                 els.overlay.setAttribute('aria-hidden', 'false');
                 if (window._calFabClose) window._calFabClose();
                 if (typeof closeFabQuickAdd === 'function') closeFabQuickAdd();
-                // 总览入口的浮层位于独立的全屏层上。移动端需等动画结束后再聚焦，
-                // 否则软键盘调整视口时会与浮层位移动画竞争，导致键盘快速收起。
-                const focusDelay = todoComposer.source === 'calendar' ? 360 : 260;
-                todoComposerFocusTimer = setTimeout(function() {
+                // 让浮窗先进入打开态，再在下一帧聚焦输入框；这样键盘和浮窗会一起抬起。
+                todoComposerFocusTimer = requestAnimationFrame(function() {
                     if (!els.overlay.classList.contains('open')) return;
                     try { els.input.focus({ preventScroll: true }); } catch (_) { els.input.focus(); }
-                }, focusDelay);
+                });
             }
 
             function finishTodoComposerClose() {
@@ -6490,7 +6483,7 @@ function closeModal() {
 
             function closeTodoComposer(fromDrag) {
                 const els = getTodoComposerElements();
-                clearTimeout(todoComposerFocusTimer);
+                cancelAnimationFrame(todoComposerFocusTimer);
                 clearTimeout(todoComposerCloseTimer);
                 closeTodoComposerReminder();
                 setTodoTypePopover(false);
