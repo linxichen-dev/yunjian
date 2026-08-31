@@ -6468,11 +6468,13 @@ function closeModal() {
                 els.overlay.setAttribute('aria-hidden', 'false');
                 if (window._calFabClose) window._calFabClose();
                 if (typeof closeFabQuickAdd === 'function') closeFabQuickAdd();
-                // 等浮层完成主要上移动画后再唤起软键盘，避免移动端跳动或闪烁。
+                // 总览入口的浮层位于独立的全屏层上。移动端需等动画结束后再聚焦，
+                // 否则软键盘调整视口时会与浮层位移动画竞争，导致键盘快速收起。
+                const focusDelay = todoComposer.source === 'calendar' ? 360 : 260;
                 todoComposerFocusTimer = setTimeout(function() {
                     if (!els.overlay.classList.contains('open')) return;
                     try { els.input.focus({ preventScroll: true }); } catch (_) { els.input.focus(); }
-                }, 260);
+                }, focusDelay);
             }
 
             function finishTodoComposerClose() {
