@@ -5574,6 +5574,7 @@ let _calFabInited = false;
 let calQuickAddType = 'inbox';
 let calFabLongPressTimer = null;
 let calFabLongPressTriggered = false;
+let calFabTouchOpenHandled = false;
 let calFabSelectionLocked = false;
 let calFabSelectionUnlockTimer = null;
 let calNoteCreating = false; // 标记便条是否从日历创建
@@ -5640,6 +5641,7 @@ function initCalFab() {
     // 长按弹出类型菜单
     calFabAddTodo.addEventListener('pointerdown', function(e) {
         if (e.pointerType !== 'touch' || !e.isPrimary) { if (e.button === 0) calFabLongPressTriggered = false; return; }
+        calFabTouchOpenHandled = false;
         lockSel();
         if (e.cancelable) e.preventDefault();
         if (this.setPointerCapture) this.setPointerCapture(e.pointerId);
@@ -5649,7 +5651,15 @@ function initCalFab() {
         calFabLongPressTimer = setTimeout(function() { calFabLongPressTriggered = true; clearSel(); if (navigator.vibrate) navigator.vibrate(15); openTypeMenu(); }, 450);
     });
     function cancelLP() { clearTimeout(calFabLongPressTimer); calFabLongPressTimer = null; }
-    calFabAddTodo.addEventListener('pointerup', cancelLP);
+    calFabAddTodo.addEventListener('pointerup', function(e) {
+        cancelLP();
+        if (e.pointerType === 'touch' && e.isPrimary && !calFabLongPressTriggered &&
+            !calFabTypeMenu.classList.contains('open')) {
+            e.preventDefault();
+            calFabTouchOpenHandled = true;
+            openTodoComposer('calendar', true);
+        }
+    });
     calFabAddTodo.addEventListener('pointercancel', cancelLP);
     calFabAddTodo.addEventListener('pointerleave', cancelLP);
     calFabAddTodo.addEventListener('selectstart', function(e) { e.preventDefault(); });
@@ -5660,6 +5670,10 @@ function initCalFab() {
     // 单击逻辑（与主清单 FAB 一致）
     calFabAddTodo.addEventListener('click', function(e) {
         e.preventDefault();
+        if (calFabTouchOpenHandled) {
+            calFabTouchOpenHandled = false;
+            return;
+        }
         if (calFabLongPressTriggered) { calFabLongPressTriggered = false; return; }
         if (calFabTypeMenu.classList.contains('open')) { openCalQuickTagModal(); return; }
         openTodoComposer('calendar');
@@ -5958,6 +5972,7 @@ function closeModal() {
             let quickAddType = 'inbox';
             let fabLongPressTimer = null;
             let fabLongPressTriggered = false;
+            let fabTouchOpenHandled = false;
             let fabSelectionLocked = false;
             let fabSelectionUnlockTimer = null;
 
@@ -6050,6 +6065,7 @@ function closeModal() {
                     if (e.button === 0) fabLongPressTriggered = false;
                     return;
                 }
+                fabTouchOpenHandled = false;
                 lockFabPageSelection();
                 if (e.cancelable) e.preventDefault();
                 if (this.setPointerCapture) this.setPointerCapture(e.pointerId);
@@ -6064,7 +6080,17 @@ function closeModal() {
                 }, 450);
             });
             function cancelFabLongPress() { clearTimeout(fabLongPressTimer); fabLongPressTimer = null; }
-            fabAddTodo.addEventListener('pointerup', cancelFabLongPress);
+            fabAddTodo.addEventListener('pointerup', function(e) {
+                cancelFabLongPress();
+                const activeTab = document.querySelector('#notePage .tabs .tab.active');
+                const tabId = activeTab ? activeTab.dataset.tab : 'todoTab';
+                if (e.pointerType === 'touch' && e.isPrimary && tabId === 'todoTab' &&
+                    !fabLongPressTriggered && !fabTypeMenu.classList.contains('open')) {
+                    e.preventDefault();
+                    fabTouchOpenHandled = true;
+                    openTodoComposer('main', true);
+                }
+            });
             fabAddTodo.addEventListener('pointercancel', cancelFabLongPress);
             fabAddTodo.addEventListener('pointerleave', cancelFabLongPress);
             fabAddTodo.addEventListener('selectstart', function(e) { e.preventDefault(); });
@@ -6079,6 +6105,10 @@ function closeModal() {
 
             fabAddTodo.addEventListener('click', function(e) {
                 e.preventDefault();
+                if (fabTouchOpenHandled) {
+                    fabTouchOpenHandled = false;
+                    return;
+                }
                 // 检查当前标签
                 const activeTab = document.querySelector('#notePage .tabs .tab.active');
                 const tabId = activeTab ? activeTab.dataset.tab : 'todoTab';
@@ -6445,7 +6475,7 @@ function closeModal() {
                 }
             }
 
-            function openTodoComposer(source) {
+            function openTodoComposer(source, focusImmediately) {
                 const els = getTodoComposerElements();
                 clearTimeout(todoComposerCloseTimer);
                 cancelAnimationFrame(todoComposerFocusTimer);
@@ -6463,11 +6493,16 @@ function closeModal() {
                 els.overlay.setAttribute('aria-hidden', 'false');
                 if (window._calFabClose) window._calFabClose();
                 if (typeof closeFabQuickAdd === 'function') closeFabQuickAdd();
-                // 让浮窗先进入打开态，再在下一帧聚焦输入框；这样键盘和浮窗会一起抬起。
-                todoComposerFocusTimer = requestAnimationFrame(function() {
+                function focusComposerInput() {
                     if (!els.overlay.classList.contains('open')) return;
                     try { els.input.focus({ preventScroll: true }); } catch (_) { els.input.focus(); }
-                });
+                }
+                if (focusImmediately) {
+                    // 安卓要求聚焦发生在真实触摸手势内，否则只会打开浮窗而不唤起键盘。
+                    focusComposerInput();
+                } else {
+                    todoComposerFocusTimer = requestAnimationFrame(focusComposerInput);
+                }
             }
 
             function finishTodoComposerClose() {
