@@ -1220,6 +1220,388 @@
             white-space: pre-wrap;
             word-break: break-word;
         }
+        /* 便条正文中的清单：保持主清单的卡片感，不再使用“已关联清单”蓝色胶囊。 */
+        .note-content-flow {
+            font-size: 15px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .note-rich-editor {
+            flex: 1 1 auto;
+            min-height: 260px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            cursor: text;
+        }
+        .note-rich-editor:empty::before {
+            color: var(--text-lighter);
+            content: attr(data-placeholder);
+            pointer-events: none;
+        }
+        .note-embedded-todo {
+            display: flex;
+            width: min(100%, 680px);
+            min-height: 58px;
+            margin: 11px 0;
+            padding: 10px 11px;
+            align-items: flex-start;
+            gap: 10px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--card);
+            box-shadow: var(--shadow-sm);
+            color: var(--text);
+            line-height: 1.35;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .note-embedded-todo.is-done { opacity: .78; }
+        .note-embedded-todo.is-missing {
+            border-style: dashed;
+            color: var(--text-light);
+        }
+        .note-todo-check {
+            display: inline-flex;
+            width: 23px;
+            height: 23px;
+            flex: 0 0 23px;
+            margin-top: 1px;
+            padding: 0;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--text-lighter);
+            border-radius: 50%;
+            background: var(--card);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .note-todo-check.done {
+            border-color: var(--primary);
+            background: var(--primary);
+        }
+        .note-todo-main {
+            display: flex;
+            min-width: 0;
+            flex: 1;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .note-todo-text {
+            overflow: hidden;
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 600;
+            text-align: left;
+            text-overflow: ellipsis;
+            white-space: normal;
+            cursor: pointer;
+        }
+        .note-embedded-todo.is-done .note-todo-text {
+            color: var(--text-light);
+            text-decoration: line-through;
+        }
+        .note-todo-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            color: var(--text-light);
+            font-size: 11px;
+        }
+        .note-todo-meta button {
+            padding: 2px 7px;
+            border: 0;
+            border-radius: 7px;
+            background: var(--bg);
+            color: var(--text-secondary);
+            font: inherit;
+            cursor: pointer;
+        }
+        .note-todo-unlink {
+            width: 28px;
+            height: 28px;
+            flex: 0 0 28px;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--text-light);
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .note-todo-unlink:hover { background: #fff1f1; color: var(--danger); }
+        .note-editor-toolbar {
+            position: sticky;
+            z-index: 12;
+            bottom: 0;
+            display: flex;
+            justify-content: flex-start;
+            flex: 0 0 auto;
+            padding: 10px 20px calc(12px + env(safe-area-inset-bottom));
+            border-top: 1px solid var(--border-light);
+            background: rgba(255,255,255,.96);
+            box-shadow: 0 -8px 22px rgba(15,23,42,.05);
+            backdrop-filter: blur(12px);
+        }
+        .note-linked-entry {
+            display: flex;
+            width: 172px;
+            pointer-events: auto;
+        }
+        .note-linked-entry button {
+            width: 100%;
+            height: 42px;
+            justify-content: flex-start;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0 14px;
+            background: var(--card);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 650;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease;
+        }
+        .note-linked-entry button .assoc-icon {
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+        }
+        .note-linked-entry button .assoc-icon svg {
+            width: 11px;
+            height: 11px;
+            stroke: currentColor;
+        }
+        .note-linked-entry button:active {
+            transform: translateY(1px) scale(.99);
+        }
+        .note-linked-entry button:hover {
+            border-color: rgba(74,108,247,.36);
+            background: var(--primary-bg);
+            color: var(--primary);
+        }
+        .note-linked-entry button.active {
+            border-color: rgba(74,108,247,.36);
+            background: var(--primary-bg);
+            color: var(--primary);
+        }
+        .note-link-popover-overlay,
+        .note-link-modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 2100;
+            display: none;
+            background: rgba(15, 23, 42, 0.18);
+        }
+        .note-link-popover-overlay.open,
+        .note-link-modal-overlay.open {
+            display: block;
+            background: transparent;
+        }
+        .note-link-popover-overlay.open.showing-modal,
+        .note-link-modal-overlay.open.showing-modal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.18);
+        }
+        .note-link-popover {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 4px;
+            width: min(188px, calc(100vw - 24px));
+            padding: 6px;
+            background: var(--card);
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(15,23,42,.16);
+            border: 1px solid var(--border);
+            transform: none;
+        }
+        .note-link-popover-overlay.showing-modal .note-link-popover {
+            display: none;
+        }
+        .note-link-popover button,
+        .note-link-modal .link-action {
+            width: 100%;
+            min-height: 46px;
+            border: 0;
+            border-radius: 9px;
+            background: transparent;
+            padding: 10px 11px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .note-link-popover button + button {
+            border-top: 0;
+        }
+        .note-link-popover button:hover { background: var(--bg); }
+        .note-link-popover button:active,
+        .note-link-modal .link-action:active {
+            background: var(--bg);
+        }
+        .note-link-modal {
+            position: relative;
+            left: auto;
+            bottom: auto;
+            transform: none;
+            width: min(92vw, 420px);
+            background: var(--card);
+            border-radius: 18px;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+        }
+        .note-link-modal-head {
+            padding: 14px 16px 12px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .note-link-modal-head h4 {
+            font-size: 15px;
+            margin: 0;
+        }
+        .note-link-modal-close {
+            border: 0;
+            background: var(--bg);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+        .note-link-modal-body {
+            padding: 14px 16px 16px;
+            max-height: 52vh;
+            overflow-y: auto;
+        }
+        .note-link-search {
+            width: 100%;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 12px;
+            background: var(--bg);
+        }
+        .note-link-search:focus {
+            border-color: var(--primary);
+            background: var(--card);
+        }
+        .note-link-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .note-link-group + .note-link-group { margin-top: 16px; }
+        .note-link-group-title {
+            display: flex;
+            justify-content: space-between;
+            margin: 2px 2px 8px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .note-link-item {
+            border: 1px solid var(--border-light);
+            background: var(--card);
+            border-radius: 14px;
+            padding: 12px;
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: 22px minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 10px;
+        }
+        .note-link-item:hover {
+            border-color: var(--primary-bg2);
+            background: #fbfcff;
+        }
+        .note-link-item.selected {
+            border-color: var(--primary);
+            background: var(--primary-bg);
+        }
+        .note-link-item-check {
+            display: inline-flex;
+            width: 22px;
+            height: 22px;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--text-lighter);
+            border-radius: 50%;
+            color: #fff;
+            font-size: 11px;
+        }
+        .note-link-item-check.done { border-color: var(--primary); background: var(--primary); }
+        .note-link-item-copy { min-width: 0; }
+        .note-link-item-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .note-link-item-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 5px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .note-link-selected-mark {
+            color: var(--primary);
+            font-size: 17px;
+            font-weight: 800;
+        }
+        .note-link-create {
+            display: grid;
+            gap: 10px;
+        }
+        .note-link-create input {
+            width: 100%;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 11px 12px;
+            font-size: 14px;
+            outline: none;
+        }
+        .note-link-create input:focus {
+            border-color: var(--primary);
+        }
+        .note-link-create .create-btn {
+            border: 0;
+            border-radius: 12px;
+            padding: 11px 14px;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .note-link-create .create-btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
         .note-edit-title {
             width: 100%;
             border: none;
@@ -1291,7 +1673,7 @@
             font-size: 15px;
             line-height: 1.8;
             outline: none;
-            padding: 6px 20px 120px;
+            padding: 6px 20px 32px;
             resize: none;
             min-height: 300px;
             font-family: inherit;
@@ -1331,7 +1713,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            z-index: 1000;
+            z-index: 1700;
             background: var(--bg);
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -1537,8 +1919,24 @@
         /* ===== 日程：全屏月历视图（v3.4.0） ===== */
         .sched-page { padding: 18px 22px; }
         .sched-page .page-header { gap: 12px; }
-        .sched-title { flex: 1; font-size: 22px; font-weight: 600; }
-        .sched-page.day-mode .sched-title { cursor: pointer; }
+        .sched-back-btn {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 10px;
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 22px;
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        .sched-page.day-mode .sched-back-btn { display: inline-flex; }
+        .sched-back-btn:hover { background: var(--border); color: var(--text); }
+        .sched-title { flex: 1; font-size: 22px; font-weight: 600; cursor: pointer; }
         .sched-page .header-right { display: flex; gap: 8px; }
         .sched-page .header-right .nav-btn {
             padding: 6px 14px; border: none; border-radius: 8px;
@@ -2549,6 +2947,19 @@
             .week-day { padding: 4px 2px; min-width: 30px; }
             .week-day-label { width: 28px; height: 28px; font-size: 12px; }
             .note-item { padding: 12px 14px; }
+            .note-link-popover {
+                width: min(188px, calc(100vw - 24px));
+            }
+            .note-editor-toolbar { padding-left: 14px; padding-right: 14px; }
+            .note-rich-editor { min-height: 220px; }
+            .note-embedded-todo { width: 100%; }
+            .note-link-modal {
+                width: min(92vw, 420px);
+                max-height: calc(100dvh - 40px);
+            }
+            .note-link-modal-body {
+                max-height: min(52dvh, 440px);
+            }
         }
         @media (hover: none) and (pointer: coarse) {
             .todo-list li { gap: 6px; padding: 8px 9px; }
@@ -3067,7 +3478,8 @@
         <!-- ===== 日程（全屏月历视图 v3.4.0） ===== -->
         <div id="scheduleChoicePage" class="page sched-page">
             <div class="page-header">
-                <h2 id="calMonthTitle" class="sched-title" title="点击返回月历">📅 2026年8月</h2>
+                <button class="sched-back-btn" id="schedBackBtn" aria-label="返回月历">←</button>
+                <h2 id="calMonthTitle" class="sched-title" title="点击选择年月">📅 2026年8月</h2>
                 <div class="header-right">
                     <button class="nav-btn today-btn" id="schedTodayBtn">今天</button>
                 </div>
@@ -3502,7 +3914,17 @@
         </div>
         <div class="new-note-time" id="noteEditTime"></div>
         <input id="noteEditTitle" class="note-edit-title" placeholder="标题（可选）">
-        <textarea id="noteEditText" class="note-edit-text" placeholder="写点什么..."></textarea>
+        <div id="noteEditText" class="note-edit-text note-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="写点什么..." data-note-context="edit"></div>
+        <div class="note-editor-toolbar">
+            <div class="note-linked-entry">
+                <button type="button" data-note-link-entry="edit" aria-haspopup="menu" aria-expanded="false">
+                    <span class="assoc-icon" aria-hidden="true">
+                        <svg viewBox="0 0 18 18" fill="none"><path d="M6.5 11.5l5-5M5.2 7.8 3.8 9.2a3 3 0 0 0 4.2 4.2L9.5 12M12.8 10.2l1.4-1.4A3 3 0 0 0 10 4.6L8.5 6" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    </span>
+                    <span>关联清单</span>
+                </button>
+            </div>
+        </div>
     </div>
     <div id="newNotePage" class="page-fullscreen">
         <div class="note-detail-header">
@@ -3513,7 +3935,17 @@
         </div>
         <div class="new-note-time" id="newNoteTime">2026-08-06 12:20 周四</div>
         <input id="newNoteTitle" class="note-edit-title" placeholder="标题（可选）">
-        <textarea id="newNoteText" class="note-edit-text" placeholder="写点什么..." oninput="onNewNoteTextInput()"></textarea>
+        <div id="newNoteText" class="note-edit-text note-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="写点什么..." data-note-context="new" oninput="onNewNoteTextInput()"></div>
+        <div class="note-editor-toolbar">
+            <div class="note-linked-entry">
+                <button type="button" data-note-link-entry="new" aria-haspopup="menu" aria-expanded="false">
+                    <span class="assoc-icon" aria-hidden="true">
+                        <svg viewBox="0 0 18 18" fill="none"><path d="M6.5 11.5l5-5M5.2 7.8 3.8 9.2a3 3 0 0 0 4.2 4.2L9.5 12M12.8 10.2l1.4-1.4A3 3 0 0 0 10 4.6L8.5 6" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    </span>
+                    <span>关联清单</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- ===== 清单编辑页（全屏，仿便条编辑页，仅未完成可编辑） ===== -->
@@ -3625,6 +4057,20 @@
         </div>
     </div>
 
+    <div class="note-link-popover-overlay" id="noteLinkPopoverOverlay" aria-hidden="true">
+        <div class="note-link-popover" id="noteLinkPopover">
+            <button type="button" data-note-link-action="existing">☷&nbsp; 添加已有清单</button>
+            <button type="button" data-note-link-action="create">＋&nbsp; 新建待办</button>
+        </div>
+        <div class="note-link-modal" id="noteLinkModal" hidden>
+            <div class="note-link-modal-head">
+                <h4 id="noteLinkModalTitle">添加已有清单</h4>
+                <button type="button" class="note-link-modal-close" id="noteLinkModalClose">×</button>
+            </div>
+            <div class="note-link-modal-body" id="noteLinkModalBody"></div>
+        </div>
+    </div>
+
     <script>
         (function() {
             // ============================================================
@@ -3650,6 +4096,16 @@
             if (!Array.isArray(notes)) notes = [];
             if (!Array.isArray(events)) events = [];
             if (!Array.isArray(userTags)) userTags = [];
+            notes.forEach(note => {
+                if (!Array.isArray(note.linkedTodoIds)) note.linkedTodoIds = [];
+                // 旧便条只有纯文字 + 关联 id。首次打开时无损转换为有顺序的正文块，
+                // 之后清单就能真正插在光标所在的书写位置，而不是统一堆在正文末尾。
+                if (!Array.isArray(note.contentBlocks)) {
+                    note.contentBlocks = [];
+                    if (note.text) note.contentBlocks.push({ type: 'text', text: String(note.text) });
+                    note.linkedTodoIds.forEach(id => note.contentBlocks.push({ type: 'todo', todoId: String(id) }));
+                }
+            });
 
             // 兼容旧数据
             todos.forEach(todo => {
@@ -4414,6 +4870,18 @@
                 const lum = 0.299*r + 0.587*g + 0.114*b;
                 return lum > 160 ? '#1f2937' : '#ffffff';
             }
+            function getTodoTypeLabel(todo) {
+                if (!todo) return '';
+                if (todo.tagId) {
+                    const tag = userTags.find(item => item.id === todo.tagId);
+                    if (tag) return tag.name;
+                }
+                if (todo.type === 'today') return '今日计划';
+                if (todo.type === 'hard') return '固定计划';
+                if (todo.type === 'flexible') return '微习惯';
+                if (todo.type === 'elastic') return todo.subType === 'habit' ? '弹性习惯' : '弹性待办';
+                return '';
+            }
 
             // ============================================================
             // 自定义标签操作（原始版本）
@@ -4453,6 +4921,412 @@
             let noteSelectedDate = todayStr();
             let editingNoteId = null;
             let noteDetailId = null;
+            let noteLinkContext = null;
+            let noteLinkTriggerButton = null;
+            const noteCaretRanges = { new: null, edit: null };
+
+            function getNoteEditor(context) {
+                return document.getElementById(context === 'edit' ? 'noteEditText' : 'newNoteText');
+            }
+            function getNoteBlocks(note) {
+                if (note && Array.isArray(note.contentBlocks)) return note.contentBlocks;
+                const blocks = [];
+                if (note && note.text) blocks.push({ type: 'text', text: String(note.text) });
+                if (note && Array.isArray(note.linkedTodoIds)) {
+                    note.linkedTodoIds.forEach(id => blocks.push({ type: 'todo', todoId: String(id) }));
+                }
+                return blocks;
+            }
+            function getNoteTodoById(id) {
+                return todos.find(todo => String(todo.id) === String(id));
+            }
+            function getNoteTodoReminderText(todo) {
+                const reminder = (todo && todo.remindTimes || []).map(normalizeReminderDateTime).find(Boolean);
+                return reminder ? formatReminderForDisplay(reminder, !reminder.startsWith(todayStr() + 'T')) : '';
+            }
+            function noteTodoCardInnerHtml(todo, allowUnlink) {
+                if (!todo) {
+                    return `<span class="note-todo-main"><span class="note-todo-text">原清单已删除</span></span>${allowUnlink ? '<button type="button" class="note-todo-unlink" aria-label="从便条移除">×</button>' : ''}`;
+                }
+                const reminder = getNoteTodoReminderText(todo);
+                const meta = [];
+                if (todo.pinned) meta.push('<span>📌 已置顶</span>');
+                if (todo.done) meta.push('<span>已完成</span>');
+                else meta.push(`<button type="button" class="note-todo-reminder">${reminder ? '◷ ' + escapeHtml(reminder) : '◷ 提醒'}</button>`);
+                return `
+                    <button type="button" class="note-todo-check ${todo.done ? 'done' : ''}" aria-label="${todo.done ? '标记为未完成' : '标记为已完成'}">${todo.done ? '✓' : ''}</button>
+                    <span class="note-todo-main">
+                        <span class="note-todo-text" role="button" tabindex="0" title="点击编辑清单">${escapeHtml(todo.text)}</span>
+                        <span class="note-todo-meta">${meta.join('')}</span>
+                    </span>
+                    ${allowUnlink ? '<button type="button" class="note-todo-unlink" aria-label="从便条移除">×</button>' : ''}`;
+            }
+            function createNoteTodoCard(todoId, context, allowUnlink) {
+                const todo = getNoteTodoById(todoId);
+                const card = document.createElement('span');
+                card.className = `note-embedded-todo${todo && todo.done ? ' is-done' : ''}${todo ? '' : ' is-missing'}`;
+                card.dataset.todoId = String(todoId);
+                if (context) card.dataset.noteContext = context;
+                card.setAttribute('contenteditable', 'false');
+                card.innerHTML = noteTodoCardInnerHtml(todo, allowUnlink !== false);
+                return card;
+            }
+            function updateNoteTodoCardElement(card) {
+                if (!card) return;
+                const todo = getNoteTodoById(card.dataset.todoId);
+                card.classList.toggle('is-done', !!(todo && todo.done));
+                card.classList.toggle('is-missing', !todo);
+                card.innerHTML = noteTodoCardInnerHtml(todo, !!card.dataset.noteContext);
+            }
+            function refreshNoteTodoCards(todoId) {
+                document.querySelectorAll('.note-embedded-todo').forEach(card => {
+                    if (todoId === undefined || String(card.dataset.todoId) === String(todoId)) updateNoteTodoCardElement(card);
+                });
+            }
+            function appendNoteText(editor, text) {
+                String(text || '').split('\n').forEach((part, index, parts) => {
+                    if (part) editor.appendChild(document.createTextNode(part));
+                    if (index < parts.length - 1) editor.appendChild(document.createElement('br'));
+                });
+            }
+            function renderNoteEditor(context, note) {
+                const editor = getNoteEditor(context);
+                if (!editor) return;
+                editor.innerHTML = '';
+                getNoteBlocks(note).forEach(block => {
+                    if (block && block.type === 'todo' && block.todoId !== undefined) {
+                        editor.appendChild(createNoteTodoCard(block.todoId, context, true));
+                        editor.appendChild(document.createElement('br'));
+                    } else if (block && block.type === 'text') {
+                        appendNoteText(editor, block.text);
+                    }
+                });
+                noteCaretRanges[context] = null;
+                updateNoteEditorState(context);
+            }
+            function serializeNoteEditor(context) {
+                const editor = getNoteEditor(context);
+                if (!editor) return [];
+                const blocks = [];
+                let textBuffer = '';
+                let skipCardSpacerBreak = false;
+                const appendText = value => { textBuffer += value || ''; };
+                const flushText = () => {
+                    const clean = textBuffer.replace(/\u200B/g, '').replace(/\u00A0/g, ' ');
+                    if (clean) blocks.push({ type: 'text', text: clean });
+                    textBuffer = '';
+                };
+                const walk = node => {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        appendText(node.nodeValue);
+                        if (node.nodeValue) skipCardSpacerBreak = false;
+                        return;
+                    }
+                    if (node.nodeType !== Node.ELEMENT_NODE) return;
+                    if (node.classList.contains('note-embedded-todo')) {
+                        flushText();
+                        blocks.push({ type: 'todo', todoId: String(node.dataset.todoId) });
+                        skipCardSpacerBreak = true;
+                        return;
+                    }
+                    if (node.tagName === 'BR') {
+                        if (skipCardSpacerBreak) {
+                            skipCardSpacerBreak = false;
+                            return;
+                        }
+                        appendText('\n');
+                        return;
+                    }
+                    const isLineBlock = /^(DIV|P)$/.test(node.tagName);
+                    Array.from(node.childNodes).forEach(walk);
+                    if (isLineBlock && !textBuffer.endsWith('\n')) appendText('\n');
+                };
+                Array.from(editor.childNodes).forEach(walk);
+                flushText();
+
+                // 清理编辑器为卡片自动保留的换行，但保留用户实际输入的段落。
+                while (blocks.length && blocks[0].type === 'text') {
+                    blocks[0].text = blocks[0].text.replace(/^\n+/, '');
+                    if (blocks[0].text) break;
+                    blocks.shift();
+                }
+                while (blocks.length && blocks[blocks.length - 1].type === 'text') {
+                    const last = blocks[blocks.length - 1];
+                    last.text = last.text.replace(/\n+$/, '');
+                    if (last.text) break;
+                    blocks.pop();
+                }
+                return blocks.filter(block => block.type === 'todo' || (block.text && block.text.replace(/\n/g, '').trim()));
+            }
+            function getPlainTextFromBlocks(blocks) {
+                return (blocks || []).filter(block => block.type === 'text').map(block => block.text).join('\n').trim();
+            }
+            function getLinkedIdsFromBlocks(blocks) {
+                return [...new Set((blocks || []).filter(block => block.type === 'todo').map(block => String(block.todoId)))];
+            }
+            function noteEditorHasContent(context) {
+                const blocks = serializeNoteEditor(context);
+                return blocks.some(block => block.type === 'todo' || (block.text && block.text.trim()));
+            }
+            function updateNoteEditorState(context) {
+                if (context === 'new') {
+                    const save = document.getElementById('newNoteSaveBtn');
+                    if (save) save.disabled = !noteEditorHasContent('new');
+                }
+            }
+            function captureNoteCaret(context) {
+                const editor = getNoteEditor(context);
+                const selection = window.getSelection && window.getSelection();
+                if (!editor || !selection || !selection.rangeCount) return;
+                const range = selection.getRangeAt(0);
+                if (editor.contains(range.commonAncestorContainer)) noteCaretRanges[context] = range.cloneRange();
+            }
+            function placeNoteCaretAtEnd(context) {
+                const editor = getNoteEditor(context);
+                if (!editor) return;
+                const range = document.createRange();
+                range.selectNodeContents(editor);
+                range.collapse(false);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+                noteCaretRanges[context] = range.cloneRange();
+            }
+            function insertTodoAtNoteCaret(context, todoId) {
+                const editor = getNoteEditor(context);
+                if (!editor) return false;
+                if (Array.from(editor.querySelectorAll('.note-embedded-todo')).some(card => String(card.dataset.todoId) === String(todoId))) {
+                    showToast('该清单已在便条中');
+                    return false;
+                }
+                let range = noteCaretRanges[context];
+                // focus 会触发编辑器的光标监听；必须先取出已保存的 Range，
+                // 否则浏览器会把它覆盖成正文开头。
+                editor.focus({ preventScroll: true });
+                if (!range || !range.commonAncestorContainer || !editor.contains(range.commonAncestorContainer)) {
+                    range = document.createRange();
+                    range.selectNodeContents(editor);
+                    range.collapse(false);
+                }
+                range.deleteContents();
+                const card = createNoteTodoCard(todoId, context, true);
+                const spacer = document.createElement('br');
+                range.insertNode(spacer);
+                range.insertNode(card);
+                range.setStartAfter(spacer);
+                range.collapse(true);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+                noteCaretRanges[context] = range.cloneRange();
+                updateNoteEditorState(context);
+                card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                return true;
+            }
+            function removeTodoCardFromEditor(card) {
+                if (!card) return;
+                const next = card.nextSibling;
+                card.remove();
+                if (next && next.nodeType === Node.ELEMENT_NODE && next.tagName === 'BR') next.remove();
+                updateNoteEditorState(card.dataset.noteContext || 'new');
+            }
+            function renderNoteContentHtml(note) {
+                const blocks = getNoteBlocks(note);
+                if (!blocks.length) return '<div class="note-content-flow"></div>';
+                return `<div class="note-content-flow">${blocks.map(block => {
+                    if (block.type === 'todo') {
+                        const todo = getNoteTodoById(block.todoId);
+                        return `<span class="note-embedded-todo${todo && todo.done ? ' is-done' : ''}${todo ? '' : ' is-missing'}" data-todo-id="${escapeAttribute(String(block.todoId))}" contenteditable="false">${noteTodoCardInnerHtml(todo, false)}</span>`;
+                    }
+                    return `<span>${escapeHtml(block.text || '')}</span>`;
+                }).join('')}</div>`;
+            }
+            function sortTodosForLinking(list) {
+                return list.slice().sort((a, b) => {
+                    if (a.done !== b.done) return a.done ? 1 : -1;
+                    if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+                    // 原实现调用了并不存在的 getTodoCreatedDate；当 a、b、c 都是
+                    // “未完成且未置顶”时会在这里抛错，导致主清单旧数据无法渲染。
+                    const getTime = todo => {
+                        const raw = todo && (todo.createdAt || todo.completedAt || todo.time);
+                        if (!raw) return 0;
+                        const parsed = new Date(String(raw).replace(' ', 'T')).getTime();
+                        return Number.isFinite(parsed) ? parsed : 0;
+                    };
+                    return getTime(b) - getTime(a);
+                });
+            }
+            function getTodosAvailableForLinking() {
+                // 打开选择器时再读取一次持久化主清单，兼容其他主清单流程已写入
+                // localStorage、但当前便条闭包中的 todos 尚未刷新的情况。
+                const stored = typeof loadTodos === 'function' ? loadTodos() : DB.get('todos', []);
+                if (Array.isArray(stored)) {
+                    stored.forEach(todo => {
+                        if (!todo || todo.id === undefined || todo.id === null) return;
+                        if (!todos.some(item => String(item.id) === String(todo.id))) todos.push(todo);
+                    });
+                }
+                return todos.filter(todo => todo && todo.id !== undefined && todo.status !== 'abandoned');
+            }
+            function closeNoteLinkPicker() {
+                const overlay = document.getElementById('noteLinkPopoverOverlay');
+                const modal = document.getElementById('noteLinkModal');
+                const popover = document.getElementById('noteLinkPopover');
+                if (!overlay || !modal) return;
+                overlay.classList.remove('open');
+                overlay.classList.remove('showing-modal');
+                overlay.setAttribute('aria-hidden', 'true');
+                modal.hidden = true;
+                if (noteLinkTriggerButton) {
+                    noteLinkTriggerButton.classList.remove('active');
+                    noteLinkTriggerButton.setAttribute('aria-expanded', 'false');
+                }
+                if (popover) {
+                    popover.style.left = '';
+                    popover.style.top = '';
+                }
+                noteLinkTriggerButton = null;
+                noteLinkContext = null;
+            }
+            function positionNoteLinkPopover() {
+                const popover = document.getElementById('noteLinkPopover');
+                if (!popover || !noteLinkTriggerButton || !document.getElementById('noteLinkPopoverOverlay').classList.contains('open')) return;
+                const rect = noteLinkTriggerButton.getBoundingClientRect();
+                const width = popover.offsetWidth || 188;
+                const height = popover.offsetHeight || 104;
+                const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
+                const top = Math.max(12, rect.top - height - 8);
+                popover.style.left = left + 'px';
+                popover.style.top = top + 'px';
+            }
+            function renderNoteLinkCandidate(todo, currentIds) {
+                const selected = currentIds.includes(String(todo.id));
+                const typeLabel = getTodoTypeLabel(todo);
+                return `
+                    <button type="button" class="note-link-item ${selected ? 'selected' : ''}" data-link-todo-id="${escapeAttribute(String(todo.id))}" data-search-text="${escapeAttribute(String(todo.text || '').toLowerCase())}">
+                        <span class="note-link-item-check ${todo.done ? 'done' : ''}">${todo.done ? '✓' : ''}</span>
+                        <span class="note-link-item-copy">
+                            <span class="note-link-item-title">${escapeHtml(todo.text)}</span>
+                            <span class="note-link-item-meta">
+                                <span>${todo.done ? '已完成' : '未完成'}</span>
+                                ${typeLabel ? `<span>${escapeHtml(typeLabel)}</span>` : '<span>待归类</span>'}
+                                ${todo.pinned ? '<span>📌 已置顶</span>' : ''}
+                            </span>
+                        </span>
+                        <span class="note-link-selected-mark">${selected ? '✓' : '＋'}</span>
+                    </button>`;
+            }
+            function renderNoteLinkExistingModal() {
+                const title = document.getElementById('noteLinkModalTitle');
+                const body = document.getElementById('noteLinkModalBody');
+                if (!title || !body || !noteLinkContext) return;
+                const editor = getNoteEditor(noteLinkContext);
+                const currentIds = editor ? Array.from(editor.querySelectorAll('.note-embedded-todo')).map(card => String(card.dataset.todoId)) : [];
+                title.textContent = '添加已有清单';
+                const candidates = sortTodosForLinking(getTodosAvailableForLinking());
+                const active = candidates.filter(todo => !todo.done);
+                const completed = candidates.filter(todo => todo.done);
+                const renderGroup = (label, items) => items.length ? `
+                    <section class="note-link-group">
+                        <div class="note-link-group-title"><span>${label}</span><span>${items.length}</span></div>
+                        <div class="note-link-list">${items.map(todo => renderNoteLinkCandidate(todo, currentIds)).join('')}</div>
+                    </section>` : '';
+                body.innerHTML = `
+                    <input class="note-link-search" id="noteLinkSearch" placeholder="搜索待办..." autocomplete="off">
+                    <div id="noteLinkList">${candidates.length ? renderGroup('未完成清单', active) + renderGroup('已完成清单', completed) : '<div class="modal-desc" style="margin-bottom:0;">还没有清单，可返回后选择“新建待办”</div>'}</div>
+                `;
+                const search = document.getElementById('noteLinkSearch');
+                const list = document.getElementById('noteLinkList');
+                if (search && list) {
+                    search.addEventListener('input', function() {
+                        const keyword = this.value.trim().toLowerCase();
+                        list.querySelectorAll('[data-link-todo-id]').forEach(item => {
+                            item.style.display = !keyword || item.dataset.searchText.includes(keyword) ? '' : 'none';
+                        });
+                        list.querySelectorAll('.note-link-group').forEach(group => {
+                            group.style.display = Array.from(group.querySelectorAll('[data-link-todo-id]')).some(item => item.style.display !== 'none') ? '' : 'none';
+                        });
+                    });
+                    requestAnimationFrame(() => search.focus());
+                }
+                body.querySelectorAll('[data-link-todo-id]').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const todoId = this.dataset.linkTodoId;
+                        if (currentIds.includes(String(todoId))) {
+                            showToast('该清单已在便条中');
+                            return;
+                        }
+                        if (insertTodoAtNoteCaret(noteLinkContext, todoId)) {
+                            closeNoteLinkPicker();
+                            showToast('已插入到当前书写位置');
+                        }
+                    });
+                });
+            }
+            function renderNoteLinkCreateModal() {
+                const title = document.getElementById('noteLinkModalTitle');
+                const body = document.getElementById('noteLinkModalBody');
+                if (!title || !body || !noteLinkContext) return;
+                title.textContent = '新建待办';
+                body.innerHTML = `
+                    <div class="note-link-create">
+                        <input type="text" id="noteLinkCreateInput" maxlength="80" placeholder="输入待办标题">
+                        <button type="button" class="create-btn" id="noteLinkCreateBtn" disabled>新建并插入</button>
+                    </div>
+                `;
+                const input = document.getElementById('noteLinkCreateInput');
+                const btn = document.getElementById('noteLinkCreateBtn');
+                if (!input || !btn) return;
+                const syncBtn = () => { btn.disabled = !input.value.trim(); };
+                input.addEventListener('input', syncBtn);
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !btn.disabled) {
+                        e.preventDefault();
+                        btn.click();
+                    }
+                });
+                btn.addEventListener('click', function() {
+                    const text = input.value.trim();
+                    if (!text) return;
+                    const todo = createTodo(text, 'inbox');
+                    todo.scheduledDate = todayStr();
+                    todo.pinned = false;
+                    todos.push(todo);
+                    DB.set('todos', todos);
+                    insertTodoAtNoteCaret(noteLinkContext, todo.id);
+                    renderTodos();
+                    if (document.getElementById('calendarOverlay').classList.contains('active')) {
+                        renderCalContent();
+                        updateCalDots();
+                    }
+                    closeNoteLinkPicker();
+                    showToast('已新建待归类清单，并插入正文');
+                });
+                requestAnimationFrame(() => input.focus());
+            }
+            function updateNoteLinkEntryVisibility() {
+                const shouldShow = document.getElementById('newNotePage').classList.contains('active') || document.getElementById('noteEditPage').classList.contains('active');
+                if (!shouldShow && noteLinkContext) closeNoteLinkPicker();
+            }
+            function openNoteLinkPicker(context) {
+                const overlay = document.getElementById('noteLinkPopoverOverlay');
+                const modal = document.getElementById('noteLinkModal');
+                if (!overlay || !modal) return;
+                const pageId = context === 'edit' ? 'noteEditPage' : 'newNotePage';
+                if (!document.getElementById(pageId).classList.contains('active')) return;
+                captureNoteCaret(context);
+                noteLinkContext = context;
+                noteLinkTriggerButton = document.querySelector(`[data-note-link-entry="${context}"]`);
+                if (noteLinkTriggerButton) {
+                    noteLinkTriggerButton.classList.add('active');
+                    noteLinkTriggerButton.setAttribute('aria-expanded', 'true');
+                }
+                overlay.classList.add('open');
+                overlay.classList.remove('showing-modal');
+                overlay.setAttribute('aria-hidden', 'false');
+                modal.hidden = true;
+                requestAnimationFrame(positionNoteLinkPopover);
+            }
 
             function buildWeekCalendarHtml(monStr) {
                 const wd = getWeekDates(monStr);
@@ -4566,7 +5440,9 @@
                 let h = '';
                 dn.forEach(n => {
                     const ht = n.title && n.title.trim();
-                    const titleHtml = ht ? escapeHtml(n.title) : `<span style="color:var(--text-secondary);font-weight:500">${escapeHtml((n.text||'').substring(0,50))}</span>`;
+                    const linkedCount = getNoteBlocks(n).filter(block => block.type === 'todo').length;
+                    const untitledPreview = (n.text || '').trim() || (linkedCount ? `包含 ${linkedCount} 个清单` : '空便条');
+                    const titleHtml = ht ? escapeHtml(n.title) : `<span style="color:var(--text-secondary);font-weight:500">${escapeHtml(untitledPreview.substring(0,50))}</span>`;
                     const time = n.time ? n.time.substring(11,16) : '';
                     const preview = n.text ? escapeHtml(n.text.substring(0,40)) : '';
                     h += `<div class="note-item" onclick="openNoteDetail('${n.id}')">
@@ -4598,9 +5474,10 @@
                 noteDetailId = id;
                 const body = document.getElementById('noteDetailBody');
                 const actions = document.getElementById('noteDetailActions');
-                body.innerHTML = `${n.title ? '<div class="note-detail-title">'+escapeHtml(n.title)+'</div>' : ''}<div class="note-detail-time">${n.date ? fullDateDisplay(n.date) : ''} ${n.time ? n.time.substring(11,16) : ''} ${n.date ? weekdayName(n.date) : ''}</div><div class="note-detail-text">${escapeHtml(n.text||'')}</div>`;
+                body.innerHTML = `${n.title ? '<div class="note-detail-title">'+escapeHtml(n.title)+'</div>' : ''}<div class="note-detail-time">${n.date ? fullDateDisplay(n.date) : ''} ${n.time ? n.time.substring(11,16) : ''} ${n.date ? weekdayName(n.date) : ''}</div>${renderNoteContentHtml(n)}`;
                 actions.innerHTML = `<button class="modal-btn modal-btn-secondary" onclick="openNoteEdit('${id}')">编辑</button><button class="modal-btn modal-btn-danger" onclick="confirmDeleteNote('${id}')">删除</button>`;
                 document.getElementById('noteDetailPage').classList.add('active');
+                updateNoteLinkEntryVisibility();
             };
             window.closeNoteDetail = function() {
                 document.getElementById('noteDetailPage').classList.remove('active');
@@ -4615,45 +5492,56 @@
                 editingNoteId = id;
                 document.getElementById('noteDetailPage').classList.remove('active');
                 document.getElementById('noteEditTitle').value = n.title || '';
-                document.getElementById('noteEditText').value = n.text || '';
                 document.getElementById('noteEditTime').textContent = (n.date ? fullDateDisplay(n.date) : '') + ' ' + (n.time ? n.time.substring(11,16) : '') + ' ' + (n.date ? weekdayName(n.date) : '');
                 document.getElementById('noteEditActions').innerHTML = '<button class="modal-btn modal-btn-primary" onclick="saveNoteEdit()">保存</button>';
                 enhanceSaveBtnTap(document.querySelector('#noteEditActions button'));
                 document.getElementById('noteEditPage').classList.add('active');
+                updateNoteLinkEntryVisibility();
+                renderNoteEditor('edit', n);
                 setTimeout(() => {
-                    const ta = document.getElementById('noteEditText');
-                    ta.focus();
-                    ta.setSelectionRange(ta.value.length, ta.value.length);
+                    const editor = getNoteEditor('edit');
+                    editor.focus();
+                    placeNoteCaretAtEnd('edit');
                 }, 200);
             };
             window.saveNoteEdit = function() {
                 const n = notes.find(x => x.id === editingNoteId);
                 if (!n) return;
+                const blocks = serializeNoteEditor('edit');
                 n.title = document.getElementById('noteEditTitle').value.trim();
-                n.text = document.getElementById('noteEditText').value.trim();
+                n.contentBlocks = blocks;
+                n.text = getPlainTextFromBlocks(blocks);
+                n.linkedTodoIds = getLinkedIdsFromBlocks(blocks);
                 DB.set('notes', notes);
                 closeNoteEdit();
                 showToast('已保存');
             };
             window.closeNoteEdit = function() {
                 document.getElementById('noteEditPage').classList.remove('active');
+                closeNoteLinkPicker();
                 editingNoteId = null;
+                renderNoteEditor('edit', null);
+                updateNoteLinkEntryVisibility();
                 if (noteDetailId) openNoteDetail(noteDetailId);
                 else { renderNoteList(); renderWeekCalendar(); }
             };
 
             window.openNewNote = function() {
                 document.getElementById('newNoteTitle').value = '';
-                document.getElementById('newNoteText').value = '';
                 document.getElementById('newNoteSaveBtn').disabled = true;
                 const now = new Date();
                 document.getElementById('newNoteTime').textContent = formatDateTime(now) + ' ' + weekdayName(todayStr());
                 document.getElementById('newNotePage').classList.add('active');
+                updateNoteLinkEntryVisibility();
+                renderNoteEditor('new', null);
                 setTimeout(() => document.getElementById('newNoteTitle').focus(), 200);
             };
             window.closeNewNote = function() {
                 document.getElementById('newNotePage').classList.remove('active');
                 document.getElementById('newNotePage').style.zIndex = '';
+                closeNoteLinkPicker();
+                renderNoteEditor('new', null);
+                updateNoteLinkEntryVisibility();
                 if (calNoteCreating) {
                     calNoteCreating = false;
                     renderCalContent();
@@ -4664,8 +5552,9 @@
                 }
             };
             window.saveNewNote = function() {
-                const text = document.getElementById('newNoteText').value.trim();
-                if (!text) return;
+                const blocks = serializeNoteEditor('new');
+                if (!blocks.length) return;
+                const text = getPlainTextFromBlocks(blocks);
                 const title = document.getElementById('newNoteTitle').value.trim();
                 const now = new Date();
                 notes.push({
@@ -4673,14 +5562,17 @@
                     title: title,
                     text: text,
                     time: formatDateTime(now),
-                    date: calNoteCreating ? (calSelectedDate || todayStr()) : noteSelectedDate
+                    date: calNoteCreating ? (calSelectedDate || todayStr()) : noteSelectedDate,
+                    linkedTodoIds: getLinkedIdsFromBlocks(blocks),
+                    contentBlocks: blocks
                 });
                 DB.set('notes', notes);
                 closeNewNote();
                 showToast('已保存');
             };
             window.onNewNoteTextInput = function() {
-                document.getElementById('newNoteSaveBtn').disabled = !document.getElementById('newNoteText').value.trim();
+                captureNoteCaret('new');
+                updateNoteEditorState('new');
             };
 
            // ============================================================
@@ -5772,13 +6664,14 @@ function openCalQuickTagModal() {
 function openCalNewNote() {
     calNoteCreating = true;
     document.getElementById('newNoteTitle').value = '';
-    document.getElementById('newNoteText').value = '';
     document.getElementById('newNoteSaveBtn').disabled = true;
+    renderNoteEditor('new', null);
     const ds = calSelectedDate || todayStr();
     document.getElementById('newNoteTime').textContent = fullDateDisplay(ds) + ' ' + weekdayName(ds);
     const page = document.getElementById('newNotePage');
     page.style.zIndex = '2000'; // 高于日历 overlay
     page.classList.add('active');
+    updateNoteLinkEntryVisibility();
     setTimeout(() => document.getElementById('newNoteTitle').focus(), 200);
 }
 
@@ -5948,6 +6841,43 @@ function closeModal() {
     if (_modalOverlay) { _modalOverlay.remove(); _modalOverlay = null; }
 }
 
+function openSchedJumpModal() {
+    const base = schedSelectedDate ? new Date(schedSelectedDate) : today();
+    const year = base.getFullYear();
+    const month = base.getMonth() + 1;
+    let monthOptions = '';
+    for (let i = 1; i <= 12; i++) monthOptions += `<option value="${i}"${i === month ? ' selected' : ''}>${i}月</option>`;
+    showModal(`
+        <div class="modal-title">跳转年月</div>
+        <div class="modal-desc">选择年份和月份后跳转。</div>
+        <label>年份</label>
+        <input type="number" id="schedJumpYear" min="1900" max="2100" value="${year}">
+        <label>月份</label>
+        <select id="schedJumpMonth">${monthOptions}</select>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="schedJumpCancel">取消</button>
+            <button class="btn-confirm" id="schedJumpConfirm">跳转</button>
+        </div>
+    `);
+    const ov = document.querySelector('.modal-overlay.open');
+    const yearInput = ov.querySelector('#schedJumpYear');
+    const monthSelect = ov.querySelector('#schedJumpMonth');
+    ov.querySelector('#schedJumpCancel').addEventListener('click', closeModal);
+    ov.querySelector('#schedJumpConfirm').addEventListener('click', function() {
+        const y = parseInt(yearInput.value, 10);
+        const m = parseInt(monthSelect.value, 10);
+        if (!Number.isInteger(y) || !Number.isInteger(m) || m < 1 || m > 12) return;
+        const day = Math.min(new Date(schedSelectedDate).getDate(), getMonthDays(y, m - 1));
+        schedSelectedDate = formatDate(new Date(y, m - 1, day));
+        schedMonthOffset = schedMonthOffsetFromDate(schedSelectedDate);
+        schedWeekStart = schedGetWeekStart(schedSelectedDate);
+        setSchedViewMode('month');
+        closeModal();
+    });
+    yearInput.focus();
+    yearInput.select();
+}
+
             // ============================================================
             // FAB 与快速添加（原始版本，但便条标签下行为不同）
             // ============================================================
@@ -5958,7 +6888,6 @@ function closeModal() {
             let quickAddType = 'inbox';
             let fabLongPressTimer = null;
             let fabLongPressTriggered = false;
-            let fabTouchOpenHandled = false;
             let fabSelectionLocked = false;
             let fabSelectionUnlockTimer = null;
 
@@ -6051,7 +6980,6 @@ function closeModal() {
                     if (e.button === 0) fabLongPressTriggered = false;
                     return;
                 }
-                fabTouchOpenHandled = false;
                 lockFabPageSelection();
                 if (e.cancelable) e.preventDefault();
                 if (this.setPointerCapture) this.setPointerCapture(e.pointerId);
@@ -6066,17 +6994,7 @@ function closeModal() {
                 }, 450);
             });
             function cancelFabLongPress() { clearTimeout(fabLongPressTimer); fabLongPressTimer = null; }
-            fabAddTodo.addEventListener('pointerup', function(e) {
-                cancelFabLongPress();
-                const activeTab = document.querySelector('#notePage .tabs .tab.active');
-                const tabId = activeTab ? activeTab.dataset.tab : 'todoTab';
-                if (e.pointerType === 'touch' && e.isPrimary && tabId === 'todoTab' &&
-                    !fabLongPressTriggered && !fabTypeMenu.classList.contains('open')) {
-                    e.preventDefault();
-                    fabTouchOpenHandled = true;
-                    openTodoComposer('main', true);
-                }
-            });
+            fabAddTodo.addEventListener('pointerup', cancelFabLongPress);
             fabAddTodo.addEventListener('pointercancel', cancelFabLongPress);
             fabAddTodo.addEventListener('pointerleave', cancelFabLongPress);
             fabAddTodo.addEventListener('selectstart', function(e) { e.preventDefault(); });
@@ -6091,10 +7009,6 @@ function closeModal() {
 
             fabAddTodo.addEventListener('click', function(e) {
                 e.preventDefault();
-                if (fabTouchOpenHandled) {
-                    fabTouchOpenHandled = false;
-                    return;
-                }
                 // 检查当前标签
                 const activeTab = document.querySelector('#notePage .tabs .tab.active');
                 const tabId = activeTab ? activeTab.dataset.tab : 'todoTab';
@@ -6461,7 +7375,7 @@ function closeModal() {
                 }
             }
 
-            function openTodoComposer(source, focusImmediately) {
+            function openTodoComposer(source) {
                 const els = getTodoComposerElements();
                 clearTimeout(todoComposerCloseTimer);
                 cancelAnimationFrame(todoComposerFocusTimer);
@@ -6479,12 +7393,17 @@ function closeModal() {
                 els.overlay.setAttribute('aria-hidden', 'false');
                 if (window._calFabClose) window._calFabClose();
                 if (typeof closeFabQuickAdd === 'function') closeFabQuickAdd();
-                if (todoComposer.source !== 'calendar') {
-                    todoComposerFocusTimer = requestAnimationFrame(function() {
-                        if (!els.overlay.classList.contains('open')) return;
-                        try { els.input.focus({ preventScroll: true }); } catch (_) { els.input.focus(); }
-                    });
-                }
+                // 关键：必须在点击手势的同步调用栈内立即聚焦输入框。
+                // 浏览器只在“用户激活(user activation)”有效期内才允许网页主动弹出软键盘；
+                // 一旦把 focus 推迟到 requestAnimationFrame，安卓会丢失这次激活，
+                // 表现为键盘慢一拍(总览)甚至完全不弹(日常)。同步聚焦可让键盘与浮窗同帧升起。
+                try { els.input.focus({ preventScroll: true }); } catch (_) { els.input.focus(); }
+                // 兜底：个别 WebView 首帧同步聚焦无效时，下一帧再补一次（此时仍在激活窗口内）。
+                todoComposerFocusTimer = requestAnimationFrame(function() {
+                    if (!els.overlay.classList.contains('open')) return;
+                    if (document.activeElement === els.input) return;
+                    try { els.input.focus({ preventScroll: true }); } catch (_) { els.input.focus(); }
+                });
             }
 
             function finishTodoComposerClose() {
@@ -7632,16 +8551,21 @@ function closeModal() {
                 meta += ' · ' + getTodoTypeText(todo);
                 document.getElementById('todoEditMeta').textContent = meta;
                 document.getElementById('todoEditSaveBtn').disabled = !todo.text.trim();
-                document.getElementById('todoEditPage').classList.add('active');
+                const editPage = document.getElementById('todoEditPage');
+                editPage.style.zIndex = '2300';
+                editPage.classList.add('active');
                 setTimeout(() => {
                     input.focus();
                     input.setSelectionRange(input.value.length, input.value.length);
                 }, 200);
             }
             function closeTodoEdit() {
-                document.getElementById('todoEditPage').classList.remove('active');
+                const editPage = document.getElementById('todoEditPage');
+                editPage.classList.remove('active');
+                editPage.style.zIndex = '';
                 editingTodoId = null;
                 renderTodos();
+                refreshNoteTodoCards();
             }
             function saveTodoEdit() {
                 const todo = todos.find(t => t.id === editingTodoId);
@@ -8780,7 +9704,10 @@ function closeModal() {
                         else { renderSchedMonth(); }
                         updateSchedTitle();
                     });
-                    document.getElementById('calMonthTitle').addEventListener('click', function() { if (schedViewMode === 'day') setSchedViewMode('month'); });
+                    document.getElementById('schedBackBtn').addEventListener('click', function() {
+                        setSchedViewMode('month');
+                    });
+                    document.getElementById('calMonthTitle').addEventListener('click', openSchedJumpModal);
 
                     // 周历条左右滑动（自定义，不吞 click）
                     initSchedWeekSwipe();
@@ -8955,7 +9882,7 @@ function closeModal() {
                 // touchstart：先收起软键盘，避免首次点击被键盘吞掉
                 btn.addEventListener('touchstart', function() {
                     const active = document.activeElement;
-                    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+                    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
                         active.blur();
                     }
                 }, { passive: true });
@@ -8996,6 +9923,126 @@ function closeModal() {
                 renderNoteList();
             }
             init();
+            const noteLinkPopoverOverlay = document.getElementById('noteLinkPopoverOverlay');
+            const noteLinkModal = document.getElementById('noteLinkModal');
+            const noteLinkModalClose = document.getElementById('noteLinkModalClose');
+            document.querySelectorAll('[data-note-link-entry]').forEach(button => {
+                // 在按钮夺走焦点前记住正文光标，随后选择的清单才能精确插入该处。
+                button.addEventListener('pointerdown', function() {
+                    captureNoteCaret(this.dataset.noteLinkEntry);
+                });
+                button.addEventListener('click', function() {
+                    openNoteLinkPicker(this.dataset.noteLinkEntry);
+                });
+            });
+            window.addEventListener('resize', function() {
+                requestAnimationFrame(positionNoteLinkPopover);
+            });
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', function() {
+                    requestAnimationFrame(positionNoteLinkPopover);
+                });
+            }
+            ['new', 'edit'].forEach(context => {
+                const editor = getNoteEditor(context);
+                if (!editor) return;
+                ['keyup', 'mouseup', 'touchend', 'focus', 'input'].forEach(type => {
+                    editor.addEventListener(type, function() { captureNoteCaret(context); });
+                });
+                editor.addEventListener('paste', function(e) {
+                    // 便条只接受纯文本粘贴，避免外部 HTML 破坏内嵌清单结构。
+                    e.preventDefault();
+                    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+                    document.execCommand('insertText', false, text);
+                });
+            });
+            updateNoteLinkEntryVisibility();
+            if (noteLinkPopoverOverlay) {
+                noteLinkPopoverOverlay.addEventListener('click', function(e) {
+                    if (e.target === noteLinkPopoverOverlay) {
+                        closeNoteLinkPicker();
+                        return;
+                    }
+                    const actionBtn = e.target.closest('[data-note-link-action]');
+                    if (!actionBtn) return;
+                    if (noteLinkModal) {
+                        noteLinkModal.hidden = false;
+                        noteLinkPopoverOverlay.classList.add('showing-modal');
+                    }
+                    if (actionBtn.dataset.noteLinkAction === 'existing') renderNoteLinkExistingModal();
+                    else renderNoteLinkCreateModal();
+                });
+            }
+            if (noteLinkModalClose) noteLinkModalClose.addEventListener('click', closeNoteLinkPicker);
+            document.addEventListener('click', function(e) {
+                const card = e.target.closest('.note-embedded-todo');
+                if (!card) return;
+                const todo = getNoteTodoById(card.dataset.todoId);
+                if (e.target.closest('.note-todo-unlink')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    removeTodoCardFromEditor(card);
+                    showToast('已从便条移除，主清单不受影响');
+                    return;
+                }
+                if (!todo) return;
+                if (e.target.closest('.note-todo-check')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (todo.done) {
+                        todo.done = false;
+                        todo.completedAt = null;
+                        todo.nextActiveTime = null;
+                        regenerateRemind(todo);
+                        if (todo.type === 'elastic' && todo.subType === 'habit') resetElasticHabitPeriod(todo);
+                    } else if (todo.type === 'elastic' && todo.subType === 'habit') {
+                        incElasticHabit(todo);
+                    } else {
+                        const now = new Date();
+                        todo.done = true;
+                        todo.completedAt = now.toISOString();
+                        if (todo.type === 'hard') DB.set('lastHardDoneTime', Date.now());
+                        const isCycle = todo.type === 'hard' && todo.hardConfig && todo.hardConfig.mode === 'cycle';
+                        if (isCycle) {
+                            const activationDate = getNextCycleActivationDate(todo.hardConfig, now);
+                            todo.nextActiveTime = activationDate.getTime();
+                            todo.remindTimes = [getCycleReminderForActivation(todo.hardConfig, activationDate)];
+                        } else {
+                            todo.nextActiveTime = null;
+                            todo.remindTimes = [];
+                        }
+                    }
+                    DB.set('todos', todos);
+                    renderTodos();
+                    if (document.getElementById('calendarOverlay').classList.contains('active')) {
+                        renderCalContent();
+                        updateCalDots();
+                    }
+                    refreshNoteTodoCards(todo.id);
+                    return;
+                }
+                if (e.target.closest('.note-todo-reminder')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (todo.type === 'hard') {
+                        document.getElementById('hardModal').style.zIndex = '2400';
+                        const mode = todo.hardConfig && todo.hardConfig.mode === 'deadline' ? 'deadline' : 'cycle';
+                        openHardModal(todo, false, null, mode, true);
+                    } else if (todo.type === 'elastic') {
+                        document.getElementById('elasticModal').style.zIndex = '2400';
+                        openElasticModal(todo, false, snapshotTodo(todo), false);
+                    } else {
+                        document.getElementById('timeEditModal').style.zIndex = '2400';
+                        openReminderTimeModal(todo);
+                    }
+                    return;
+                }
+                if (e.target.closest('.note-todo-text')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openTodoEdit(String(todo.id));
+                }
+            });
 
             // ============================================================
             // 清单渲染（从参考代码移植）
@@ -9394,6 +10441,7 @@ function closeModal() {
                 const list = document.getElementById('todoList');
                 if (todos.length === 0) {
                     list.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>还没有待办事项</p></div>`;
+                    refreshNoteTodoCards();
                     return;
                 }
 
@@ -9470,6 +10518,7 @@ function closeModal() {
 
                 list.innerHTML = html;
                 attachTodoEvents(list);
+                refreshNoteTodoCards();
             }
 
             // ============================================================
@@ -9883,6 +10932,10 @@ function closeModal() {
 
         })();
     </script>
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon="{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;ecc6cfd0e0a14cedb231a95e9f5a150d&quot;,&quot;r&quot;:1}" crossorigin="anonymous"></script>
-
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v3d52b47920f24c319d37e2661827c42b1787588026925" integrity="sha512-d9sL6GJLXn6fInD1+TVXhTcQOsmxeHfmHAvwGDIxp5TO+uo1fiWW7mHomMj4MLRlCsJDTqXzWLHJFFlPCEIj/A==" data-cf-beacon='{"version":"2024.11.0","token":"ecc6cfd0e0a14cedb231a95e9f5a150d","r":1}' crossorigin="anonymous"></script>
 </body></html>
+
+
+
+
+
