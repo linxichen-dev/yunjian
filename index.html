@@ -5,6 +5,7 @@
     <!-- 移动端显示配置 -->
     <meta name="theme-color" content="#4A6CF7">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>云笺</title>
     <style>
@@ -82,7 +83,7 @@
             z-index: 1600;
             height: 72px;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             align-items: stretch;
             padding: 7px 22px 8px;
             background: rgba(255, 255, 255, 0.96);
@@ -3412,6 +3413,300 @@
             .todo-composer-overlay, .todo-composer-sheet, .todo-type-popover,
             .todo-reminder-overlay, .todo-reminder-dialog { transition-duration: .01ms !important; }
         }
+
+        /* ===== 番茄钟 ===== */
+        .pomodoro-page {
+            --pomo-accent: var(--primary);
+            --pomo-soft: var(--primary-bg);
+        }
+        .pomodoro-page.is-break {
+            --pomo-accent: #20a779;
+            --pomo-soft: #e5f7f0;
+        }
+        .pomo-content {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 22px 4px 8px;
+            scrollbar-width: thin;
+        }
+        .pomo-layout {
+            min-height: 100%;
+            display: grid;
+            grid-template-columns: minmax(310px, 1.25fr) minmax(270px, .75fr);
+            gap: 28px;
+            align-items: center;
+        }
+        .pomo-timer-panel {
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .pomo-plan-title {
+            max-width: 100%;
+            margin-bottom: 6px;
+            color: var(--text);
+            font-size: 18px;
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .pomo-stage-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 18px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        .pomo-stage-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--pomo-accent);
+            box-shadow: 0 0 0 4px var(--pomo-soft);
+        }
+        .pomo-clock {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            display: grid;
+            place-items: center;
+        }
+        .pomo-ring {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        .pomo-ring-track,
+        .pomo-ring-value {
+            fill: none;
+            stroke-width: 10;
+        }
+        .pomo-ring-track { stroke: var(--pomo-soft); }
+        .pomo-ring-value {
+            stroke: var(--pomo-accent);
+            stroke-linecap: round;
+            stroke-dasharray: 666;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset .4s linear, stroke .25s ease;
+        }
+        .pomo-time {
+            position: relative;
+            color: var(--text);
+            font-size: clamp(48px, 7vw, 66px);
+            font-weight: 700;
+            letter-spacing: -3px;
+            font-variant-numeric: tabular-nums;
+        }
+        .pomo-time-caption {
+            position: absolute;
+            top: calc(50% + 48px);
+            color: var(--text-light);
+            font-size: 12px;
+        }
+        .pomo-rounds {
+            display: flex;
+            justify-content: center;
+            gap: 7px;
+            min-height: 10px;
+            margin: 18px 0 22px;
+        }
+        .pomo-round-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 99px;
+            background: var(--border);
+            transition: width .2s ease, background .2s ease;
+        }
+        .pomo-round-dot.done { background: color-mix(in srgb, var(--pomo-accent) 45%, white); }
+        .pomo-round-dot.current { width: 24px; background: var(--pomo-accent); }
+        .pomo-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .pomo-control {
+            height: 44px;
+            min-width: 96px;
+            padding: 0 18px;
+            border: 0;
+            border-radius: 12px;
+            background: var(--bg);
+            color: var(--text-secondary);
+            font: 600 14px/1 system-ui, -apple-system, sans-serif;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .pomo-control:hover { transform: translateY(-1px); background: var(--border-light); color: var(--text); }
+        .pomo-control.primary {
+            min-width: 128px;
+            background: var(--pomo-accent);
+            color: #fff;
+            box-shadow: 0 8px 20px color-mix(in srgb, var(--pomo-accent) 24%, transparent);
+        }
+        .pomo-control:focus-visible,
+        .pomo-plan-card:focus-visible,
+        .pomo-add-plan:focus-visible {
+            outline: 3px solid color-mix(in srgb, var(--primary) 28%, transparent);
+            outline-offset: 2px;
+        }
+        .pomo-side {
+            align-self: stretch;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 4px 0;
+        }
+        .pomo-side-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .pomo-side-head h3 { font-size: 15px; color: var(--text); }
+        .pomo-add-plan {
+            border: 0;
+            background: transparent;
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 650;
+            cursor: pointer;
+            padding: 7px 8px;
+            border-radius: 8px;
+        }
+        .pomo-add-plan:hover { background: var(--primary-bg); }
+        .pomo-plan-list {
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .pomo-plan-card {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 4px 10px;
+            width: 100%;
+            padding: 14px 44px 14px 15px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--card);
+            color: var(--text);
+            text-align: left;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .pomo-plan-card:hover { border-color: var(--primary-bg2); transform: translateY(-1px); }
+        .pomo-plan-card.active {
+            border-color: var(--primary);
+            background: var(--primary-bg);
+            box-shadow: inset 3px 0 0 var(--primary);
+        }
+        .pomo-plan-name {
+            overflow: hidden;
+            font-size: 14px;
+            font-weight: 700;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .pomo-plan-meta { grid-column: 1 / -1; color: var(--text-secondary); font-size: 12px; }
+        .pomo-default-mark { color: var(--primary); font-size: 11px; font-weight: 650; }
+        .pomo-plan-edit {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-light);
+            font-size: 17px;
+            cursor: pointer;
+            transform: translateY(-50%);
+        }
+        .pomo-plan-edit:hover { background: rgba(255,255,255,.72); color: var(--text); }
+        .pomo-empty-note {
+            margin-top: 12px;
+            color: var(--text-light);
+            font-size: 12px;
+            line-height: 1.55;
+        }
+        .pomo-reminder {
+            position: absolute;
+            left: 50%;
+            bottom: 88px;
+            z-index: 1750;
+            width: min(520px, calc(100% - 28px));
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 15px;
+            border: 1px solid #bfe9d9;
+            border-radius: 14px;
+            background: rgba(245,255,251,.97);
+            box-shadow: 0 16px 40px rgba(18,94,71,.16);
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, 14px);
+            transition: opacity .22s ease, transform .22s ease;
+        }
+        .pomo-reminder.show { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+        .pomo-reminder-icon { font-size: 23px; }
+        .pomo-reminder-copy { flex: 1; min-width: 0; }
+        .pomo-reminder-copy strong { display: block; margin-bottom: 3px; color: #167456; font-size: 13px; }
+        .pomo-reminder-copy p { color: var(--text-secondary); font-size: 13px; line-height: 1.45; }
+        .pomo-reminder-close {
+            flex: 0 0 auto;
+            width: 30px;
+            height: 30px;
+            border: 0;
+            border-radius: 8px;
+            background: #e5f7f0;
+            color: #167456;
+            cursor: pointer;
+        }
+        .pomo-editor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .pomo-editor-error { min-height: 18px; margin-top: 8px; color: var(--danger); font-size: 12px; }
+        .pomo-editor-delete {
+            margin-right: auto;
+            background: transparent !important;
+            color: var(--danger) !important;
+        }
+
+        @media (max-width: 760px) {
+            .pomo-content { padding-top: 14px; }
+            .pomo-layout { grid-template-columns: 1fr; gap: 18px; align-items: start; }
+            .pomo-timer-panel { min-height: auto; }
+            .pomo-clock { width: 220px; height: 220px; }
+            .pomo-time { font-size: 54px; }
+            .pomo-side { min-height: 150px; }
+            .pomo-plan-list { max-height: 220px; }
+        }
+        @media (max-width: 440px) {
+            .pomo-clock { width: 200px; height: 200px; }
+            .pomo-time { font-size: 48px; }
+            .pomo-time-caption { top: calc(50% + 39px); }
+            .pomo-controls { width: 100%; gap: 7px; }
+            .pomo-control { min-width: 0; flex: 1; padding: 0 10px; }
+            .pomo-control.primary { min-width: 0; flex: 1.2; }
+            .pomo-editor-grid { grid-template-columns: 1fr; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .pomo-ring-value, .pomo-control, .pomo-plan-card, .pomo-reminder { transition-duration: .01ms !important; }
+        }
     </style>
 </head>
 <body>
@@ -3558,6 +3853,55 @@
                 </div>
             </div>
         </div>
+        <!-- ===== 番茄钟 ===== -->
+        <div id="pomodoroPage" class="page pomodoro-page">
+            <div class="page-header">
+                <h2>🍅 番茄钟</h2>
+                <span class="badge" id="pomoHeaderStatus">准备专注</span>
+            </div>
+            <div class="pomo-content">
+                <div class="pomo-layout">
+                    <section class="pomo-timer-panel" aria-label="当前番茄钟">
+                        <div class="pomo-plan-title" id="pomoCurrentName">经典番茄钟</div>
+                        <div class="pomo-stage-line">
+                            <span class="pomo-stage-dot" aria-hidden="true"></span>
+                            <span id="pomoStageText">专注 · 第 1 / 4 轮</span>
+                        </div>
+                        <div class="pomo-clock" aria-live="polite">
+                            <svg class="pomo-ring" viewBox="0 0 240 240" aria-hidden="true">
+                                <circle class="pomo-ring-track" cx="120" cy="120" r="106"></circle>
+                                <circle class="pomo-ring-value" id="pomoRingValue" cx="120" cy="120" r="106"></circle>
+                            </svg>
+                            <div class="pomo-time" id="pomoTime">25:00</div>
+                            <div class="pomo-time-caption" id="pomoTimeCaption">准备好就开始</div>
+                        </div>
+                        <div class="pomo-rounds" id="pomoRounds" aria-label="轮次进度"></div>
+                        <div class="pomo-controls">
+                            <button type="button" class="pomo-control" id="pomoResetBtn">重置</button>
+                            <button type="button" class="pomo-control primary" id="pomoToggleBtn">开始专注</button>
+                            <button type="button" class="pomo-control" id="pomoSkipBtn">跳过阶段</button>
+                        </div>
+                    </section>
+                    <aside class="pomo-side" aria-label="番茄钟方案">
+                        <div class="pomo-side-head">
+                            <h3>我的番茄钟</h3>
+                            <button type="button" class="pomo-add-plan" id="pomoAddPlanBtn">＋ 新建</button>
+                        </div>
+                        <div class="pomo-plan-list" id="pomoPlanList"></div>
+                        <p class="pomo-empty-note">选择不同方案会重置当前计时。方案会保存在这台设备上，创建数量不限。</p>
+                    </aside>
+                </div>
+            </div>
+            <div class="pomo-reminder" id="pomoReminder" role="alert" aria-live="assertive">
+                <div class="pomo-reminder-icon" aria-hidden="true">🌿</div>
+                <div class="pomo-reminder-copy">
+                    <strong>休息时间到</strong>
+                    <p id="pomoReminderText"></p>
+                </div>
+                <button type="button" class="pomo-reminder-close" id="pomoReminderClose" aria-label="关闭提醒">✓</button>
+            </div>
+        </div>
+
     <!-- ===== 手机式主导航 ===== -->
     <nav class="bottom-nav" id="bottomNav" aria-label="主导航">
         <button type="button" class="active" data-main-nav="note" aria-label="日常">
@@ -3572,10 +3916,42 @@
             <span class="nav-icon" aria-hidden="true">▦</span>
             <span>日程</span>
         </button>
+        <button type="button" data-main-nav="pomodoro" aria-label="番茄钟">
+            <span class="nav-icon" aria-hidden="true">◷</span>
+            <span>番茄钟</span>
+        </button>
     </nav>
     </div>
 
     <!-- ===== 全局模态框 ===== -->
+    <div class="modal-overlay" id="pomoEditorModal" aria-hidden="true">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="pomoEditorTitle">
+            <h3 id="pomoEditorTitle">新建番茄钟</h3>
+            <label for="pomoNameInput">名称</label>
+            <input type="text" id="pomoNameInput" maxlength="24" placeholder="例如：深度写作" autocomplete="off">
+            <div class="pomo-editor-grid">
+                <div>
+                    <label for="pomoFocusInput">专注（分钟）</label>
+                    <input type="number" id="pomoFocusInput" min="1" max="180" inputmode="numeric" value="25">
+                </div>
+                <div>
+                    <label for="pomoBreakInput">休息（分钟）</label>
+                    <input type="number" id="pomoBreakInput" min="1" max="60" inputmode="numeric" value="5">
+                </div>
+                <div>
+                    <label for="pomoRoundsInput">轮数</label>
+                    <input type="number" id="pomoRoundsInput" min="1" max="20" inputmode="numeric" value="4">
+                </div>
+            </div>
+            <div class="pomo-editor-error" id="pomoEditorError" aria-live="polite"></div>
+            <div class="modal-actions">
+                <button type="button" class="pomo-editor-delete" id="pomoDeleteBtn">删除</button>
+                <button type="button" class="btn-cancel" id="pomoEditorCancel">取消</button>
+                <button type="button" class="btn-confirm" id="pomoEditorSave">保存</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="eventModal">
         <div class="modal-box">
             <h3 id="modalTitle">添加事件</h3>
@@ -9306,7 +9682,7 @@ function openSchedJumpModal() {
                 if (calendarOverlay) calendarOverlay.classList.remove('active');
                 document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                 document.getElementById(pageId).classList.add('active');
-                updateMainNav(pageId === 'scheduleChoicePage' ? 'schedule' : 'note');
+                updateMainNav(pageId === 'scheduleChoicePage' ? 'schedule' : pageId === 'pomodoroPage' ? 'pomodoro' : 'note');
                 if (pageId === 'scheduleChoicePage') { initSchedView(); }
                 else if (pageId === 'dayPlanPage') { renderDayView(); initSwipe('daySliderWrap', onDaySwipe); }
                 else if (pageId === 'weekPlanPage') { renderWeekView(); initSwipe('weekSliderWrap', onWeekSwipe); }
@@ -9322,6 +9698,9 @@ function openSchedJumpModal() {
                     renderNoteList();
                     initWeekCalSwipe();
                    
+                }
+                else if (pageId === 'pomodoroPage') {
+                    renderPomodoro();
                 }
             }
             document.querySelectorAll('.home-card[data-page]').forEach(el => {
@@ -9355,6 +9734,8 @@ function openSchedJumpModal() {
                         openCalendarOverlay();
                     } else if (target === 'schedule') {
                         showPage('scheduleChoicePage');
+                    } else if (target === 'pomodoro') {
+                        showPage('pomodoroPage');
                     }
                 });
             });
@@ -10846,6 +11227,387 @@ function openSchedJumpModal() {
                     document.getElementById('tagModalConfirm').click();
                 }
             });
+
+            // ============================================================
+            // 番茄钟：多方案、阶段切换、持久化与休息提醒
+            // ============================================================
+            const POMODORO_DEFAULT = {
+                id: 'default',
+                name: '经典番茄钟',
+                focusMinutes: 25,
+                breakMinutes: 5,
+                rounds: 4,
+                isDefault: true
+            };
+            const POMODORO_REST_MESSAGES = [
+                '主动的休息会更好地恢复精力哟。',
+                '保持专注并不是一味拼毅力，耐心休息一下也很重要。',
+                '已经专注这么久啦，起身走走休息一下吧。',
+                '喝口水，看看远处，让眼睛和思绪一起松一松。',
+                '休息不是打断节奏，而是在为下一轮专注蓄力。',
+                '放松肩颈，做几次深呼吸，再轻松回来吧。'
+            ];
+            let pomodoroProfiles = DB.get('pomodoroProfiles', []);
+            if (!Array.isArray(pomodoroProfiles)) pomodoroProfiles = [];
+            pomodoroProfiles = pomodoroProfiles
+                .filter(function(profile) { return profile && profile.id && profile.id !== 'default'; })
+                .map(function(profile) {
+                    return {
+                        id: String(profile.id),
+                        name: String(profile.name || '未命名番茄钟').slice(0, 24),
+                        focusMinutes: Math.min(180, Math.max(1, Number(profile.focusMinutes) || 25)),
+                        breakMinutes: Math.min(60, Math.max(1, Number(profile.breakMinutes) || 5)),
+                        rounds: Math.min(20, Math.max(1, Number(profile.rounds) || 4)),
+                        isDefault: false
+                    };
+                });
+            pomodoroProfiles.unshift(POMODORO_DEFAULT);
+            DB.set('pomodoroProfiles', pomodoroProfiles.filter(function(profile) { return !profile.isDefault; }));
+
+            function getPomodoroProfile(id) {
+                return pomodoroProfiles.find(function(profile) { return profile.id === id; }) || POMODORO_DEFAULT;
+            }
+
+            function pomodoroStageSeconds(profile, phase) {
+                return (phase === 'break' ? profile.breakMinutes : profile.focusMinutes) * 60;
+            }
+
+            let pomodoroSession = DB.get('pomodoroSession', null);
+            if (!pomodoroSession || !pomodoroProfiles.some(function(profile) { return profile.id === pomodoroSession.profileId; })) {
+                pomodoroSession = null;
+            }
+            if (!pomodoroSession) {
+                pomodoroSession = {
+                    profileId: 'default',
+                    phase: 'focus',
+                    currentRound: 1,
+                    remainingSeconds: POMODORO_DEFAULT.focusMinutes * 60,
+                    running: false,
+                    endAt: null
+                };
+            }
+            pomodoroSession.phase = pomodoroSession.phase === 'break' ? 'break' : 'focus';
+            pomodoroSession.currentRound = Math.max(1, Number(pomodoroSession.currentRound) || 1);
+            pomodoroSession.running = Boolean(pomodoroSession.running);
+            let pomodoroEditorId = null;
+            let pomodoroTicker = null;
+            let pomodoroReminderTimer = null;
+
+            function persistPomodoro() {
+                DB.set('pomodoroProfiles', pomodoroProfiles.filter(function(profile) { return !profile.isDefault; }));
+                DB.set('pomodoroSession', pomodoroSession);
+            }
+
+            function resetPomodoro(profileId) {
+                const profile = getPomodoroProfile(profileId || pomodoroSession.profileId);
+                pomodoroSession = {
+                    profileId: profile.id,
+                    phase: 'focus',
+                    currentRound: 1,
+                    remainingSeconds: profile.focusMinutes * 60,
+                    running: false,
+                    endAt: null
+                };
+                hidePomodoroReminder();
+                persistPomodoro();
+                renderPomodoro();
+            }
+
+            function formatPomodoroTime(seconds) {
+                const safe = Math.max(0, Math.ceil(Number(seconds) || 0));
+                const mins = Math.floor(safe / 60);
+                const secs = safe % 60;
+                return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+            }
+
+            function startPomodoroTicker() {
+                if (pomodoroTicker) return;
+                pomodoroTicker = setInterval(tickPomodoro, 250);
+            }
+
+            function stopPomodoroTicker() {
+                if (!pomodoroTicker) return;
+                clearInterval(pomodoroTicker);
+                pomodoroTicker = null;
+            }
+
+            function togglePomodoro() {
+                const profile = getPomodoroProfile(pomodoroSession.profileId);
+                if (pomodoroSession.running) {
+                    pomodoroSession.remainingSeconds = Math.max(0, Math.ceil((pomodoroSession.endAt - Date.now()) / 1000));
+                    pomodoroSession.running = false;
+                    pomodoroSession.endAt = null;
+                    stopPomodoroTicker();
+                } else {
+                    if (!pomodoroSession.remainingSeconds || pomodoroSession.remainingSeconds < 1) {
+                        pomodoroSession.remainingSeconds = pomodoroStageSeconds(profile, pomodoroSession.phase);
+                    }
+                    pomodoroSession.running = true;
+                    pomodoroSession.endAt = Date.now() + pomodoroSession.remainingSeconds * 1000;
+                    startPomodoroTicker();
+                    ensureNotificationPermission();
+                }
+                persistPomodoro();
+                renderPomodoro();
+            }
+
+            function tickPomodoro() {
+                if (!pomodoroSession.running) return;
+                const remaining = Math.max(0, Math.ceil((pomodoroSession.endAt - Date.now()) / 1000));
+                if (remaining <= 0) {
+                    advancePomodoro(false);
+                    return;
+                }
+                if (pomodoroSession.remainingSeconds !== remaining) {
+                    pomodoroSession.remainingSeconds = remaining;
+                    renderPomodoro();
+                }
+            }
+
+            function advancePomodoro(skipped) {
+                const profile = getPomodoroProfile(pomodoroSession.profileId);
+                const keepRunning = pomodoroSession.running;
+                const wasFocus = pomodoroSession.phase === 'focus';
+                if (wasFocus) {
+                    pomodoroSession.phase = 'break';
+                    pomodoroSession.remainingSeconds = profile.breakMinutes * 60;
+                    showPomodoroRestReminder();
+                } else if (pomodoroSession.currentRound < profile.rounds) {
+                    pomodoroSession.phase = 'focus';
+                    pomodoroSession.currentRound += 1;
+                    pomodoroSession.remainingSeconds = profile.focusMinutes * 60;
+                    hidePomodoroReminder();
+                } else {
+                    pomodoroSession.phase = 'focus';
+                    pomodoroSession.currentRound = 1;
+                    pomodoroSession.remainingSeconds = profile.focusMinutes * 60;
+                    pomodoroSession.running = false;
+                    pomodoroSession.endAt = null;
+                    stopPomodoroTicker();
+                    showPomodoroMessage('本组番茄钟完成', '很棒，今天的专注又向前走了一步。', true);
+                    persistPomodoro();
+                    renderPomodoro();
+                    return;
+                }
+                pomodoroSession.running = keepRunning;
+                pomodoroSession.endAt = keepRunning ? Date.now() + pomodoroSession.remainingSeconds * 1000 : null;
+                persistPomodoro();
+                renderPomodoro();
+                if (keepRunning) startPomodoroTicker();
+            }
+
+            function showPomodoroRestReminder() {
+                const message = POMODORO_REST_MESSAGES[Math.floor(Math.random() * POMODORO_REST_MESSAGES.length)];
+                showPomodoroMessage('休息时间到', message, false);
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    try {
+                        new Notification('云笺 · 该休息啦', {
+                            body: message,
+                            tag: 'cloudnote-pomodoro-rest',
+                            renotify: true
+                        });
+                    } catch (e) {}
+                }
+            }
+
+            function showPomodoroMessage(title, message, completed) {
+                const reminder = document.getElementById('pomoReminder');
+                reminder.querySelector('strong').textContent = title;
+                document.getElementById('pomoReminderText').textContent = message;
+                reminder.querySelector('.pomo-reminder-icon').textContent = completed ? '✨' : '🌿';
+                reminder.classList.add('show');
+                clearTimeout(pomodoroReminderTimer);
+                pomodoroReminderTimer = setTimeout(hidePomodoroReminder, 12000);
+            }
+
+            function hidePomodoroReminder() {
+                const reminder = document.getElementById('pomoReminder');
+                if (reminder) reminder.classList.remove('show');
+                clearTimeout(pomodoroReminderTimer);
+                pomodoroReminderTimer = null;
+            }
+
+            function renderPomodoroProfiles() {
+                const list = document.getElementById('pomoPlanList');
+                if (!list) return;
+                list.innerHTML = pomodoroProfiles.map(function(profile) {
+                    const active = profile.id === pomodoroSession.profileId;
+                    return '<div class="pomo-plan-card' + (active ? ' active' : '') + '" role="button" tabindex="0" data-pomo-profile="' + escapeHtml(profile.id) + '" aria-pressed="' + String(active) + '">' +
+                        '<span class="pomo-plan-name">' + escapeHtml(profile.name) + '</span>' +
+                        (profile.isDefault ? '<span class="pomo-default-mark">默认</span>' : '') +
+                        '<span class="pomo-plan-meta">专注 ' + profile.focusMinutes + ' 分钟 · 休息 ' + profile.breakMinutes + ' 分钟 · ' + profile.rounds + ' 轮</span>' +
+                        (!profile.isDefault ? '<button type="button" class="pomo-plan-edit" data-pomo-edit="' + escapeHtml(profile.id) + '" aria-label="编辑' + escapeHtml(profile.name) + '">•••</button>' : '') +
+                    '</div>';
+                }).join('');
+                list.querySelectorAll('[data-pomo-profile]').forEach(function(card) {
+                    function selectCard() {
+                        if (card.dataset.pomoProfile !== pomodoroSession.profileId) {
+                            resetPomodoro(card.dataset.pomoProfile);
+                        }
+                    }
+                    card.addEventListener('click', function(event) {
+                        if (!event.target.closest('[data-pomo-edit]')) selectCard();
+                    });
+                    card.addEventListener('keydown', function(event) {
+                        if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('[data-pomo-edit]')) {
+                            event.preventDefault();
+                            selectCard();
+                        }
+                    });
+                });
+                list.querySelectorAll('[data-pomo-edit]').forEach(function(button) {
+                    button.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                        openPomodoroEditor(button.dataset.pomoEdit);
+                    });
+                });
+            }
+
+            function renderPomodoro() {
+                const page = document.getElementById('pomodoroPage');
+                if (!page) return;
+                const profile = getPomodoroProfile(pomodoroSession.profileId);
+                pomodoroSession.currentRound = Math.min(profile.rounds, Math.max(1, pomodoroSession.currentRound));
+                const total = pomodoroStageSeconds(profile, pomodoroSession.phase);
+                pomodoroSession.remainingSeconds = Math.min(total, Math.max(0, Number(pomodoroSession.remainingSeconds) || total));
+                const ratio = total ? pomodoroSession.remainingSeconds / total : 0;
+                page.classList.toggle('is-break', pomodoroSession.phase === 'break');
+                document.getElementById('pomoCurrentName').textContent = profile.name;
+                document.getElementById('pomoStageText').textContent =
+                    (pomodoroSession.phase === 'focus' ? '专注' : '休息') + ' · 第 ' + pomodoroSession.currentRound + ' / ' + profile.rounds + ' 轮';
+                document.getElementById('pomoTime').textContent = formatPomodoroTime(pomodoroSession.remainingSeconds);
+                document.getElementById('pomoRingValue').style.strokeDashoffset = String(666 * (1 - ratio));
+                const pristine = !pomodoroSession.running && pomodoroSession.remainingSeconds === total;
+                document.getElementById('pomoTimeCaption').textContent = pomodoroSession.running
+                    ? (pomodoroSession.phase === 'focus' ? '保持节奏' : '放松一下')
+                    : (pristine ? '准备好就开始' : '已暂停');
+                document.getElementById('pomoHeaderStatus').textContent = pomodoroSession.running
+                    ? (pomodoroSession.phase === 'focus' ? '专注中' : '休息中')
+                    : (pristine ? (pomodoroSession.phase === 'focus' ? '准备专注' : '准备休息') : '已暂停');
+                document.getElementById('pomoToggleBtn').textContent = pomodoroSession.running
+                    ? '暂停'
+                    : (pristine ? (pomodoroSession.phase === 'focus' ? '开始专注' : '开始休息') : '继续');
+                document.getElementById('pomoRounds').innerHTML = Array.from({ length: profile.rounds }, function(_, index) {
+                    const round = index + 1;
+                    const done = round < pomodoroSession.currentRound;
+                    const current = round === pomodoroSession.currentRound;
+                    return '<span class="pomo-round-dot' + (done ? ' done' : '') + (current ? ' current' : '') + '" title="第 ' + round + ' 轮"></span>';
+                }).join('');
+                document.title = pomodoroSession.running
+                    ? formatPomodoroTime(pomodoroSession.remainingSeconds) + ' · ' + (pomodoroSession.phase === 'focus' ? '专注' : '休息') + ' · 云笺'
+                    : '云笺';
+                renderPomodoroProfiles();
+            }
+
+            function openPomodoroEditor(profileId) {
+                pomodoroEditorId = profileId || null;
+                const profile = profileId ? getPomodoroProfile(profileId) : null;
+                document.getElementById('pomoEditorTitle').textContent = profile ? '编辑番茄钟' : '新建番茄钟';
+                document.getElementById('pomoNameInput').value = profile ? profile.name : '';
+                document.getElementById('pomoFocusInput').value = profile ? profile.focusMinutes : 25;
+                document.getElementById('pomoBreakInput').value = profile ? profile.breakMinutes : 5;
+                document.getElementById('pomoRoundsInput').value = profile ? profile.rounds : 4;
+                document.getElementById('pomoEditorError').textContent = '';
+                document.getElementById('pomoDeleteBtn').style.display = profile ? '' : 'none';
+                const modal = document.getElementById('pomoEditorModal');
+                modal.classList.add('open');
+                modal.setAttribute('aria-hidden', 'false');
+                setTimeout(function() { document.getElementById('pomoNameInput').focus(); }, 30);
+            }
+
+            function closePomodoroEditor() {
+                const modal = document.getElementById('pomoEditorModal');
+                modal.classList.remove('open');
+                modal.setAttribute('aria-hidden', 'true');
+                pomodoroEditorId = null;
+            }
+
+            function savePomodoroEditor() {
+                const name = document.getElementById('pomoNameInput').value.replace(/\s+/g, ' ').trim();
+                const focusMinutes = Number(document.getElementById('pomoFocusInput').value);
+                const breakMinutes = Number(document.getElementById('pomoBreakInput').value);
+                const rounds = Number(document.getElementById('pomoRoundsInput').value);
+                const error = document.getElementById('pomoEditorError');
+                if (!name) { error.textContent = '请给这个番茄钟起一个名字。'; return; }
+                if (!Number.isInteger(focusMinutes) || focusMinutes < 1 || focusMinutes > 180) {
+                    error.textContent = '专注时间请输入 1～180 分钟的整数。'; return;
+                }
+                if (!Number.isInteger(breakMinutes) || breakMinutes < 1 || breakMinutes > 60) {
+                    error.textContent = '休息时间请输入 1～60 分钟的整数。'; return;
+                }
+                if (!Number.isInteger(rounds) || rounds < 1 || rounds > 20) {
+                    error.textContent = '轮数请输入 1～20 的整数。'; return;
+                }
+                if (pomodoroEditorId) {
+                    const profile = getPomodoroProfile(pomodoroEditorId);
+                    profile.name = name;
+                    profile.focusMinutes = focusMinutes;
+                    profile.breakMinutes = breakMinutes;
+                    profile.rounds = rounds;
+                    if (profile.id === pomodoroSession.profileId) resetPomodoro(profile.id);
+                } else {
+                    const profile = {
+                        id: 'pomo_' + uid(),
+                        name: name,
+                        focusMinutes: focusMinutes,
+                        breakMinutes: breakMinutes,
+                        rounds: rounds,
+                        isDefault: false
+                    };
+                    pomodoroProfiles.push(profile);
+                    resetPomodoro(profile.id);
+                }
+                persistPomodoro();
+                closePomodoroEditor();
+                renderPomodoro();
+            }
+
+            function deletePomodoroProfile() {
+                if (!pomodoroEditorId) return;
+                const profile = getPomodoroProfile(pomodoroEditorId);
+                if (profile.isDefault) return;
+                if (!confirm('删除“' + profile.name + '”？计时方案删除后无法恢复。')) return;
+                pomodoroProfiles = pomodoroProfiles.filter(function(item) { return item.id !== profile.id; });
+                if (pomodoroSession.profileId === profile.id) resetPomodoro('default');
+                persistPomodoro();
+                closePomodoroEditor();
+                renderPomodoro();
+            }
+
+            document.getElementById('pomoToggleBtn').addEventListener('click', togglePomodoro);
+            document.getElementById('pomoResetBtn').addEventListener('click', function() { resetPomodoro(); });
+            document.getElementById('pomoSkipBtn').addEventListener('click', function() { advancePomodoro(true); });
+            document.getElementById('pomoReminderClose').addEventListener('click', hidePomodoroReminder);
+            document.getElementById('pomoAddPlanBtn').addEventListener('click', function() { openPomodoroEditor(null); });
+            document.getElementById('pomoEditorCancel').addEventListener('click', closePomodoroEditor);
+            document.getElementById('pomoEditorSave').addEventListener('click', savePomodoroEditor);
+            document.getElementById('pomoDeleteBtn').addEventListener('click', deletePomodoroProfile);
+            document.getElementById('pomoEditorModal').addEventListener('click', function(event) {
+                if (event.target === this) closePomodoroEditor();
+            });
+            document.getElementById('pomoNameInput').addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') savePomodoroEditor();
+            });
+            window.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && document.getElementById('pomoEditorModal').classList.contains('open')) {
+                    closePomodoroEditor();
+                }
+            });
+
+            if (pomodoroSession.running && pomodoroSession.endAt) {
+                const restored = Math.ceil((pomodoroSession.endAt - Date.now()) / 1000);
+                if (restored > 0) {
+                    pomodoroSession.remainingSeconds = restored;
+                    startPomodoroTicker();
+                } else {
+                    advancePomodoro(false);
+                }
+            } else {
+                pomodoroSession.running = false;
+                pomodoroSession.endAt = null;
+            }
+            persistPomodoro();
+            renderPomodoro();
 
             // 暴露全局
             window.showPage = showPage;
