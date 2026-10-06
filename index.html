@@ -404,6 +404,14 @@
             min-width: 0;
             overflow: hidden;
         }
+        .todo-list li .todo-copy-row {
+            display: flex;
+            flex: 1 1 auto;
+            align-items: center;
+            gap: 7px;
+            min-width: 0;
+            overflow: hidden;
+        }
         .todo-list li .text {
             display: block;
             flex: 1 1 auto;
@@ -3007,15 +3015,49 @@
                 -webkit-tap-highlight-color: transparent;
             }
             .todo-list li .todo-content.todo-text-expanded {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                align-items: start;
+                gap: 7px;
+                overflow: visible;
+            }
+            .todo-list li .todo-content.todo-text-expanded .todo-copy-row {
+                grid-column: 1 / -1;
+                width: 100%;
                 align-items: flex-start;
                 overflow: visible;
             }
             .todo-list li .todo-content.todo-text-expanded .text {
                 overflow: visible;
+                font-size: 15px;
+                line-height: 1.65;
                 white-space: normal;
                 text-overflow: clip;
                 overflow-wrap: anywhere;
                 word-break: break-word;
+            }
+            .todo-list li .todo-content.todo-text-expanded .todo-expand-btn {
+                grid-column: 2;
+                grid-row: 2;
+                align-self: center;
+                margin: 0;
+            }
+            .todo-list li .todo-content.todo-text-expanded .todo-meta {
+                grid-column: 1;
+                grid-row: 2;
+                width: auto;
+                min-width: 0;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            .todo-list li.todo-item-expanded,
+            .todo-list li.todo-item-expanded .swipe-wrapper {
+                align-items: flex-start;
+            }
+            .todo-list li.todo-item-expanded > .check,
+            .todo-list li.todo-item-expanded > .del,
+            .todo-list li.todo-item-expanded .swipe-wrapper > .check {
+                margin-top: 3px;
             }
             .done-group-title { margin-left: 10px; font-size: 12px; }
             .done-group-items { margin-left: 10px; }
@@ -10620,8 +10662,10 @@ function openSchedJumpModal() {
                 const innerContent = `
                     <span class="check ${checkedClass}" data-id="${todo.id}">${todo.done ? '✓' : ''}</span>
                     <div class="todo-content">
-                        ${todo.pinned ? '<span class="todo-pin-indicator" title="已置顶">📌</span>' : ''}
-                        <span class="text ${doneClass}" data-id="${todo.id}" title="${escapeAttribute(todo.text)}">${escapeHtml(todo.text)}</span>
+                        <div class="todo-copy-row">
+                            ${todo.pinned ? '<span class="todo-pin-indicator" title="已置顶">📌</span>' : ''}
+                            <span class="text ${doneClass}" data-id="${todo.id}" title="${escapeAttribute(todo.text)}">${escapeHtml(todo.text)}</span>
+                        </div>
                         <button class="todo-expand-btn" type="button" aria-expanded="false" aria-label="展开清单文字">展开</button>
                         <div class="todo-meta">${typeLabel}${detailInfo}${expiredBadge}</div>
                     </div>`;
@@ -10751,9 +10795,14 @@ function openSchedJumpModal() {
                         e.preventDefault();
                         const content = this.closest('.todo-content');
                         if (!content) return;
-                        content.classList.add('todo-text-expanded');
-                        this.classList.remove('is-visible');
-                        this.setAttribute('aria-expanded', 'true');
+                        const shouldExpand = this.getAttribute('aria-expanded') !== 'true';
+                        content.classList.toggle('todo-text-expanded', shouldExpand);
+                        const listItem = content.closest('li');
+                        if (listItem) listItem.classList.toggle('todo-item-expanded', shouldExpand);
+                        this.classList.add('is-visible');
+                        this.setAttribute('aria-expanded', String(shouldExpand));
+                        this.setAttribute('aria-label', shouldExpand ? '收起清单文字' : '展开清单文字');
+                        this.textContent = shouldExpand ? '收起' : '展开';
                     });
                 });
 
