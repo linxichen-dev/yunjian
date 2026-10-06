@@ -4607,6 +4607,23 @@
                     sessionStorage.setItem(expandedTodoTextStateKey, JSON.stringify(Array.from(expandedTodoTextIds)));
                 } catch {}
             }
+            // “待完成”分区也会随 renderTodos() 重建。提醒轮询每 30 秒会触发一次
+            // 重建，因此分区的展开状态不能只保存在 DOM class 上。
+            const futureTodoSectionStateKey = 'desk_futureTodoSectionCollapsed';
+            function loadFutureTodoSectionCollapsed() {
+                try {
+                    const saved = sessionStorage.getItem(futureTodoSectionStateKey);
+                    return saved === null ? true : saved === 'true';
+                } catch {
+                    return true;
+                }
+            }
+            let futureTodoSectionCollapsed = loadFutureTodoSectionCollapsed();
+            function persistFutureTodoSectionCollapsed() {
+                try {
+                    sessionStorage.setItem(futureTodoSectionStateKey, String(futureTodoSectionCollapsed));
+                } catch {}
+            }
             notes.forEach(note => {
                 if (!Array.isArray(note.linkedTodoIds)) note.linkedTodoIds = [];
                 // 旧便条只有纯文字 + 关联 id。首次打开时无损转换为有顺序的正文块，
@@ -11086,9 +11103,9 @@ function openSchedJumpModal() {
                 if (futureUndone.length > 0) {
                     html += `<div class="future-section-header" onclick="toggleFutureSection()">
                         <span>📅 待完成（${futureUndone.length}个）</span>
-                        <span class="toggle-icon" id="futureToggleIcon">▶</span>
+                        <span class="toggle-icon" id="futureToggleIcon">${futureTodoSectionCollapsed ? '▶' : '▼'}</span>
                     </div>`;
-                    html += `<div class="future-section collapsed" id="futureSection">`;
+                    html += `<div class="future-section${futureTodoSectionCollapsed ? ' collapsed' : ''}" id="futureSection">`;
                     html += futureUndone.map(t => buildTodoItemHtml(t, false, false)).join('');
                     html += `</div>`;
                 }
@@ -11243,6 +11260,8 @@ function openSchedJumpModal() {
                 const icon = document.getElementById('futureToggleIcon');
                 if (!section) return;
                 const collapsed = section.classList.toggle('collapsed');
+                futureTodoSectionCollapsed = collapsed;
+                persistFutureTodoSectionCollapsed();
                 if (icon) icon.textContent = collapsed ? '▶' : '▼';
                 if (!collapsed) updateMobileTodoExpandButtons(section);
             }
