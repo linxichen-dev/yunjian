@@ -1198,14 +1198,19 @@
         }
         .note-detail-body {
             padding: 24px 20px;
+            min-width: 0;
+            overflow-x: hidden;
             overflow-y: auto;
             flex: 1;
         }
         .note-detail-title {
+            max-width: 100%;
             font-size: 24px;
             font-weight: 800;
             margin-bottom: 10px;
             line-height: 1.35;
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
         .note-detail-time {
             font-size: 13px;
@@ -1216,23 +1221,36 @@
             gap: 8px;
         }
         .note-detail-text {
+            width: 100%;
+            max-width: 100%;
             font-size: 15px;
             line-height: 1.8;
             white-space: pre-wrap;
+            overflow-wrap: anywhere;
             word-break: break-word;
         }
         /* 便条正文中的清单：保持主清单的卡片感，不再使用“已关联清单”蓝色胶囊。 */
         .note-content-flow {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
             font-size: 15px;
             line-height: 1.8;
             white-space: pre-wrap;
+            overflow-wrap: anywhere;
             word-break: break-word;
         }
         .note-rich-editor {
             flex: 1 1 auto;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
             min-height: 260px;
+            overflow-x: hidden;
             overflow-y: auto;
             white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            word-break: break-word;
             cursor: text;
         }
         .note-rich-editor:empty::before {
@@ -1243,6 +1261,8 @@
         .note-embedded-todo {
             display: flex;
             width: min(100%, 680px);
+            max-width: 100%;
+            min-width: 0;
             min-height: 58px;
             margin: 11px 0;
             padding: 10px 11px;
@@ -1291,13 +1311,16 @@
             gap: 6px;
         }
         .note-todo-text {
+            display: block;
             overflow: hidden;
             color: var(--text);
             font-size: 14px;
             font-weight: 600;
             text-align: left;
-            text-overflow: ellipsis;
+            text-overflow: clip;
             white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
             cursor: pointer;
         }
         .note-embedded-todo.is-done .note-todo-text {
@@ -1492,6 +1515,8 @@
         .note-link-modal-body {
             padding: 14px 16px 16px;
             max-height: 52vh;
+            min-width: 0;
+            overflow-x: hidden;
             overflow-y: auto;
         }
         .note-link-search {
@@ -1510,9 +1535,12 @@
         }
         .note-link-list {
             display: flex;
+            width: 100%;
+            min-width: 0;
             flex-direction: column;
             gap: 8px;
         }
+        .note-link-group { min-width: 0; }
         .note-link-group + .note-link-group { margin-top: 16px; }
         .note-link-group-title {
             display: flex;
@@ -1523,6 +1551,8 @@
             font-weight: 700;
         }
         .note-link-item {
+            width: 100%;
+            min-width: 0;
             border: 1px solid var(--border-light);
             background: var(--card);
             border-radius: 14px;
@@ -1532,6 +1562,7 @@
             grid-template-columns: 22px minmax(0, 1fr) auto;
             align-items: center;
             gap: 10px;
+            text-align: left;
         }
         .note-link-item:hover {
             border-color: var(--primary-bg2);
@@ -1553,14 +1584,24 @@
             font-size: 11px;
         }
         .note-link-item-check.done { border-color: var(--primary); background: var(--primary); }
-        .note-link-item-copy { min-width: 0; }
+        .note-link-item-copy {
+            display: block;
+            min-width: 0;
+            text-align: left;
+        }
         .note-link-item-title {
+            display: block;
+            max-width: 100%;
             font-size: 14px;
             font-weight: 700;
             color: var(--text);
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            text-align: left;
+            text-overflow: clip;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            line-height: 1.45;
         }
         .note-link-item-meta {
             display: flex;
@@ -1669,6 +1710,8 @@
 
         .note-edit-text {
             width: 100%;
+            max-width: 100%;
+            min-width: 0;
             border: none;
             background: none;
             font-size: 15px;
@@ -1678,6 +1721,7 @@
             resize: none;
             min-height: 300px;
             font-family: inherit;
+            overflow-wrap: anywhere;
             word-break: break-word;
         }
         .note-edit-text::placeholder {
@@ -1716,6 +1760,7 @@
             bottom: 0;
             z-index: 1700;
             background: var(--bg);
+            overflow-x: hidden;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             max-width: 1100px;
