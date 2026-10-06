@@ -4589,6 +4589,24 @@
             if (!Array.isArray(notes)) notes = [];
             if (!Array.isArray(events)) events = [];
             if (!Array.isArray(userTags)) userTags = [];
+            // 展开/收起属于当前界面的阅读状态。按任务 id 保存，避免 renderTodos()
+            // 因完成、编辑、提醒或新增任务而重建 DOM 时把所有长文字意外收起。
+            // 同时写入 sessionStorage，移动端页面被系统临时重载后仍能恢复本次会话状态。
+            const expandedTodoTextStateKey = 'desk_expandedTodoTextIds';
+            function loadExpandedTodoTextIds() {
+                try {
+                    const saved = JSON.parse(sessionStorage.getItem(expandedTodoTextStateKey) || '[]');
+                    return Array.isArray(saved) ? saved.map(String) : [];
+                } catch {
+                    return [];
+                }
+            }
+            const expandedTodoTextIds = new Set(loadExpandedTodoTextIds());
+            function persistExpandedTodoTextIds() {
+                try {
+                    sessionStorage.setItem(expandedTodoTextStateKey, JSON.stringify(Array.from(expandedTodoTextIds)));
+                } catch {}
+            }
             notes.forEach(note => {
                 if (!Array.isArray(note.linkedTodoIds)) note.linkedTodoIds = [];
                 // 旧便条只有纯文字 + 关联 id。首次打开时无损转换为有顺序的正文块，
@@ -10614,6 +10632,8 @@ function openSchedJumpModal() {
                 const doneClass = todo.done ? 'done-text' : '';
                 const checkedClass = todo.done ? 'done' : '';
                 const expiredClass = isExpired ? ' expired' : '';
+                const isTextExpanded = expandedTodoTextIds.has(String(todo.id));
+                const expandedItemClass = isTextExpanded ? ' todo-item-expanded' : '';
                 const expiredBadge = isExpired
                     ? `<span class="expired-badge">过期${daysBetween(getTodoExpiredDate(todo) || getTodoScheduledDate(todo), todayStr())}天</span>`
                     : '';
@@ -10661,16 +10681,16 @@ function openSchedJumpModal() {
 
                 const innerContent = `
                     <span class="check ${checkedClass}" data-id="${todo.id}">${todo.done ? '✓' : ''}</span>
-                    <div class="todo-content">
+                    <div class="todo-content${isTextExpanded ? ' todo-text-expanded' : ''}">
                         <div class="todo-copy-row">
                             ${todo.pinned ? '<span class="todo-pin-indicator" title="已置顶">📌</span>' : ''}
                             <span class="text ${doneClass}" data-id="${todo.id}" title="${escapeAttribute(todo.text)}">${escapeHtml(todo.text)}</span>
                         </div>
-                        <button class="todo-expand-btn" type="button" aria-expanded="false" aria-label="展开清单文字">展开</button>
+                        <button class="todo-expand-btn${isTextExpanded ? ' is-visible' : ''}" type="button" aria-expanded="${isTextExpanded}" aria-label="${isTextExpanded ? '收起清单文字' : '展开清单文字'}">${isTextExpanded ? '收起' : '展开'}</button>
                         <div class="todo-meta">${typeLabel}${detailInfo}${expiredBadge}</div>
                     </div>`;
                 if (isExpired) {
-                    return `<li data-id="${todo.id}" data-done="${todo.done}" class="${doneClass}${expiredClass}">
+                    return `<li data-id="${todo.id}" data-done="${todo.done}" class="${doneClass}${expiredClass}${expandedItemClass}">
                         <div class="swipe-actions">
                             <button class="swipe-btn postpone" data-id="${todo.id}">📅 延期</button>
                             <button class="swipe-btn abandon" data-id="${todo.id}">🚫 放弃</button>
@@ -10679,7 +10699,7 @@ function openSchedJumpModal() {
                         <div class="swipe-wrapper">${innerContent}</div>
                     </li>`;
                 }
-                return `<li data-id="${todo.id}" data-done="${todo.done}" class="${doneClass}${expiredClass}">
+                return `<li data-id="${todo.id}" data-done="${todo.done}" class="${doneClass}${expiredClass}${expandedItemClass}">
                     ${innerContent}
                     <button class="del" data-id="${todo.id}" aria-label="删除任务">×</button>
                 </li>`;
@@ -10798,7 +10818,15 @@ function openSchedJumpModal() {
                         const shouldExpand = this.getAttribute('aria-expanded') !== 'true';
                         content.classList.toggle('todo-text-expanded', shouldExpand);
                         const listItem = content.closest('li');
-                        if (listItem) listItem.classList.toggle('todo-item-expanded', shouldExpand);
+                        if (listItem) {
+                            listItem.classList.toggle('todo-item-expanded', shouldExpand);
+                            const todoId = String(listItem.dataset.id || '');
+                            if (todoId) {
+                                if (shouldExpand) expandedTodoTextIds.add(todoId);
+                                else expandedTodoTextIds.delete(todoId);
+                                persistExpandedTodoTextIds();
+                            }
+                        }
                         this.classList.add('is-visible');
                         this.setAttribute('aria-expanded', String(shouldExpand));
                         this.setAttribute('aria-label', shouldExpand ? '收起清单文字' : '展开清单文字');
@@ -10995,6 +11023,15 @@ function openSchedJumpModal() {
 
             function renderTodos() {
                 const list = document.getElementById('todoList');
+                const currentTodoIds = new Set(todos.map(todo => String(todo.id)));
+                let expandedStateChanged = false;
+                expandedTodoTextIds.forEach(id => {
+                    if (!currentTodoIds.has(id)) {
+                        expandedTodoTextIds.delete(id);
+                        expandedStateChanged = true;
+                    }
+                });
+                if (expandedStateChanged) persistExpandedTodoTextIds();
                 if (todos.length === 0) {
                     list.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>还没有待办事项</p></div>`;
                     refreshNoteTodoCards();
