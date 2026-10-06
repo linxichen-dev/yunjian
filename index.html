@@ -2925,7 +2925,8 @@
             border: none;
             background: transparent;
             color: inherit;
-            font-size: 13px;
+            font-size: 11px;
+            line-height: 1;
             cursor: pointer;
             opacity: 0.65;
             min-width: 18px;
@@ -4323,7 +4324,7 @@
             <div class="tag-library" id="quickTagLibrary">
             <span class="tag-chip " data-tagid="msbf5ns1_yxny" style="background:#fef3c7;color:#1f2937;">
                 <span>bug</span>
-                <button type="button" class="tag-delete" data-delid="msbf5ns1_yxny">✕</button>
+                <button type="button" class="tag-delete" data-delid="msbf5ns1_yxny">×</button>
             </span>
         </div>
             <div class="quick-tag-create">
@@ -7196,7 +7197,7 @@ function openCalQuickTagModal() {
         container.innerHTML = userTags.length ? userTags.map(tag => `
             <span class="tag-chip ${calQuickAddType === tag.id ? 'is-selected' : ''}" data-tagid="${tag.id}" style="background:${tag.color};color:${getContrastColor(tag.color)};">
                 <span>${escapeHtml(tag.name)}</span>
-                <button type="button" class="tag-delete" data-delid="${tag.id}">✕</button>
+                <button type="button" class="tag-delete" data-delid="${tag.id}">×</button>
             </span>
         `).join('') : '暂无自定义标签';
         container.querySelectorAll('.tag-chip').forEach(chip => {
@@ -7732,7 +7733,7 @@ function openSchedJumpModal() {
                 container.innerHTML = userTags.length ? userTags.map(tag => `
                     <span class="tag-chip ${quickAddType === tag.id ? 'is-selected' : ''} ${quickTagNewId === tag.id ? 'is-new' : ''}" data-tagid="${tag.id}" style="background:${tag.color};color:${getContrastColor(tag.color)};">
                         <span>${escapeHtml(tag.name)}</span>
-                        <button type="button" class="tag-delete" data-delid="${tag.id}">✕</button>
+                        <button type="button" class="tag-delete" data-delid="${tag.id}">×</button>
                     </span>
                 `).join('') : '暂无自定义标签';
                 container.querySelectorAll('.tag-chip').forEach(chip => {
@@ -11323,7 +11324,7 @@ function openSchedJumpModal() {
                             ${userTags.map(tag => `
                                 <span class="tag-chip" data-tagid="${tag.id}" style="background:${tag.color};color:${getContrastColor(tag.color)};">
                                     <span>${escapeHtml(tag.name)}</span>
-                                    <button type="button" class="tag-delete" data-delid="${tag.id}" title="删除此分类">✕</button>
+                                    <button type="button" class="tag-delete" data-delid="${tag.id}" title="删除此分类">×</button>
                                 </span>
                             `).join('')}
                         </div>
