@@ -416,6 +416,9 @@
             text-overflow: ellipsis;
             cursor: pointer;
         }
+        .todo-expand-btn {
+            display: none;
+        }
        .todo-list li .text.done-text {
     color: var(--text);
     text-decoration: none;
@@ -2987,6 +2990,33 @@
             .tabs .tab { font-size: 14px; padding: 6px 12px; }
             .todo-list li .type-badge { font-size: 10px; padding: 1px 8px; }
             .todo-list li .remind-info { font-size: 10px; }
+            .todo-list li .todo-expand-btn.is-visible {
+                display: inline-flex;
+                flex: 0 0 auto;
+                align-items: center;
+                align-self: center;
+                padding: 0;
+                border: 0;
+                background: transparent;
+                color: var(--primary);
+                font-size: 12px;
+                line-height: 1.35;
+                white-space: nowrap;
+                cursor: pointer;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .todo-list li .todo-content.todo-text-expanded {
+                align-items: flex-start;
+                overflow: visible;
+            }
+            .todo-list li .todo-content.todo-text-expanded .text {
+                overflow: visible;
+                white-space: normal;
+                text-overflow: clip;
+                overflow-wrap: anywhere;
+                word-break: break-word;
+            }
             .done-group-title { margin-left: 10px; font-size: 12px; }
             .done-group-items { margin-left: 10px; }
             .week-calendar { padding: 8px 10px; }
@@ -6975,6 +7005,10 @@ function initCalFab() {
         e.preventDefault();
         if (calFabLongPressTriggered) { calFabLongPressTriggered = false; return; }
         if (calFabTypeMenu.classList.contains('open')) { openCalQuickTagModal(); return; }
+        if (calFabInputPanel.classList.contains('open')) {
+            submitCalQuickAdd();
+            return;
+        }
         openTodoComposer('calendar');
     });
     calFabAddTodo.addEventListener('contextmenu', function(e) { e.preventDefault(); cancelLP(); openTypeMenu(); });
@@ -7442,6 +7476,10 @@ function openSchedJumpModal() {
                 if (fabLongPressTriggered) { fabLongPressTriggered = false; return; }
                 if (fabTypeMenu.classList.contains('open')) {
                     openQuickTagModal();
+                    return;
+                }
+                if (fabInputPanel.classList.contains('open')) {
+                    submitQuickAdd();
                     return;
                 }
                 openTodoComposer('main');
@@ -10584,6 +10622,7 @@ function openSchedJumpModal() {
                     <div class="todo-content">
                         ${todo.pinned ? '<span class="todo-pin-indicator" title="已置顶">📌</span>' : ''}
                         <span class="text ${doneClass}" data-id="${todo.id}" title="${escapeAttribute(todo.text)}">${escapeHtml(todo.text)}</span>
+                        <button class="todo-expand-btn" type="button" aria-expanded="false" aria-label="展开清单文字">展开</button>
                         <div class="todo-meta">${typeLabel}${detailInfo}${expiredBadge}</div>
                     </div>`;
                 if (isExpired) {
@@ -10601,6 +10640,36 @@ function openSchedJumpModal() {
                     <button class="del" data-id="${todo.id}" aria-label="删除任务">×</button>
                 </li>`;
             }
+
+            function updateMobileTodoExpandButtons(container) {
+                if (!container) return;
+                const buttons = container.querySelectorAll('.todo-expand-btn');
+                buttons.forEach(button => {
+                    if (button.getAttribute('aria-expanded') !== 'true') {
+                        button.classList.remove('is-visible');
+                    }
+                });
+                if (!window.matchMedia('(max-width: 680px)').matches) return;
+                requestAnimationFrame(function() {
+                    buttons.forEach(button => {
+                        if (button.getAttribute('aria-expanded') === 'true') return;
+                        const content = button.closest('.todo-content');
+                        const text = content ? content.querySelector('.text') : null;
+                        if (!text || text.getClientRects().length === 0) return;
+                        if (text.scrollWidth > text.clientWidth + 1) {
+                            button.classList.add('is-visible');
+                        }
+                    });
+                });
+            }
+
+            let todoExpandResizeTimer = null;
+            window.addEventListener('resize', function() {
+                clearTimeout(todoExpandResizeTimer);
+                todoExpandResizeTimer = setTimeout(function() {
+                    updateMobileTodoExpandButtons(document.getElementById('todoList'));
+                }, 100);
+            });
 
             function attachTodoEvents(container) {
                 container.querySelectorAll('.check').forEach(element => {
@@ -10674,6 +10743,18 @@ function openSchedJumpModal() {
                             showContextMenu(e, this, { type: 'todo', id: this.dataset.id });
                         });
                     }
+                });
+
+                container.querySelectorAll('.todo-expand-btn').forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const content = this.closest('.todo-content');
+                        if (!content) return;
+                        content.classList.add('todo-text-expanded');
+                        this.classList.remove('is-visible');
+                        this.setAttribute('aria-expanded', 'true');
+                    });
                 });
 
                 container.querySelectorAll('.type-badge').forEach(badge => {
@@ -10944,6 +11025,7 @@ function openSchedJumpModal() {
 
                 list.innerHTML = html;
                 attachTodoEvents(list);
+                updateMobileTodoExpandButtons(list);
                 refreshNoteTodoCards();
             }
 
@@ -11076,6 +11158,7 @@ function openSchedJumpModal() {
                 if (!section) return;
                 const collapsed = section.classList.toggle('collapsed');
                 if (icon) icon.textContent = collapsed ? '▶' : '▼';
+                if (!collapsed) updateMobileTodoExpandButtons(section);
             }
 
             // ============================================================
