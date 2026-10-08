@@ -5298,6 +5298,10 @@
             function getTodoExpiredDate(todo) {
                 if (!todo || todo.done || todo.status === 'abandoned') return null;
                 const today = todayStr();
+                if (todo.type === 'inbox' || todo.tagId) {
+                    const scheduledDate = todo.scheduledDate || today;
+                    return scheduledDate < today ? scheduledDate : null;
+                }
                 if (todo.type === 'today') {
                     const sd = todo.scheduledDate || todayStr();
                     return sd < today ? sd : null;
