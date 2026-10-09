@@ -5294,14 +5294,15 @@
                 if (todo.type === 'inbox' || todo.tagId) return todo.scheduledDate || todayStr();
                 return todo.scheduledDate ? todo.scheduledDate : todayStr();
             }
+            // 待归类与自定义标签任务没有过期概念：未完成时始终留在主清单中。
+            function isPersistentMainTodo(todo) {
+                return !!todo && (todo.type === 'inbox' || !!todo.tagId);
+            }
             // 类型感知的失效日期：返回 'YYYY-MM-DD' 或 null（未失效）
             function getTodoExpiredDate(todo) {
                 if (!todo || todo.done || todo.status === 'abandoned') return null;
                 const today = todayStr();
-                if (todo.type === 'inbox' || todo.tagId) {
-                    const scheduledDate = todo.scheduledDate || today;
-                    return scheduledDate < today ? scheduledDate : null;
-                }
+                if (isPersistentMainTodo(todo)) return null;
                 if (todo.type === 'today') {
                     const sd = todo.scheduledDate || todayStr();
                     return sd < today ? sd : null;
@@ -5358,6 +5359,7 @@
                 const todayStrNow = todayStr();
                 return todos.filter(t =>
                     !t.done && t.status !== 'abandoned' &&
+                    !isPersistentMainTodo(t) &&
                     getTodoScheduledDate(t) > todayStrNow
                 );
             }
@@ -5855,7 +5857,7 @@
                     const todo = createTodo(text, 'inbox');
                     todo.scheduledDate = todayStr();
                     todo.pinned = false;
-                    todos.push(todo);
+                    todos.unshift(todo);
                     DB.set('todos', todos);
                     insertTodoAtNoteCaret(noteLinkContext, todo.id);
                     renderTodos();
@@ -7141,7 +7143,7 @@ function initCalFab() {
                     remindCount: 0, hardConfig: null, completedAt: null,
                     nextActiveTime: null, tagId: null
                 };
-                todos.push(draft);
+                todos.unshift(draft);
                 DB.set('todos', todos); renderTodos(); renderCalContent(); updateCalDots();
                 const ctm = document.getElementById('calTimeModal');
                 if (ctm) ctm.style.zIndex = '2000';
@@ -7155,7 +7157,7 @@ function initCalFab() {
                     remindCount: 0, hardConfig: null, completedAt: null,
                     nextActiveTime: null, tagId: null
                 };
-                todos.push(draft);
+                todos.unshift(draft);
                 DB.set('todos', todos); renderTodos(); renderCalContent(); updateCalDots();
                 const hm = document.getElementById('hardModal');
                 if (hm) hm.style.zIndex = '2000';
@@ -7271,7 +7273,7 @@ function calAddTodoForDate(text, type) {
         newTodo.remindTimes.push(ds + 'T09:00');
         newTodo.remindCount = 0;
     }
-    todos.push(newTodo);
+    todos.unshift(newTodo);
     DB.set('todos', todos); // scheduledDate 已写入
     renderTodos();
     renderCalContent();
@@ -7625,14 +7627,14 @@ function openSchedJumpModal() {
                     } else if (fabType === 'today') {
                         // 一步走：创建草稿 + 直接打开模态框
                         const draft = createTodo('', 'today');
-                        todos.push(draft);
+                        todos.unshift(draft);
                         DB.set('todos', todos);
                         renderTodos();
                         openTodayTimeEditModal(draft, true);
                     } else if (fabType === 'hard') {
                         // 一步走：创建草稿 + 直接打开模态框
                         const draft = createTodo('', 'hard');
-                        todos.push(draft);
+                        todos.unshift(draft);
                         DB.set('todos', todos);
                         renderTodos();
                         openHardModal(draft, true);
@@ -7841,7 +7843,7 @@ function openSchedJumpModal() {
                 const realType = customTag ? 'inbox' : type;
                 const newTodo = createTodo(text, realType);
                 if (customTag) applyCustomTag(newTodo, customTag.id);
-                todos.push(newTodo);
+                todos.unshift(newTodo);
                 DB.set('todos', todos);
                 renderTodos();
                 if (realType === 'today') openTodayTimeEditModal(newTodo, true);
@@ -7863,7 +7865,7 @@ function openSchedJumpModal() {
                     nextActiveTime: null,
                     tagId: tagId || null
                 };
-                todos.push(todo);
+                todos.unshift(todo);
                 DB.set('todos', todos);
                 renderTodos();
                 return todo;
@@ -8017,7 +8019,7 @@ function openSchedJumpModal() {
                 newTodo.scheduledDate = todoComposer.targetDate || todayStr();
                 newTodo.pinned = !!todoComposer.pinned;
                 newTodo.remindTimes = todoComposer.reminder ? [todoComposer.reminder] : [];
-                todos.push(newTodo);
+                todos.unshift(newTodo);
                 DB.set('todos', todos);
                 renderTodos();
                 if (document.getElementById('calendarOverlay').classList.contains('active')) {
@@ -8857,7 +8859,7 @@ function openSchedJumpModal() {
                     newTodo.hardConfig = null;
                     newTodo.nextActiveTime = null;
                     newTodo.tagId = null;
-                    todos.push(newTodo);
+                    todos.unshift(newTodo);
                     elasticModalTargetId = newTodo.id;
                 }
                 DB.set('todos', todos);
@@ -11048,9 +11050,9 @@ function openSchedJumpModal() {
             function isTodoVisibleInMainList(todo) {
                 if (todo.status === 'abandoned') return false;
                 const todayStrNow = todayStr();
+                if (isPersistentMainTodo(todo)) return true;
                 // 主清单只拉取 scheduledDate <= 今天 的任务；无 scheduledDate 的老任务默认视为今天
                 if (getTodoScheduledDate(todo) > todayStrNow) return false;
-                if (todo.type === 'inbox' || todo.tagId) return true;
                 if (todo.type === 'flexible') return true;
                 if (todo.type === 'elastic') return true;
                 if (todo.type === 'today') {
@@ -11096,7 +11098,7 @@ function openSchedJumpModal() {
                 const todayUndone = todos.filter(todo =>
                     !todo.done && todo.status !== 'abandoned' &&
                     isTodoVisibleInMainList(todo) &&
-                    getTodoScheduledDate(todo) === todayStrNow
+                    (isPersistentMainTodo(todo) || getTodoScheduledDate(todo) === todayStrNow)
                 ).sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned));
                 const done = todos.filter(todo => todo.done && isCompletedVisibleInMainList(todo));
 
@@ -11113,9 +11115,9 @@ function openSchedJumpModal() {
                 let html = '';
                 const showTodayHeader = expiredUndone.length > 0 || futureUndone.length > 0;
 
-                // A. 今天要做
+                // A. 任务清单
                 if (todayUndone.length > 0) {
-                    if (showTodayHeader) html += `<div class="today-section-header">⏰ 今天要做</div>`;
+                    if (showTodayHeader) html += `<div class="today-section-header">⏰ 任务清单</div>`;
                     html += todayUndone.map(t => buildTodoItemHtml(t, false, false)).join('');
                 } else if (expiredUndone.length === 0 && futureUndone.length === 0) {
                     html += `<div class="empty-state"><div class="icon">✨</div><p>全部完成，太棒了！</p></div>`;
