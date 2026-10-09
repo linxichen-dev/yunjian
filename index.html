@@ -5298,10 +5298,6 @@
             function getTodoExpiredDate(todo) {
                 if (!todo || todo.done || todo.status === 'abandoned') return null;
                 const today = todayStr();
-                if (todo.type === 'inbox' || todo.tagId) {
-                    const scheduledDate = todo.scheduledDate || today;
-                    return scheduledDate < today ? scheduledDate : null;
-                }
                 if (todo.type === 'today') {
                     const sd = todo.scheduledDate || todayStr();
                     return sd < today ? sd : null;
@@ -11098,6 +11094,12 @@ function openSchedJumpModal() {
                     isTodoVisibleInMainList(todo) &&
                     getTodoScheduledDate(todo) === todayStrNow
                 ).sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned));
+                const ongoingInboxUndone = todos.filter(todo =>
+                    !todo.done && todo.status !== 'abandoned' &&
+                    isTodoVisibleInMainList(todo) &&
+                    (todo.type === 'inbox' || todo.tagId) &&
+                    getTodoScheduledDate(todo) < todayStrNow
+                ).sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned));
                 const done = todos.filter(todo => todo.done && isCompletedVisibleInMainList(todo));
 
                 const hasCustomTag = todo => todo.tagId && userTags.some(tag => tag.id === todo.tagId);
@@ -11111,17 +11113,23 @@ function openSchedJumpModal() {
                 };
 
                 let html = '';
-                const showTodayHeader = expiredUndone.length > 0 || futureUndone.length > 0;
+                const showTodayHeader = expiredUndone.length > 0 || futureUndone.length > 0 || ongoingInboxUndone.length > 0;
 
                 // A. 今天要做
                 if (todayUndone.length > 0) {
                     if (showTodayHeader) html += `<div class="today-section-header">⏰ 今天要做</div>`;
                     html += todayUndone.map(t => buildTodoItemHtml(t, false, false)).join('');
-                } else if (expiredUndone.length === 0 && futureUndone.length === 0) {
+                } else if (expiredUndone.length === 0 && futureUndone.length === 0 && ongoingInboxUndone.length === 0) {
                     html += `<div class="empty-state"><div class="icon">✨</div><p>全部完成，太棒了！</p></div>`;
                 }
 
-                // B. 已过期分区
+                // B. 待归类和自定义标签任务不随计划日期过期
+                if (ongoingInboxUndone.length > 0) {
+                    html += `<div class="today-section-header">📥 待归类与自定义标签</div>`;
+                    html += ongoingInboxUndone.map(t => buildTodoItemHtml(t, false, false)).join('');
+                }
+
+                // C. 已过期分区
                 if (expiredUndone.length > 0) {
                     html += `<div class="expired-section-header">
                         <div class="expired-title"><span>⏳ 已过期</span>
@@ -11134,7 +11142,7 @@ function openSchedJumpModal() {
                     html += expiredUndone.map(t => buildTodoItemHtml(t, false, true)).join('');
                 }
 
-                // C. 待完成（未来日期）
+                // D. 待完成（未来日期）
                 if (futureUndone.length > 0) {
                     html += `<div class="future-section-header" onclick="toggleFutureSection()">
                         <span>📅 待完成（${futureUndone.length}个）</span>
