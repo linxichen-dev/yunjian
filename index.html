@@ -3084,12 +3084,12 @@
             }
             .todo-list li.todo-item-expanded,
             .todo-list li.todo-item-expanded .swipe-wrapper {
-                align-items: flex-start;
+                align-items: center;
             }
             .todo-list li.todo-item-expanded > .check,
             .todo-list li.todo-item-expanded > .del,
             .todo-list li.todo-item-expanded .swipe-wrapper > .check {
-                margin-top: 3px;
+                margin-top: 0;
             }
             .done-group-title { margin-left: 10px; font-size: 12px; }
             .done-group-items { margin-left: 10px; }
@@ -6839,11 +6839,15 @@ function renderCalContent() {
         }
         const doneClass = todo.done ? 'done-text' : '';
         const checkedClass = todo.done ? 'done' : '';
-        return `<li data-id="${todo.id}" data-done="${todo.done}">
+        const isTextExpanded = expandedTodoTextIds.has(String(todo.id));
+        return `<li data-id="${todo.id}" data-done="${todo.done}" class="${isTextExpanded ? 'todo-item-expanded' : ''}">
             <span class="check ${checkedClass}" data-id="${todo.id}">${todo.done ? '✓' : ''}</span>
-            <div class="todo-content">
-                ${todo.pinned ? '<span class="todo-pin-indicator" title="已置顶">📌</span>' : ''}
-                <span class="text ${doneClass}" data-id="${todo.id}" title="${escapeHtml(todo.text)}">${escapeHtml(todo.text)}</span>
+            <div class="todo-content${isTextExpanded ? ' todo-text-expanded' : ''}">
+                <div class="todo-copy-row">
+                    ${todo.pinned ? '<span class="todo-pin-indicator" title="已置顶">📌</span>' : ''}
+                    <span class="text ${doneClass}" data-id="${todo.id}" title="${escapeAttribute(todo.text)}">${escapeHtml(todo.text)}</span>
+                </div>
+                <button class="todo-expand-btn${isTextExpanded ? ' is-visible' : ''}" type="button" aria-expanded="${isTextExpanded}" aria-label="${isTextExpanded ? '收起清单文字' : '展开清单文字'}">${isTextExpanded ? '收起' : '展开'}</button>
                 <div class="todo-meta">${typeLabel}${detailInfo}</div>
             </div>
             <button class="del" data-id="${todo.id}" aria-label="删除任务">×</button>
@@ -6879,6 +6883,9 @@ function renderCalContent() {
             h = `<div class="empty-state"><div class="icon">📋</div><p>${dateDisplay(ds)} 无任务</p></div>`;
         }
         wrap.innerHTML = h;
+
+        attachTodoExpandEvents(wrap);
+        updateMobileTodoExpandButtons(wrap);
 
         // 绑定清单事件（点击完成、删除、点击卡片编辑）
         wrap.querySelectorAll('.todo-list li .check').forEach(el => {
@@ -6963,7 +6970,7 @@ function renderCalContent() {
         // 点击任务卡片（非 check/del/badge 区域）打开编辑弹窗
         wrap.querySelectorAll('.todo-list li').forEach(el => {
             el.addEventListener('click', function(e) {
-                if (e.target.closest('.check') || e.target.closest('.del') || e.target.closest('.type-badge') || e.target.closest('.remind-info') || e.target.closest('.plan-detail')) return;
+                if (e.target.closest('.check') || e.target.closest('.del') || e.target.closest('.type-badge') || e.target.closest('.remind-info') || e.target.closest('.plan-detail') || e.target.closest('.todo-expand-btn')) return;
                 const id = this.dataset.id;
                 if (id) openCalTodoEdit(id);
             });
@@ -10786,10 +10793,43 @@ function openSchedJumpModal() {
                 clearTimeout(todoExpandResizeTimer);
                 todoExpandResizeTimer = setTimeout(function() {
                     updateMobileTodoExpandButtons(document.getElementById('todoList'));
+                    updateMobileTodoExpandButtons(document.getElementById('calContent'));
                 }, 100);
             });
 
+            function attachTodoExpandEvents(container) {
+                container.querySelectorAll('.todo-expand-btn').forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const content = this.closest('.todo-content');
+                        if (!content) return;
+                        const shouldExpand = this.getAttribute('aria-expanded') !== 'true';
+                        const listItem = content.closest('li');
+                        const todoId = String(listItem?.dataset.id || '');
+                        if (todoId) {
+                            if (shouldExpand) expandedTodoTextIds.add(todoId);
+                            else expandedTodoTextIds.delete(todoId);
+                            persistExpandedTodoTextIds();
+                        }
+                        // 同一任务可同时出现在日常清单和总览中，同步阅读状态。
+                        document.querySelectorAll('.todo-list li').forEach(item => {
+                            if (item !== listItem && (!todoId || item.dataset.id !== todoId)) return;
+                            item.classList.toggle('todo-item-expanded', shouldExpand);
+                            item.querySelector('.todo-content')?.classList.toggle('todo-text-expanded', shouldExpand);
+                            const expandButton = item.querySelector('.todo-expand-btn');
+                            if (!expandButton) return;
+                            expandButton.classList.add('is-visible');
+                            expandButton.setAttribute('aria-expanded', String(shouldExpand));
+                            expandButton.setAttribute('aria-label', shouldExpand ? '收起清单文字' : '展开清单文字');
+                            expandButton.textContent = shouldExpand ? '收起' : '展开';
+                        });
+                    });
+                });
+            }
+
             function attachTodoEvents(container) {
+                attachTodoExpandEvents(container);
                 container.querySelectorAll('.check').forEach(element => {
                     element.addEventListener('click', function(e) {
                         e.stopPropagation();
@@ -10861,31 +10901,6 @@ function openSchedJumpModal() {
                             showContextMenu(e, this, { type: 'todo', id: this.dataset.id });
                         });
                     }
-                });
-
-                container.querySelectorAll('.todo-expand-btn').forEach(button => {
-                    button.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        const content = this.closest('.todo-content');
-                        if (!content) return;
-                        const shouldExpand = this.getAttribute('aria-expanded') !== 'true';
-                        content.classList.toggle('todo-text-expanded', shouldExpand);
-                        const listItem = content.closest('li');
-                        if (listItem) {
-                            listItem.classList.toggle('todo-item-expanded', shouldExpand);
-                            const todoId = String(listItem.dataset.id || '');
-                            if (todoId) {
-                                if (shouldExpand) expandedTodoTextIds.add(todoId);
-                                else expandedTodoTextIds.delete(todoId);
-                                persistExpandedTodoTextIds();
-                            }
-                        }
-                        this.classList.add('is-visible');
-                        this.setAttribute('aria-expanded', String(shouldExpand));
-                        this.setAttribute('aria-label', shouldExpand ? '收起清单文字' : '展开清单文字');
-                        this.textContent = shouldExpand ? '收起' : '展开';
-                    });
                 });
 
                 container.querySelectorAll('.type-badge').forEach(badge => {
