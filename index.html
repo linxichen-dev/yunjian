@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="light"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
     <!-- 移动端显示配置 -->
     <meta name="theme-color" content="#4A6CF7">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3889,12 +3889,12 @@
                 </div>
             </div>
             <div class="tabs" id="noteTabs">
-                <button class="tab" data-tab="todoTab">📋 清单</button>
-                <button class="tab active" data-tab="noteTab">📝 便条</button>
+                <button class="tab active" data-tab="todoTab">📋 清单</button>
+                <button class="tab" data-tab="noteTab">📝 便条</button>
             </div>
             <div class="content-area" id="noteContentArea">
                 <!-- 清单 -->
-                <div id="todoTab" class="tab-content" style="position:relative;">
+                <div id="todoTab" class="tab-content active" style="position:relative;">
                     <ul class="todo-list" id="todoList"><div class="empty-state"><div class="icon">✨</div><p>全部完成，太棒了！</p></div></ul>
                     <div class="fab-type-menu" id="fabTypeMenu" aria-hidden="true">
                         <button class="fab-type-option hard" data-type="hard" title="固定计划">📋</button>
@@ -3907,7 +3907,7 @@
                     <button class="fab-add-todo" id="fabAddTodo" title="单击添加，长按或右键选择类型">+</button>
                 </div>
                 <!-- 便条（trea 版本） -->
-                <div id="noteTab" class="tab-content active" style="position:relative;">
+                <div id="noteTab" class="tab-content" style="position:relative;">
                     <div class="week-cal-outer">
                     <button class="week-cal-arrow" onclick="noteWeekPrev()" aria-label="上一周" title="上一周">‹</button>
                     <div id="weekCalWrap" style="touch-action: pan-y;"><div class="slider" id="noteWeekSlider" style="transform: translateX(-33.333%);"><div class="slide"><div class="week-calendar"><div class="week-day" onclick="selectNoteDate('2026-08-03')"><span class="week-day-name">一</span><span class="week-day-label">3</span><span class="week-day-dot"></span></div><div class="week-day has-notes" onclick="selectNoteDate('2026-08-04')"><span class="week-day-name">二</span><span class="week-day-label">4</span><span class="week-day-dot"></span></div><div class="week-day has-notes" onclick="selectNoteDate('2026-08-05')"><span class="week-day-name">三</span><span class="week-day-label">5</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-06')"><span class="week-day-name">四</span><span class="week-day-label">6</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-07')"><span class="week-day-name">五</span><span class="week-day-label">7</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-08')"><span class="week-day-name">六</span><span class="week-day-label">8</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-09')"><span class="week-day-name">日</span><span class="week-day-label">9</span><span class="week-day-dot"></span></div></div></div><div class="slide"><div class="week-calendar"><div class="week-day" onclick="selectNoteDate('2026-08-10')"><span class="week-day-name">一</span><span class="week-day-label">10</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-11')"><span class="week-day-name">二</span><span class="week-day-label">11</span><span class="week-day-dot"></span></div><div class="week-day selected today-marker" onclick="selectNoteDate('2026-08-12')"><span class="week-day-name">三</span><span class="week-day-label">12</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-13')"><span class="week-day-name">四</span><span class="week-day-label">13</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-14')"><span class="week-day-name">五</span><span class="week-day-label">14</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-15')"><span class="week-day-name">六</span><span class="week-day-label">15</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-16')"><span class="week-day-name">日</span><span class="week-day-label">16</span><span class="week-day-dot"></span></div></div></div><div class="slide"><div class="week-calendar"><div class="week-day" onclick="selectNoteDate('2026-08-17')"><span class="week-day-name">一</span><span class="week-day-label">17</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-18')"><span class="week-day-name">二</span><span class="week-day-label">18</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-19')"><span class="week-day-name">三</span><span class="week-day-label">19</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-20')"><span class="week-day-name">四</span><span class="week-day-label">20</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-21')"><span class="week-day-name">五</span><span class="week-day-label">21</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-22')"><span class="week-day-name">六</span><span class="week-day-label">22</span><span class="week-day-dot"></span></div><div class="week-day" onclick="selectNoteDate('2026-08-23')"><span class="week-day-name">日</span><span class="week-day-label">23</span><span class="week-day-dot"></span></div></div></div></div></div>
@@ -7956,6 +7956,27 @@ function openSchedJumpModal() {
                 }
             }
 
+            // 手机软键盘通常只改变 visualViewport。把固定浮层显式锚定到当前
+            // 可视视口，避免打开动画结束后因键盘改变视口而再次向下回弹。
+            function syncTodoComposerViewport() {
+                const els = getTodoComposerElements();
+                const viewport = window.visualViewport;
+                if (!viewport || !els.overlay.classList.contains('open')) return;
+                els.overlay.style.top = viewport.offsetTop + 'px';
+                els.overlay.style.left = viewport.offsetLeft + 'px';
+                els.overlay.style.right = 'auto';
+                els.overlay.style.bottom = 'auto';
+                els.overlay.style.width = viewport.width + 'px';
+                els.overlay.style.height = viewport.height + 'px';
+            }
+
+            function resetTodoComposerViewport() {
+                const overlay = getTodoComposerElements().overlay;
+                ['top', 'right', 'bottom', 'left', 'width', 'height'].forEach(function(property) {
+                    overlay.style[property] = '';
+                });
+            }
+
             function openTodoComposer(source) {
                 const els = getTodoComposerElements();
                 clearTimeout(todoComposerCloseTimer);
@@ -7972,6 +7993,7 @@ function openSchedJumpModal() {
                     : '新建清单';
                 els.overlay.classList.add('open');
                 els.overlay.setAttribute('aria-hidden', 'false');
+                syncTodoComposerViewport();
                 if (window._calFabClose) window._calFabClose();
                 if (typeof closeFabQuickAdd === 'function') closeFabQuickAdd();
                 // 关键：必须在点击手势的同步调用栈内立即聚焦输入框。
@@ -7996,6 +8018,7 @@ function openSchedJumpModal() {
                 els.overlay.style.background = '';
                 els.input.blur();
                 setTodoTypePopover(false);
+                resetTodoComposerViewport();
             }
 
             function closeTodoComposer(fromDrag) {
@@ -8230,6 +8253,17 @@ function openSchedJumpModal() {
                     else if (els.typePopover.classList.contains('open')) setTodoTypePopover(false);
                     else if (els.overlay.classList.contains('open')) closeTodoComposer(false);
                 });
+                window.addEventListener('resize', function() {
+                    requestAnimationFrame(syncTodoComposerViewport);
+                });
+                if (window.visualViewport) {
+                    window.visualViewport.addEventListener('resize', function() {
+                        requestAnimationFrame(syncTodoComposerViewport);
+                    });
+                    window.visualViewport.addEventListener('scroll', function() {
+                        requestAnimationFrame(syncTodoComposerViewport);
+                    });
+                }
                 updateTodoComposerUI();
             }
 
