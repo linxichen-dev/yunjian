@@ -1224,6 +1224,11 @@
             overflow-wrap: anywhere;
             word-break: break-word;
         }
+        .note-detail-title-input {
+            display: block;
+            padding: 0;
+            margin: 0 0 10px;
+        }
         .note-detail-time {
             font-size: 13px;
             color: var(--text-light);
@@ -1666,6 +1671,10 @@
             padding: 24px 20px 6px;
             line-height: 1.35;
         }
+        #noteDetailTitleEdit {
+            padding: 0;
+            margin: 0 0 10px;
+        }
         .note-edit-title::placeholder {
             color: var(--text-lighter);
             font-weight: 400;
@@ -1745,7 +1754,8 @@
             color: var(--text-light);
             font-weight: 500;
         }
-        .new-note-save-btn {
+        .new-note-save-btn,
+        .note-detail-header .modal-btn-primary {
             padding: 9px 22px;
             border: none;
             background: var(--primary);
@@ -1756,7 +1766,8 @@
             cursor: pointer;
             transition: var(--transition);
         }
-        .new-note-save-btn:hover {
+        .new-note-save-btn:hover,
+        .note-detail-header .modal-btn-primary:hover {
             background: var(--primary-dark);
         }
         .new-note-save-btn:disabled {
@@ -1766,10 +1777,14 @@
         }
         .page-fullscreen {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 50%;
+            left: 50%;
+            right: auto;
+            bottom: auto;
+            transform: translate(-50%, -50%);
+            width: calc(100% - 40px);
+            height: 90vh;
+            max-height: 820px;
             z-index: 1700;
             background: var(--bg);
             overflow-x: hidden;
@@ -3256,13 +3271,14 @@
         }
         /* 响应式 */
         @media (max-width: 820px) {
-            .page-fullscreen, .calendar-overlay, .search-overlay {
+            .calendar-overlay, .search-overlay {
                 max-width: 100%;
                 border-radius: 0;
             }
         }
         @media (max-width: 680px) {
             #app,
+            .page-fullscreen,
             .calendar-overlay,
             .search-overlay {
                 height: 96vh;
@@ -4766,7 +4782,7 @@
             <button class="new-note-save-btn" id="newNoteSaveBtn" onclick="saveNewNote()" disabled="" data-save-tap-enhanced="true">保存</button>
         </div>
         <div class="new-note-time" id="newNoteTime">2026-08-06 12:20 周四</div>
-        <input id="newNoteTitle" class="note-edit-title" placeholder="标题（可选）">
+        <input id="newNoteTitle" class="note-edit-title" placeholder="标题（可选）" oninput="onNewNoteTextInput()">
         <div id="newNoteText" class="note-edit-text note-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="写点什么..." data-note-context="new" oninput="onNewNoteTextInput()"></div>
         <div class="note-editor-toolbar">
             <div class="note-linked-entry">
@@ -5835,11 +5851,15 @@
             let noteSelectedDate = todayStr();
             let editingNoteId = null;
             let noteDetailId = null;
+            let newNoteDraftId = null;
             let noteLinkContext = null;
             let noteLinkTriggerButton = null;
             const noteCaretRanges = { new: null, edit: null };
+            let noteDetailOriginalSnapshot = null;
+            let noteDetailDirty = false;
 
             function getNoteEditor(context) {
+                if (context === 'detail') return document.getElementById('noteDetailTextEdit');
                 return document.getElementById(context === 'edit' ? 'noteEditText' : 'newNoteText');
             }
             function getNoteBlocks(note) {
@@ -5890,7 +5910,7 @@
                 const todo = getNoteTodoById(card.dataset.todoId);
                 card.classList.toggle('is-done', !!(todo && todo.done));
                 card.classList.toggle('is-missing', !todo);
-                card.innerHTML = noteTodoCardInnerHtml(todo, !!card.dataset.noteContext);
+                card.innerHTML = noteTodoCardInnerHtml(todo, /^(new|edit)$/.test(card.dataset.noteContext || ''));
             }
             function refreshNoteTodoCards(todoId) {
                 document.querySelectorAll('.note-embedded-todo').forEach(card => {
@@ -5909,7 +5929,7 @@
                 editor.innerHTML = '';
                 getNoteBlocks(note).forEach(block => {
                     if (block && block.type === 'todo' && block.todoId !== undefined) {
-                        editor.appendChild(createNoteTodoCard(block.todoId, context, true));
+                        editor.appendChild(createNoteTodoCard(block.todoId, context, context !== 'detail'));
                         editor.appendChild(document.createElement('br'));
                     } else if (block && block.type === 'text') {
                         appendNoteText(editor, block.text);
@@ -5985,9 +6005,24 @@
             function updateNoteEditorState(context) {
                 if (context === 'new') {
                     const save = document.getElementById('newNoteSaveBtn');
-                    if (save) save.disabled = !noteEditorHasContent('new');
+                    const title = document.getElementById('newNoteTitle').value.trim();
+                    if (save) save.disabled = !title && !noteEditorHasContent('new');
                 }
             }
+            function getNoteDetailSnapshot() {
+                const title = (document.getElementById('noteDetailTitleEdit')?.value || '').trim();
+                const blocks = serializeNoteEditor('detail');
+                return JSON.stringify({ title, blocks });
+            }
+            function updateNoteDetailDirtyState() {
+                if (!noteDetailOriginalSnapshot) return;
+                noteDetailDirty = getNoteDetailSnapshot() !== noteDetailOriginalSnapshot;
+                const actions = document.getElementById('noteDetailActions');
+                if (!actions) return;
+                actions.innerHTML = noteDetailDirty ? '<button class="modal-btn modal-btn-primary" onclick="saveNoteDetail()">保存</button>' : '';
+                if (noteDetailDirty) enhanceSaveBtnTap(actions.querySelector('button'));
+            }
+            window.onNoteDetailInput = updateNoteDetailDirtyState;
             function captureNoteCaret(context) {
                 const editor = getNoteEditor(context);
                 const selection = window.getSelection && window.getSelection();
@@ -6042,7 +6077,9 @@
                 const next = card.nextSibling;
                 card.remove();
                 if (next && next.nodeType === Node.ELEMENT_NODE && next.tagName === 'BR') next.remove();
-                updateNoteEditorState(card.dataset.noteContext || 'new');
+                const context = card.dataset.noteContext || 'new';
+                updateNoteEditorState(context);
+                if (context === 'detail') updateNoteDetailDirtyState();
             }
             function renderNoteContentHtml(note) {
                 const blocks = getNoteBlocks(note);
@@ -6388,18 +6425,44 @@
                 noteDetailId = id;
                 const body = document.getElementById('noteDetailBody');
                 const actions = document.getElementById('noteDetailActions');
-                body.innerHTML = `${n.title ? '<div class="note-detail-title">'+escapeHtml(n.title)+'</div>' : ''}<div class="note-detail-time">${n.date ? fullDateDisplay(n.date) : ''} ${n.time ? n.time.substring(11,16) : ''} ${n.date ? weekdayName(n.date) : ''}</div>${renderNoteContentHtml(n)}`;
-                actions.innerHTML = `<button class="modal-btn modal-btn-secondary" onclick="openNoteEdit('${id}')">编辑</button><button class="modal-btn modal-btn-danger" onclick="confirmDeleteNote('${id}')">删除</button>`;
+                body.innerHTML = '<input id="noteDetailTitleEdit" class="note-edit-title note-detail-title-input" placeholder="标题（可选）" value="' + escapeAttribute(n.title || '') + '" oninput="onNoteDetailInput()"><div class="note-detail-time">' + (n.date ? fullDateDisplay(n.date) : '') + ' ' + (n.time ? n.time.substring(11,16) : '') + ' ' + (n.date ? weekdayName(n.date) : '') + '</div><div id="noteDetailTextEdit" class="note-detail-text note-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="写点什么..." data-note-context="detail" oninput="onNoteDetailInput()"></div>';
+                actions.innerHTML = '';
                 document.getElementById('noteDetailPage').classList.add('active');
+                renderNoteEditor('detail', n);
+                noteDetailOriginalSnapshot = getNoteDetailSnapshot();
+                noteDetailDirty = false;
                 updateNoteLinkEntryVisibility();
             };
-            window.closeNoteDetail = function() {
+            window.saveNoteDetail = function() {
+                const n = notes.find(x => x.id === noteDetailId);
+                if (!n) return;
+                const blocks = serializeNoteEditor('detail');
+                n.title = (document.getElementById('noteDetailTitleEdit')?.value || '').trim();
+                n.contentBlocks = blocks;
+                n.text = getPlainTextFromBlocks(blocks);
+                n.linkedTodoIds = getLinkedIdsFromBlocks(blocks);
+                DB.set('notes', notes);
+                noteDetailOriginalSnapshot = getNoteDetailSnapshot();
+                noteDetailDirty = false;
+                const actions = document.getElementById('noteDetailActions');
+                if (actions) actions.innerHTML = '';
+                renderNoteList();
+                renderWeekCalendar();
+                showToast('已保存');
+            };
+            window.finishCloseNoteDetail = function() {
                 document.getElementById('noteDetailPage').classList.remove('active');
                 document.getElementById('noteDetailPage').style.zIndex = '';
                 document.getElementById('noteEditPage').style.zIndex = '';
                 noteDetailId = null;
+                noteDetailOriginalSnapshot = null;
+                noteDetailDirty = false;
                 renderNoteList();
                 renderWeekCalendar();
+            }
+            window.closeNoteDetail = function() {
+                if (!noteDetailDirty) { window.finishCloseNoteDetail(); return; }
+                showModal('<div class="modal-title">保存修改？</div><div class="modal-desc">便条已修改，是否保存？</div><div class="modal-actions"><button class="btn-cancel" onclick="closeModal(); window.finishCloseNoteDetail();">否</button><button class="btn-confirm" onclick="closeModal(); saveNoteDetail(); window.finishCloseNoteDetail();">是</button></div>');
             };
 
             window.openNoteEdit = function(id) {
@@ -6420,19 +6483,24 @@
                     placeNoteCaretAtEnd('edit');
                 }, 200);
             };
-            window.saveNoteEdit = function() {
+            function persistNoteEdit() {
                 const n = notes.find(x => x.id === editingNoteId);
-                if (!n) return;
+                if (!n) return false;
                 const blocks = serializeNoteEditor('edit');
                 n.title = document.getElementById('noteEditTitle').value.trim();
                 n.contentBlocks = blocks;
                 n.text = getPlainTextFromBlocks(blocks);
                 n.linkedTodoIds = getLinkedIdsFromBlocks(blocks);
                 DB.set('notes', notes);
-                closeNoteEdit();
+                return true;
+            }
+            window.saveNoteEdit = function() {
+                if (!persistNoteEdit()) return;
+                closeNoteEdit(true);
                 showToast('已保存');
             };
-            window.closeNoteEdit = function() {
+            window.closeNoteEdit = function(skipAutoSave) {
+                const autoSaved = !skipAutoSave && persistNoteEdit();
                 document.getElementById('noteEditPage').classList.remove('active');
                 closeNoteLinkPicker();
                 editingNoteId = null;
@@ -6440,9 +6508,11 @@
                 updateNoteLinkEntryVisibility();
                 if (noteDetailId) openNoteDetail(noteDetailId);
                 else { renderNoteList(); renderWeekCalendar(); }
+                if (autoSaved) showToast('已自动保存');
             };
 
             window.openNewNote = function() {
+                newNoteDraftId = null;
                 document.getElementById('newNoteTitle').value = '';
                 document.getElementById('newNoteSaveBtn').disabled = true;
                 const now = new Date();
@@ -6452,11 +6522,43 @@
                 renderNoteEditor('new', null);
                 setTimeout(() => document.getElementById('newNoteTitle').focus(), 200);
             };
-            window.closeNewNote = function() {
+            function persistNewNote() {
+                const blocks = serializeNoteEditor('new');
+                const title = document.getElementById('newNoteTitle').value.trim();
+                if (!title && !blocks.length) {
+                    if (newNoteDraftId && notes.some(n => n.id === newNoteDraftId)) {
+                        notes = notes.filter(n => n.id !== newNoteDraftId);
+                        DB.set('notes', notes);
+                    }
+                    newNoteDraftId = null;
+                    return false;
+                }
+                const text = getPlainTextFromBlocks(blocks);
+                const now = new Date();
+                let note = newNoteDraftId ? notes.find(n => n.id === newNoteDraftId) : null;
+                if (!note) {
+                    newNoteDraftId = uid();
+                    note = {
+                        id: newNoteDraftId,
+                        time: formatDateTime(now),
+                        date: calNoteCreating ? (calSelectedDate || todayStr()) : noteSelectedDate
+                    };
+                    notes.push(note);
+                }
+                note.title = title;
+                note.text = text;
+                note.linkedTodoIds = getLinkedIdsFromBlocks(blocks);
+                note.contentBlocks = blocks;
+                DB.set('notes', notes);
+                return true;
+            }
+            window.closeNewNote = function(skipAutoSave) {
+                const autoSaved = !skipAutoSave && persistNewNote();
                 document.getElementById('newNotePage').classList.remove('active');
                 document.getElementById('newNotePage').style.zIndex = '';
                 closeNoteLinkPicker();
                 renderNoteEditor('new', null);
+                newNoteDraftId = null;
                 updateNoteLinkEntryVisibility();
                 if (calNoteCreating) {
                     calNoteCreating = false;
@@ -6466,30 +6568,25 @@
                     renderNoteList();
                     renderWeekCalendar();
                 }
+                if (autoSaved) showToast('已自动保存');
             };
             window.saveNewNote = function() {
-                const blocks = serializeNoteEditor('new');
-                if (!blocks.length) return;
-                const text = getPlainTextFromBlocks(blocks);
-                const title = document.getElementById('newNoteTitle').value.trim();
-                const now = new Date();
-                notes.push({
-                    id: uid(),
-                    title: title,
-                    text: text,
-                    time: formatDateTime(now),
-                    date: calNoteCreating ? (calSelectedDate || todayStr()) : noteSelectedDate,
-                    linkedTodoIds: getLinkedIdsFromBlocks(blocks),
-                    contentBlocks: blocks
-                });
-                DB.set('notes', notes);
-                closeNewNote();
+                if (!persistNewNote()) return;
+                closeNewNote(true);
                 showToast('已保存');
             };
             window.onNewNoteTextInput = function() {
                 captureNoteCaret('new');
                 updateNoteEditorState('new');
             };
+            function persistOpenNoteEditors() {
+                if (document.getElementById('newNotePage').classList.contains('active')) persistNewNote();
+                if (document.getElementById('noteEditPage').classList.contains('active')) persistNoteEdit();
+            }
+            window.addEventListener('pagehide', persistOpenNoteEditors);
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'hidden') persistOpenNoteEditors();
+            });
 
            // ============================================================
 // 日历总览（三页滑动版，移植自旧版历史日历）
@@ -7943,6 +8040,7 @@ function openCalQuickTagModal() {
 // 日历内新建便条（复用 newNotePage，基于选中日期）
 function openCalNewNote() {
     calNoteCreating = true;
+    newNoteDraftId = null;
     document.getElementById('newNoteTitle').value = '';
     document.getElementById('newNoteSaveBtn').disabled = true;
     renderNoteEditor('new', null);
@@ -11271,7 +11369,7 @@ function openSchedJumpModal() {
                     requestAnimationFrame(positionNoteLinkPopover);
                 });
             }
-            ['new', 'edit'].forEach(context => {
+            ['new', 'edit', 'detail'].forEach(context => {
                 const editor = getNoteEditor(context);
                 if (!editor) return;
                 ['keyup', 'mouseup', 'touchend', 'focus', 'input'].forEach(type => {
